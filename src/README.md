@@ -1,0 +1,1 @@
+Currently there is 1 category of sketches. Sketch.js contains the script for generating line art, and lineartexplainer.js is similar to it but used in the 'about'-pages
