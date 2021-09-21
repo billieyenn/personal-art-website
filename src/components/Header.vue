@@ -10,18 +10,18 @@
   <hr>
   <router-link tag='li' to='/about/perdurable' style='cursor: pointer;'>Perdurable</router-link>
   <ul>
-  <router-link tag='li' to='/sketches/7' style='cursor: pointer;'>UltraMinimalist</router-link>
-  <router-link tag='li' to='/sketches/5' style='cursor: pointer;'>Minimalist</router-link>
-  <router-link tag='li' to='/sketches/1' style='cursor: pointer;'>PureShapes</router-link>
-  <router-link tag='li' to='/sketches/6' style='cursor: pointer;'>MinimalistBeans</router-link>
-  <router-link tag='li' to='/sketches/3' style='cursor: pointer;'>MediumBeans</router-link>
-  <router-link tag='li' to='/sketches/4' style='cursor: pointer;'>HighBeans</router-link>
-  <router-link tag='li' to='/sketches/11' style='cursor: pointer;'>Symmetrical</router-link>
-  <router-link tag='li' to='/sketches/2' style='cursor: pointer;'>PolySquiggle</router-link>
-  <router-link tag='li' to='/sketches/12' style='cursor: pointer;'>PolySymmetrical</router-link>
-  <router-link tag='li' to='/sketches/8' style='cursor: pointer;'>Toroid</router-link>
-  <router-link tag='li' to='/sketches/9' style='cursor: pointer;'>Storm</router-link>
-  <router-link tag='li' to='/sketches/10' style='cursor: pointer;'>Disc</router-link>
+  <router-link tag='li' to='/sketches/perdurable/7' style='cursor: pointer;'>UltraMinimalist</router-link>
+  <router-link tag='li' to='/sketches/perdurable/5' style='cursor: pointer;'>Minimalist</router-link>
+  <router-link tag='li' to='/sketches/perdurable/1' style='cursor: pointer;'>PureShapes</router-link>
+  <router-link tag='li' to='/sketches/perdurable/6' style='cursor: pointer;'>MinimalistBeans</router-link>
+  <router-link tag='li' to='/sketches/perdurable/3' style='cursor: pointer;'>MediumBeans</router-link>
+  <router-link tag='li' to='/sketches/perdurable/4' style='cursor: pointer;'>HighBeans</router-link>
+  <router-link tag='li' to='/sketches/perdurable/11' style='cursor: pointer;'>Symmetrical</router-link>
+  <router-link tag='li' to='/sketches/perdurable/2' style='cursor: pointer;'>PolySquiggle</router-link>
+  <router-link tag='li' to='/sketches/perdurable/12' style='cursor: pointer;'>PolySymmetrical</router-link>
+  <router-link tag='li' to='/sketches/perdurable/8' style='cursor: pointer;'>Toroid</router-link>
+  <router-link tag='li' to='/sketches/perdurable/9' style='cursor: pointer;'>Storm</router-link>
+  <router-link tag='li' to='/sketches/perdurable/10' style='cursor: pointer;'>Disc</router-link>
   </ul>
 
   <hr>

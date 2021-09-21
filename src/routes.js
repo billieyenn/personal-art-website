@@ -55,18 +55,18 @@ export const routes = [
 
     },
     children: [
-      { path: '1', component: LineArtPureShapes },
-      { path: '2', component: LineArtPolySquiggle },
-      { path: '3', component: LineArtAsymmetricalMediumComplex },
-      { path: '4', component: LineArtAsymmetricalHighComplex },
-      { path: '5', component: LineArtMinimalist },
-      { path: '6', component: LineArtMinimalistBeans },
-      { path: '7', component: LineArtUltraMinimalist },
-      { path: '8', component: LineArtToroid },
-      { path: '9', component: LineArtStorm },
-      { path: '10', component: LineArtDisc },
-      { path: '11', component: LineArtSymmetrical },
-      { path: '12', component: LineArtPolySymmetrical }
+      { path: 'perdurable/1', component: LineArtPureShapes },
+      { path: 'perdurable/2', component: LineArtPolySquiggle },
+      { path: 'perdurable/3', component: LineArtAsymmetricalMediumComplex },
+      { path: 'perdurable/4', component: LineArtAsymmetricalHighComplex },
+      { path: 'perdurable/5', component: LineArtMinimalist },
+      { path: 'perdurable/6', component: LineArtMinimalistBeans },
+      { path: 'perdurable/7', component: LineArtUltraMinimalist },
+      { path: 'perdurable/8', component: LineArtToroid },
+      { path: 'perdurable/9', component: LineArtStorm },
+      { path: 'perdurable/10', component: LineArtDisc },
+      { path: 'perdurable/11', component: LineArtSymmetrical },
+      { path: 'perdurable/12', component: LineArtPolySymmetrical }
     ]
   },
   {
