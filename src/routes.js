@@ -14,6 +14,7 @@ import LineArtToroid from './components/Lineart/Toroid.vue'
 import LineArtStorm from './components/Lineart/Storm.vue'
 import LineArtDisc from './components/Lineart/Disc.vue'
 import LineArtAbout from './components/Lineart/LineArtAbout.vue'
+import Test from './components/Test/Test.vue'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
 
@@ -66,7 +67,9 @@ export const routes = [
       { path: 'perdurable/9', component: LineArtStorm },
       { path: 'perdurable/10', component: LineArtDisc },
       { path: 'perdurable/11', component: LineArtSymmetrical },
-      { path: 'perdurable/12', component: LineArtPolySymmetrical }
+      { path: 'perdurable/12', component: LineArtPolySymmetrical },
+      { path: 'test/1', component: Test }
+
     ]
   },
   {

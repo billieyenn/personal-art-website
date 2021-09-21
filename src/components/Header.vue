@@ -24,6 +24,11 @@
   <router-link tag='li' to='/sketches/perdurable/10' style='cursor: pointer;'>Disc</router-link>
   </ul>
 
+  <router-link tag='li' to='/about/test' style='cursor: pointer;'>Test</router-link>
+  <ul>
+      <router-link tag='li' to='/sketches/test/1' style='cursor: pointer;'>Test 1</router-link>
+  </ul>
+
   <hr>
 </div>
 </div>
