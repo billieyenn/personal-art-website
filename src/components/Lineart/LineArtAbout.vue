@@ -36,7 +36,7 @@
       Collection
     </h4>
     <p>
-      The collection is available on Opensea, and consists of the following distribution of configurations
+      The collection is available on <a href="https://opensea.io/collection/perdurable">Opensea</a>, and consists of the following distribution of configurations
       <ul>
         <li>200x PureShapes</li>
         <li>51x MediumBeans</li>

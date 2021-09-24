@@ -12,38 +12,89 @@
 </template>
 
 <script>
+/* eslint-enable */
+/* eslint-disable */
+
+let sketch = (config) => {
+  return function (p) {
+    p.setup = function () {
+      p.createCanvas(710, 400, p.WEBGL);
+    }
+    p.draw = function () {
+      p.background(250)
+      p.normalMaterial()
+
+      p.translate(-240, -100, 0)
+      p.push()
+      p.rotateZ(p.frameCount * 0.01)
+      p.rotateX(p.frameCount * 0.01)
+      p.rotateY(p.frameCount * 0.01)
+      p.plane(70)
+      p.pop()
+
+      p.translate(240, 0, 0)
+      p.push()
+      p.rotateZ(p.frameCount * 0.01)
+      p.rotateX(p.frameCount * 0.01)
+      p.rotateY(p.frameCount * 0.01)
+      p.box(70, 70, 70)
+      p.pop()
+
+      p.translate(240, 0, 0)
+      p.push()
+      p.rotateZ(p.frameCount * 0.01)
+      p.rotateX(p.frameCount * 0.01)
+      p.rotateY(p.frameCount * 0.01)
+      p.cylinder(70, 70)
+      p.pop()
+
+      p.translate(-240 * 2, 200, 0)
+      p.push()
+      p.rotateZ(p.frameCount * 0.01)
+      p.rotateX(p.frameCount * 0.01)
+      p.rotateY(p.frameCount * 0.01)
+      p.cone(70, 70)
+      p.pop()
+
+      p.translate(240, 0, 0)
+      p.push()
+      p.rotateZ(p.frameCount * 0.01)
+      p.rotateX(p.frameCount * 0.01)
+      p.rotateY(p.frameCount * 0.01)
+      p.torus(70, 20)
+      p.pop()
+
+      p.translate(240, 0, 0)
+      p.push()
+      p.rotateZ(p.frameCount * 0.01)
+      p.rotateX(p.frameCount * 0.01)
+      p.rotateY(p.frameCount * 0.01)
+      p.sphere(70)
+      p.pop()
+    }
+  }
+}
 /* eslint-disable */
 
 import P5 from 'p5'
-// import { curry } from '../../sketch'
 export default {
-  name: 'HelloWorld',
   props: {
     msg: String
   },
   data () {
     return {
       componentKey: 0,
-      p5canvas: null,
-      // slightly asymmetrical high complex soft background
-      config: {
-        decay: 0.9,
-        complexity: 100,
-        symmetricity: false,
-        rotation_directions: 1,
-        background_shape_match_exactness: 0.05,
-        bg_shape_complexity: 3,
-        cycle_ratio: 1
-      }
+      config: {}
     }
   },
   async mounted () {
-    const baseURI = 'https://raw.githubusercontent.com/billieyenn/perdurable/main/sketch.js'
-
+    /*
+    const baseURI = 'https://raw.githubusercontent.com/billieyenn/test-art/main/sketch.js'
     let sketch = await this.getSketch(baseURI, this.config)
     console.log(sketch)
+    */
 
-    this.p5canvas = new P5(sketch, 'canvas')
+    this.p5canvas = new P5(sketch(), 'canvas')
 
   },
   methods: {
@@ -57,7 +108,12 @@ export default {
       return curry
     }
   }
+
+
+
+
 }
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

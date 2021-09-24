@@ -2,10 +2,10 @@
 <div id="sidebar-wrapper">
 <div class="header">
 <!-- <img alt="logo" src="../assets/logo2.png" width="20%" height="20%"> -->
-<h1>BIL.ART</h1>
-  <router-link to="/about" tag="li" active-class="active"><a>About</a></router-link>
+  <router-link to="/" tag="h1" active-class="active">BIL.ART</router-link>
   <router-link to="/twitter" tag="li" active-class="active"><a>Twitter</a></router-link>
   <router-link to="/github" tag="li" active-class="active"><a>Github</a></router-link>
+  <router-link to="/opensea" tag="li" active-class="active"><a>OpenSea</a></router-link>
 <!-- <router-link to="/gallery" tag="li" active-class="active"><a>Gallery</a></router-link> -->
   <hr>
   <router-link tag='li' to='/about/perdurable' style='cursor: pointer;'>Perdurable</router-link>
@@ -23,10 +23,16 @@
   <router-link tag='li' to='/sketches/perdurable/9' style='cursor: pointer;'>Storm</router-link>
   <router-link tag='li' to='/sketches/perdurable/10' style='cursor: pointer;'>Disc</router-link>
   </ul>
-
+<!--
   <router-link tag='li' to='/about/test' style='cursor: pointer;'>Test</router-link>
   <ul>
       <router-link tag='li' to='/sketches/test/1' style='cursor: pointer;'>Test 1</router-link>
+  </ul>
+-->
+
+  <router-link tag='li' to='/about/fourierplayground' style='cursor: pointer;'>Fourier Playground</router-link>
+  <ul>
+      <router-link tag='li' to='/sketches/fourier' style='cursor: pointer;'>Playground</router-link>
   </ul>
 
   <hr>
@@ -45,5 +51,12 @@ export default {
 <style>
 li {
   list-style-type: none;
+ }
+ li:active{
+  font-weight: bold
+ }
+ li.router-link-active{
+ font-weight: bold
+  
  }
 </style>

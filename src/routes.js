@@ -15,8 +15,12 @@ import LineArtStorm from './components/Lineart/Storm.vue'
 import LineArtDisc from './components/Lineart/Disc.vue'
 import LineArtAbout from './components/Lineart/LineArtAbout.vue'
 import Test from './components/Test/Test.vue'
+import TestAbout from './components/Test/TestAbout.vue'
+import FourierPlaygroundAbout from './components/FourierPlayground/FourierPlaygroundAbout.vue'
+import FourierPlayground from './components/FourierPlayground/FourierPlayground.vue'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
+import SketchesAbout from './components/SketchesAbout.vue'
 
 export const routes = [
   {
@@ -29,13 +33,18 @@ export const routes = [
     }
   },
   {
-    path: '/about/perdurable',
+    path: '/about',
     name: 'LineArtAbout',
     components: {
-      default: LineArtAbout,
+      default: SketchesAbout,
       'header-top': Header,
       'header-bottom': Footer
-    }
+    },
+    children: [
+      { path: 'perdurable', component: LineArtAbout },
+      { path: 'test', component: TestAbout },
+      { path: 'fourierplayground', component: FourierPlaygroundAbout }
+    ]
   },
   {
     path: '/gallery',
@@ -68,7 +77,8 @@ export const routes = [
       { path: 'perdurable/10', component: LineArtDisc },
       { path: 'perdurable/11', component: LineArtSymmetrical },
       { path: 'perdurable/12', component: LineArtPolySymmetrical },
-      { path: 'test/1', component: Test }
+      { path: 'test/1', component: Test },
+      { path: 'fourier', component: FourierPlayground }
 
     ]
   },
@@ -82,6 +92,12 @@ export const routes = [
     path: '/github',
     beforeEnter (to, from, next) {
       window.location.href = 'https://github.com/billieyenn'
+    }
+  },
+  {
+    path: '/opensea',
+    beforeEnter (to, from, next) {
+      window.location.href = 'https://opensea.io/Billieyenn'
     }
   },
   {
