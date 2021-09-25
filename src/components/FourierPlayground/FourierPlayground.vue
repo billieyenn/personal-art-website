@@ -5,11 +5,17 @@
   <div>
     <button @click="refresh">Redraw</button>
     <br>
+    <label for="hash">Hash</label>
+    <input v-model="config.hash" type="text" name="hash">
+    <br>
     <label for="complexity">Complexity</label>
     <input v-model="config.complexity" type="number" name="complexity">
     <br>
     <label for="speed">Slowdown factor</label>
     <input v-model="config.speed" type="number" name="speed">
+    <br>
+    <label for="vectorList">Vector List: See console log for array of vectors</label>
+    <input v-model="config.vectorList" type="text" name="vectorList">
     <br>
     <p>Press 'spacebar' to pause</p>
     <button @click="pause">Or press this button to pause, followed by redraw</button>
@@ -27,7 +33,7 @@
 
 let sketch = (config) => {
   return function (p) {
-function randomHash () {
+    function randomHash () {
       const x = '0123456789abcdef'
       let hash = '0x'
       for (let i = 64; i > 0; --i) {
@@ -41,10 +47,11 @@ function randomHash () {
       // "hash": "0x0d11e9a6862358fcd49514c34d1008d4a5bba02dd48abe03731a711bc1543620",
       tokenId: '123000456'
     }
-    console.log('hash: ' + tokenData.hash)
-
+/*
     const seed = parseInt(tokenData.hash.slice(0, 16), 16)
     console.log('seed: ' + seed)
+    const R = new Mulberry32(seed)
+*/
 
     // inspiration from https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316#47593316
     class Mulberry32 {
@@ -68,7 +75,6 @@ function randomHash () {
       }
     }
 
-    const R = new Mulberry32(seed)
    
 
 const generateRandomWaves = function (complexity, decay, symmetricity, rotationDirections) {
@@ -134,9 +140,9 @@ const generateRandomWaves = function (complexity, decay, symmetricity, rotationD
       return waves
     }
 
-    const tracePoints = function (waves, fps, slowdownFactor, complexity) {
+    const tracePoints = function (waves, fps, slowdownFactor, ) {
       const trace = []
-      const wavesIncluded = waves.slice(0, complexity * 2 + 1)
+      const wavesIncluded = waves.slice(0, waves.length)
       // accumulate points until full cycle complete
       while (fps * slowdownFactor > trace.length) { // -2 bc then first and last point are same
         p.push()
@@ -190,16 +196,34 @@ const generateRandomWaves = function (complexity, decay, symmetricity, rotationD
          p.beginShape()
         for (let ii = 0; ii < 0 + traceLength - 1; ii++) {
           const i = ii + 0 % trace.length
-          /*
-          p.line(trace[(i)].x, trace[(i)].y, trace[(i+1)].x, trace[(i+1)].y )
-          */
           p.curveVertex(trace[(i) % trace.length].x, trace[(i) % trace.length].y)
-          //p.curveVertex(trace[(i + 1) % trace.length].x, trace[(i + 1) % trace.length].y)
-          //p.curveVertex(trace[(i + 2) % trace.length].x, trace[(i + 2) % trace.length].y)
-          //p.curveVertex(trace[(i + 3) % trace.length].x, trace[(i + 3) % trace.length].y)
         }
            p.endShape()
       
+    }
+
+    const generateWavesFromVectorList = function(vectorlist) {
+      const waves = []; 
+      let w1 = new Wave(
+        p.createVector(0,0),
+        0
+        );
+      waves.push(w1);
+      let ii = 1;
+      //loop condition keeps wave counts small by not letting too many pointless vectors to exist
+      for (let i = 1; i < vectorlist.length / 2; i++) {
+
+        let frequency = i;
+        let parent = waves[waves.length - 1];
+        waves.push(new Wave(vectorlist[ii], frequency, parent));
+        ii++;
+
+        frequency = -i;
+        parent = waves[waves.length - 1];
+        waves.push(new Wave(vectorlist[ii], frequency, parent));
+        ii++;
+      }
+      return waves
     }
 
     const traceInfo = function (trace) {
@@ -235,6 +259,7 @@ const generateRandomWaves = function (complexity, decay, symmetricity, rotationD
     let selectedKnob = null
 
     let paused// = config.paused
+    let vectorPrefixes
 
 class Knob {
   constructor (pos, index, size, wave) {
@@ -284,17 +309,45 @@ class Knob {
   }
 }
 
+    let seed
+    let R
+
+
     p.setup = function () {
+      const hash = config.hash || tokenData.hash
+      console.log('hash: ' + hash)
+
+      seed = parseInt(hash.slice(0, 16), 16)
+      R = new Mulberry32(seed)
       complexity = config?.complexity || 4
       slowdownFactor = config.speed || 4 * complexity
       paused = config.pause
+      vectorPrefixes = (config.vectorList.length === 0) ? [] : JSON.parse(config.vectorList)
+
 
       p.createCanvas(windowSize, windowSize);
       p.background(250)
 
-      waves = generateRandomWaves(complexity, 1, false, 2)
+
+
+      /*
+// mr oinker
+  vectorPrefixes = [[1964.248, 2006.509], [-459.096, -149.198], [683.451, -350.212], [87.927, -116.106], [-86.815, 143.783], [-192.303, -82.594], [-40.175, -49.319], [-73.503, 51.801], [-28.684, 122.724], [-135.243, -79.617], [-117.404, -16.919], [-91.579, 27.314], [51.680, 163.512], [-41.694, -137.139], [49.374, -11.939], [-36.478, 33.986], [-3.292, 5.519], [13.016, -58.407], [67.714, -0.740], [43.332, -6.629], [-42.022, -83.645], [55.932, 82.423], [8.746, 45.703], [-48.179, -21.957], [-42.093, 21.413], [45.665, 12.302], [69.632, 82.429], [8.407, 3.655], [40.887, 7.640], [-42.986, 16.575], [21.269, -27.119], [56.996, -83.156], [25.154, 67.896], [-15.023, 48.881], [67.711, -69.997], [8.593, -67.966], [-52.898, 22.214], [18.015, 0.841], [33.432, 7.421], [-0.707, 8.885], [24.934, 5.101], [-32.378, -57.646], [-15.249, 1.228], [43.593, -16.540], [47.840, 53.714], [-0.197, -26.958], [39.972, -36.316], [12.899, -0.433], [8.684, -19.517], [-5.026, -36.004], [2.092, 19.843], [4.805, -14.164], [36.036, -21.831], [-4.259, -32.456], [-7.105, 21.342], [25.269, -41.145], [0.591, 5.247], [6.593, 2.833], [30.198, 27.629], [4.566, -49.342], [7.720, -19.026], [21.017, -12.033], [-5.431, 18.505], [9.181, -17.894], [-14.116, 29.886], [-29.044, -11.884], [15.425, 14.909], [24.293, -36.416], [-20.867, 23.894], [-12.627, -5.209], [18.222, 17.825], [-0.154, -33.741], [4.992, 20.387], [2.712, -7.452], [-20.079, 5.543], [-12.233, 10.643], [-2.169, 34.752], [-13.310, -15.823], [-3.250, -1.869]]
+      */
+  let vectors = vectorPrefixes.map(w => p.createVector(w[0], w[1]))
+
+  if (vectors.length > 0) {
+  waves = generateWavesFromVectorList(vectors)
+
+} else {
+  waves = generateRandomWaves(complexity, 1, false, 2)
+
+}
+      // console.log(JSON.stringify(waves.map(w => [w.vector.x.toFixed(3), w.vector.y.toFixed(3)])))
+      /*
       // console.log(waves)
       // let the wave machine run a trace
+      */
       trace = tracePoints(waves, fps, slowdownFactor, complexity)
       let traceInfoObj = traceInfo(trace)
       const resizeFactor = p.width * 0.8 / traceInfoObj.traceSize
@@ -373,6 +426,10 @@ class Knob {
     }
 
     p.mouseReleased = function () {
+      if(knobSelected) {
+
+        console.log(JSON.stringify(waves.map(w => [w.vector.x.toFixed(3), w.vector.y.toFixed(3)])))
+      }
       knobSelected = false
       selectedKnob = null
       knobs.forEach(knob => {
@@ -381,6 +438,8 @@ class Knob {
         }
         knob.selected = false
       })
+
+
     }
 /*
     p.mousePressed = function () {
@@ -415,7 +474,9 @@ export default {
       config: {
         complexity: 3,
         speed: 4,
-        pause: false
+        pause: false,
+        vectorList: "",
+        hash: this.tokenData().hash
       }
     }
   },
@@ -441,7 +502,30 @@ export default {
       const curry = new Function(result.data)()(config) // eslint-disable-line no-new-func
       console.log(curry)
       return curry
+    },
+     randomHash () {
+      const x = '0123456789abcdef'
+      let hash = '0x'
+      for (let i = 64; i > 0; --i) {
+        hash += x[math.floor(math.random() * x.length)]
+      }
+      return hash
+    },
+
+    tokenData () {
+      return {
+      hash: this.randomHash(),
+      // "hash": "0x0d11e9a6862358fcd49514c34d1008d4a5bba02dd48abe03731a711bc1543620",
+      tokenId: '123000456'
+
+      }
     }
+    /*
+    console.log('hash: ' + tokenData.hash)
+
+    const seed = parseInt(tokenData.hash.slice(0, 16), 16)
+    console.log('seed: ' + seed)
+    */
   }
 
 
