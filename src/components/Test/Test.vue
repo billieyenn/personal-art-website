@@ -5,7 +5,7 @@
   <div>
     <button @click="refresh">Redraw</button>
     <div >
-      <div id="canvas" :key="componentKey"></div>
+      <div id="canvas"></div>
     </div>
 
   </div>
@@ -83,7 +83,6 @@ export default {
   },
   data () {
     return {
-      componentKey: 0,
       config: {}
     }
   },

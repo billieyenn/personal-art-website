@@ -35,6 +35,11 @@
       <router-link tag='li' to='/sketches/fourier' style='cursor: pointer;'>Playground</router-link>
   </ul>
 
+  <router-link tag='li' to='/about/practice' style='cursor: pointer;'>Practice</router-link>
+  <ul>
+      <router-link tag='li' to='/sketches/practice/placeholder' style='cursor: pointer;'>Placeholder</router-link>
+  </ul>
+
   <hr>
 </div>
 </div>

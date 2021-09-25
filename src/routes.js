@@ -16,6 +16,8 @@ import LineArtDisc from './components/Lineart/Disc.vue'
 import LineArtAbout from './components/Lineart/LineArtAbout.vue'
 import Test from './components/Test/Test.vue'
 import TestAbout from './components/Test/TestAbout.vue'
+import Practice from './components/Practice/Practice.vue'
+import PracticeAbout from './components/Practice/PracticeAbout.vue'
 import FourierPlaygroundAbout from './components/FourierPlayground/FourierPlaygroundAbout.vue'
 import FourierPlayground from './components/FourierPlayground/FourierPlayground.vue'
 import Header from './components/Header.vue'
@@ -43,7 +45,8 @@ export const routes = [
     children: [
       { path: 'perdurable', component: LineArtAbout },
       { path: 'test', component: TestAbout },
-      { path: 'fourierplayground', component: FourierPlaygroundAbout }
+      { path: 'fourierplayground', component: FourierPlaygroundAbout },
+      { path: 'practice', component: PracticeAbout }
     ]
   },
   {
@@ -78,8 +81,8 @@ export const routes = [
       { path: 'perdurable/11', component: LineArtSymmetrical },
       { path: 'perdurable/12', component: LineArtPolySymmetrical },
       { path: 'test/1', component: Test },
-      { path: 'fourier', component: FourierPlayground }
-
+      { path: 'fourier', component: FourierPlayground },
+      { path: 'practice/placeholder', component: Practice }
     ]
   },
   {
