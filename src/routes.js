@@ -17,6 +17,7 @@ import LineArtAbout from './components/Lineart/LineArtAbout.vue'
 import Test from './components/Test/Test.vue'
 import TestAbout from './components/Test/TestAbout.vue'
 import Practice from './components/Practice/Practice.vue'
+import Flower from './components/Practice/Flower.vue'
 import PracticeAbout from './components/Practice/PracticeAbout.vue'
 import FourierPlaygroundAbout from './components/FourierPlayground/FourierPlaygroundAbout.vue'
 import FourierPlayground from './components/FourierPlayground/FourierPlayground.vue'
@@ -82,7 +83,8 @@ export const routes = [
       { path: 'perdurable/12', component: LineArtPolySymmetrical },
       { path: 'test/1', component: Test },
       { path: 'fourier', component: FourierPlayground },
-      { path: 'practice/placeholder', component: Practice }
+      { path: 'practice/placeholder', component: Practice },
+      { path: 'practice/flower', component: Flower }
     ]
   },
   {

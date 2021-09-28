@@ -38,6 +38,7 @@
   <router-link tag='li' to='/about/practice' style='cursor: pointer;'>Practice</router-link>
   <ul>
       <router-link tag='li' to='/sketches/practice/placeholder' style='cursor: pointer;'>Placeholder</router-link>
+      <router-link tag='li' to='/sketches/practice/flower' style='cursor: pointer;'>Flower</router-link>
   </ul>
 
   <hr>

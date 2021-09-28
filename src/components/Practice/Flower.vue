@@ -70,15 +70,65 @@ let sketch = (config) => {
       }
     }
 
+
+    class Knob {
+      constructor (pos, index, size, wave) {
+        this.pos = pos
+        this.index = index
+        this.size = size
+        this.wave = wave
+        this.selected = false
+        this.edited = false
+      }
+
+      isClicked () {
+        if (!this.selected && this.isPressed()) {
+          this.select()
+        }
+      }
+
+      select () {
+        if (!knobSelected) {
+          this.selected = true
+          selectedKnob = this
+          knobSelected = true
+          // console.log(this.index + " is selected")
+        }
+      }
+
+      isPressed () {
+        return p.mouseIsPressed && p.createVector(p.mouseX, p.mouseY).dist(this.pos) < this.wave.vector.mag() / 2 + 10 // the +10 is because mouse moves more than 1 pixel per frame
+      }
+
+      drag () {
+        if (this.isPressed() && this.selected) {
+          //this.wave.vector.x = (p.mouseX - this.pos.x) * 2
+          //this.wave.vector.y = (p.mouseY - this.pos.y) * 2
+          this.edited = true
+        }
+      }
+
+      display () {
+        if (this.isPressed()) {
+          p.fill(200)
+        } else {
+          p.fill(255)
+        }
+        p.ellipse(this.pos.x, this.pos.y, this.wave.vector.mag())
+        p.line(this.pos.x, this.pos.y, this.pos.x + this.wave.vector.x / 2, this.pos.y + this.wave.vector.y / 2)
+      }
+    }
+
     class Wave {
-      constructor (vector, f, parent) {
+      constructor (vector, f, parent, frozen) {
         this.frequency = (f * p.TWO_PI) / fps / slowdownFactor // full circle performed after
         this.vector = vector
         this.parent = parent
+        this.frozen = frozen || false
       }
 
       rotate () {
-        this.vector.rotate(this.frequency)
+          this.vector.rotate(this.frequency)
       }
 
       display () {
@@ -170,10 +220,11 @@ let sketch = (config) => {
     }
 
     class Machine {
-      constructor (waves, trace, fill) {
+      constructor (waves, trace, fill, color) {
         this.waves = waves
         this.trace = trace || []
         this.fill = fill || false
+        this.color = color || p.color(200)
       }
 
       tracePoints (fps, slowdownFactor) {
@@ -199,8 +250,7 @@ let sketch = (config) => {
         const traceLength = this.trace.length * cycleRatio
         // the trace goes around
         if (this.fill) {
-          p.fill(p.color('#fb8b24'))
-          p.fill(p.color('#c21e56'))
+          p.fill(this.color)
           p.noStroke()
         } else {
           p.noFill()
@@ -213,7 +263,7 @@ let sketch = (config) => {
         p.push()
         p.translate(this.waves[0].vector.x, this.waves[0].vector.y)
         p.beginShape()
-        for (let ii = 0; ii < 0 + traceLength - 1; ii++) {
+        for (let ii = 0; ii < 0 + traceLength + 3; ii++) {
           const i = ii + 0 % this.trace.length
           p.curveVertex(this.trace[(i) % this.trace.length].x, this.trace[(i) % this.trace.length].y)
         }
@@ -252,53 +302,6 @@ let sketch = (config) => {
       }
     }
 
-    class Knob {
-      constructor (pos, index, size, wave) {
-        this.pos = pos
-        this.index = index
-        this.size = size
-        this.wave = wave
-        this.selected = false
-        this.edited = false
-      }
-
-      isClicked () {
-        if (!this.selected && this.isPressed()) {
-          this.select()
-        }
-      }
-
-      select () {
-        if (!knobSelected) {
-          this.selected = true
-          selectedKnob = this
-          knobSelected = true
-          // console.log(this.index + " is selected")
-        }
-      }
-
-      isPressed () {
-        return p.mouseIsPressed && p.createVector(p.mouseX, p.mouseY).dist(this.pos) < this.wave.vector.mag() / 2 + 10 // the +10 is because mouse moves more than 1 pixel per frame
-      }
-
-      drag () {
-        if (this.isPressed() && this.selected) {
-          //this.wave.vector.x = (p.mouseX - this.pos.x) * 2
-          //this.wave.vector.y = (p.mouseY - this.pos.y) * 2
-          this.edited = true
-        }
-      }
-
-      display () {
-        if (this.isPressed()) {
-          p.fill(200)
-        } else {
-          p.fill(255)
-        }
-        p.ellipse(this.pos.x, this.pos.y, this.wave.vector.mag())
-        p.line(this.pos.x, this.pos.y, this.pos.x + this.wave.vector.x / 2, this.pos.y + this.wave.vector.y / 2)
-      }
-    }
 
     let seed
     let R
@@ -337,19 +340,61 @@ let sketch = (config) => {
 
       let vectors = vectorPrefixes.map(w => p.createVector(w[0], w[1]))
 
+      let flowerVectors = [["0.0","0.0"],["-89.0","10.0"],["46.0","-7.2"],["-14.9","2.0"],["24.2","37.8"],["-8.6","0.8"],["9.8","-8.4"],["-7.9","14.8"],["32.6","5.2"],["-3.3","4.3"],["2.6","17.0"],["-8.9","1.8"],["3.5","-6.4"],["-0.3","5.3"],["7.8","-0.8"],["-8.5","0.0"],["6.8","14.8"],["4.5","1.8"],["2.0","1.1"],["4.7","5.4"],["-0.1","2.2"],["0.1","2.8"],["11.8","3.8"],["0.1","-0.8"],["2.2","0.3"],["3.5","7.4"],["2.5","-4.9"],["-2.4","8.5"],["-1.7","5.3"],["0.1","-5.4"],["5.0","-7.2"],["2.1","-4.3"],["-4.7","3.8"],["-0.8","1.7"],["-4.9","1.5"],["-4.5","3.6"],["3.9","10.2"],["1.1","0.4"],["6.1","-2.8"],["2.4","-2.1"],["0.4","-1.3"],["-0.3","-3.9"],["-2.0","4.6"],["-4.2","0.3"],["2.9","1.1"],["-6.7","-2.4"],["-0.3","1.4"],["-0.6","1.3"],["-0.3","1.8"],["1.0","0.1"],["7.9","7.0"],["-3.1","-0.3"],["1.8","-0.8"],["-2.5","-6.3"],["1.3","0.1"],["-4.6","1.0"],["2.6","4.0"],["-6.3","-0.8"],["5.2","1.3"],["-7.0","0.8"],["-2.0","0.8"],["-1.4","3.8"],["0.7","4.2"],["-4.9","4.2"],["2.6","1.5"],["-2.1","1.0"],["0.3","4.5"],["-2.0","0.3"],["2.6","3.3"],["-6.0","4.7"],["0.3","0.4"],["-2.5","1.8"],["-0.8","-0.0"],["-1.5","4.6"],["0.8","7.0"],["-0.6","5.2"],["1.4","3.1"],["-4.2","2.8"],["-0.3","2.8"],["-0.4","5.7"],["-1.5","1.3"],["-0.3","6.7"],["0.8","4.0"],["-0.7","4.9"],["-0.4","2.5"],["0.8","0.8"],["-2.8","2.9"],["1.0","4.0"],["-2.1","1.8"],["0.1","7.1"],["-1.0","4.6"],["1.0","2.9"],["0.3","2.8"],["4.0","2.9"],["-3.2","1.5"],["4.2","2.8"],["-4.3","2.6"],["0.6","4.6"],["-0.6","2.5"],["3.9","-0.6"],["-1.5","1.4"],["4.3","1.0"],["-4.3","2.4"],["3.6","0.6"],["-2.9","2.8"],["2.0","-1.0"],["-2.2","0.0"],["5.0","-1.1"],["-1.8","1.3"],["2.6","-2.0"],["-4.2","1.1"],["2.8","-3.5"],["-2.4","1.7"],["2.5","-2.2"],["-4.0","0.1"],["0.7","-1.4"],["-1.0","1.8"],["0.8","-3.3"],["-2.8","0.4"],["2.4","-4.3"],["-3.8","-0.1"],["1.8","-2.0"],["-4.0","0.7"],["-1.0","-3.9"],["-0.3","0.6"],["0.3","-5.6"],["-2.5","-1.1"],["-0.4","-4.9"],["-4.3","0.8"],["-3.2","-2.5"],["-4.3","1.7"],["-4.3","-3.1"],["-1.1","-0.3"],["-1.5","-2.9"],["-3.2","-2.4"],["-2.1","-2.2"],["-3.8","0.3"],["-3.2","-2.0"],["-2.2","-0.0"],["-5.3","-2.4"],["-2.5","-1.4"],["-3.3","-0.8"],["-3.2","-0.6"],["-4.6","-0.4"],["-3.1","-0.6"],["-3.6","-0.3"],["-2.6","-1.3"],["-4.0","0.7"],["-3.5","-1.4"],["-3.8","1.8"],["-1.4","-1.3"],["-3.5","1.0"],["-2.5","-2.0"],["-2.8","2.4"],["-2.5","-2.4"],["-4.2","3.2"],["-2.6","-0.6"],["-3.5","2.5"],["-0.4","-2.9"],["-1.3","2.8"],["-3.1","-1.8"],["-0.8","3.5"],["-2.6","-2.0"],["-2.5","3.8"],["-1.4","-1.1"],["-1.4","3.1"],["-1.3","-3.2"],["-0.3","4.2"],["-2.2","-2.2"],["0.8","3.6"],["-2.1","-1.0"],["0.7","3.9"],["-0.7","-2.8"],["0.4","2.2"],["-1.3","-3.3"],["1.7","2.5"],["-2.0","-2.5"],["1.4","2.4"],["-0.0","-1.7"],["0.4","2.6"],["-1.7","-3.1"],["1.3","1.4"],["-1.3","-3.1"],["2.1","3.3"],["-0.8","-2.0"],["2.8","1.8"],["0.4","-3.1"],["2.4","0.4"],["-1.0","-2.6"],["3.3","-0.1"],["-0.3","-2.4"],["1.4","0.1"],["0.4","-2.8"],["2.0","-0.7"],["-1.0","-2.2"],["2.2","-1.0"],["0.3","-2.2"],["0.6","-0.1"],["0.1","-2.8"],["1.4","-1.3"],["0.3","-3.3"],["1.5","-0.4"],["0.6","-1.3"],["1.5","-0.7"],["1.3","-2.5"],["-0.1","-2.0"],["0.6","-2.2"],["0.7","-1.3"],["0.3","-2.4"],["0.1","-0.4"],["1.3","-1.5"],["-0.3","-0.8"],["0.8","-2.1"],["0.3","-2.4"],["0.4","-2.0"],["-0.1","-1.1"],["0.8","-2.0"],["-1.0","0.0"],["1.3","-0.8"],["-1.1","-1.4"],["1.8","-1.5"],["-0.3","-1.0"],["0.6","-1.7"],["-0.4","-0.8"],["0.4","-1.3"],["-2.2","0.4"],["2.0","-0.7"],["-0.8","-1.1"],["1.5","-1.4"],["-0.7","0.1"],["0.3","-1.0"],["-0.8","0.1"],["1.0","-0.3"],["-1.8","-0.1"],["1.3","-1.3"],["-0.3","0.3"],["1.4","-0.6"],["-0.7","0.3"],["0.6","-0.4"],["-0.4","-0.4"],["1.1","-0.4"],["-0.4","0.1"],["0.4","-0.7"],["-1.1","0.6"],["1.5","0.0"],["-1.1","-0.1"],["0.8","-0.4"],["-0.1","-0.3"],["0.3","-0.3"],["-0.3","1.1"],["-0.0","0.1"],["-1.3","0.4"],["1.8","0.1"],["0.0","-0.3"],["0.8","-0.7"],["0.3","-0.1"],["-0.1","0.3"],["-0.7","0.6"],["-0.1","0.7"],["-1.4","-0.1"],["1.3","0.0"],["0.0","-0.1"],["0.3","-0.8"],["0.0","0.1"],["-0.3","0.6"],["-0.6","0.1"],["0.4","0.4"],["-1.3","-0.1"],["0.4","-0.3"],["-0.3","0.3"],["-0.3","0.1"],["-0.8","0.3"],["-0.1","0.3"],["-0.3","-0.0"],["0.1","-0.0"],["-0.7","0.1"],["-0.6","-0.1"],["-0.7","0.7"],["0.6","-0.1"],["-0.6","0.1"],["-0.1","-0.3"],["-0.3","0.6"],["-0.3","-0.4"],["-1.1","1.0"],["-0.4","0.4"],["-1.1","0.4"],["0.7","-0.8"],["-0.1","0.6"],["-0.6","-0.3"],["0.0","1.0"],["-0.6","-0.1"],["-1.0","1.0"],["-0.0","0.1"],["-0.6","0.6"],["0.1","-1.0"],["-0.1","1.1"],["-0.6","-0.6"],["0.1","1.0"],["-0.7","0.3"],["0.0","1.3"],["0.0","-0.7"],["-0.3","0.4"],["-0.3","-1.1"],["0.3","0.8"],["-0.7","-0.7"],["0.3","0.8"],["0.4","-0.1"],["-0.4","1.0"],["-0.6","-1.0"],["0.0","0.3"],["-0.4","-1.0"],["0.4","1.5"],["-0.4","-0.4"],["0.6","0.7"],["0.4","-1.1"],["0.4","0.3"],["-0.4","-0.8"],["1.1","0.1"],["-0.1","-0.7"],["0.1","0.4"],["0.3","-1.0"],["0.6","-0.0"],["-0.6","-0.8"],["0.8","-0.1"],["0.1","-0.7"],["-0.1","0.4"],["0.1","-1.1"],["0.6","-0.4"],["0.1","-1.5"],["0.6","0.1"],["0.3","-0.4"],["0.7","0.1"],["0.7","-1.1"],["-0.3","-0.6"],["0.3","-1.0"],["0.4","-0.1"],["0.0","-1.0"],["0.1","0.3"],["0.6","-0.6"],["-0.1","-0.0"],["0.4","-1.0"],["0.3","-1.0"],["0.3","-0.8"],["0.1","-0.3"],["0.4","-1.0"],["-0.4","0.4"],["0.7","-0.3"],["-0.4","-0.6"],["1.1","-0.8"],["0.1","-0.4"],["0.1","-0.8"],["0.1","-0.3"],["0.1","-0.6"],["-1.1","0.4"],["1.0","-0.3"],["-0.3","-0.6"],["1.0","-0.8"],["-0.1","0.1"],["0.1","-0.6"],["-0.3","0.1"],["0.6","-0.1"],["-0.8","-0.0"],["0.7","-0.7"],["-0.0","0.1"],["0.7","-0.3"],["-0.3","0.1"],["0.1","-0.3"],["-0.1","-0.3"],["0.7","-0.3"],["-0.1","0.0"],["0.3","-0.4"],["-0.7","0.3"],["1.0","0.1"],["-0.6","-0.1"],["0.4","-0.3"],["0.0","-0.3"],["0.1","-0.3"],["-0.1","0.7"],["0.0","0.0"],["-0.8","0.1"],["1.1","0.1"],["-0.0","-0.3"],["0.6","-0.4"],["0.1","-0.1"],["-0.1","0.1"],["-0.4","0.3"],["-0.1","0.4"],["-1.0","-0.1"],["0.8","0.0"],["0.0","0.0"],["0.1","-0.6"],["0.0","0.1"],["-0.1","0.3"],["-0.3","0.3"],["0.4","0.1"],["-0.8","-0.1"],["0.4","-0.3"],["-0.1","0.1"],["0.0","0.0"]].map(v => p.createVector(v[0], v[1]))
+
+      let flowerBGVectors = [["-14","-62"],["-90","29"],["-11","-3"],["5","-4"],["2","-10"]].map(v => p.createVector(v[0], v[1]))
+
+      let flowerStemVectors = [["6.0","38.0"],["-74.0","4.0"],["80.0","-6.0"],["-18.0","12.0"],["12.0","2.0"]].map(v => p.createVector(v[0], v[1]))
+
+      let flowerLeafRightVectors = [["30.0","28.0"],["54.0","-36.0"],["-0.0","12.0"],["12.0","-20.0"],["-20.0","-0.0"]].map(v => p.createVector(v[0], v[1]))
+
+      let flowerLeafLeftVectors = [["-44.0","58.0"],["44.0","-66.0"],["-2.0","4.0"],["4.0","-8.0"],["-8.0","12.0"]].map(v => p.createVector(v[0], v[1]))
+     
+
       const G = new Generator()
       machines = []
+      /*
       if (vectors.length > 0) {
         machines.push(new Machine(G.generateWavesFromVectorList(vectors, complexity)))
       } else {
         machines.push(new Machine(G.generateRandomWaves(complexity, 1, false, 2)))
       }
+      */
+
+      //machines.push(new Machine(G.generateRandomWaves(3, 1, false, 2), [], true))
+      /*
+      machines[0].tracePoints(fps, slowdownFactor)
+      machines[0].resize(0.5)
+      machines[0].waves[0].vector = p.createVector(R.randomNum(-p.width/4, p.width/4), R.randomNum(-p.height/4, p.height/4))
+      machines[0].tracePoints(fps, slowdownFactor)
+      */
+
+
+      //rose
+      machines.push(new Machine(G.generateWavesFromVectorList(flowerStemVectors, 2), [], true, p.color('#238004')))
+      machines.push(new Machine(G.generateWavesFromVectorList(flowerLeafRightVectors, 3), [], true, p.color('#238004')))
+      machines.push(new Machine(G.generateWavesFromVectorList(flowerLeafLeftVectors, 3), [], true, p.color('#238004')))
+      machines.push(new Machine(G.generateWavesFromVectorList(flowerBGVectors, 3), [], true, p.color('#c21e56')))
+      machines.push(new Machine(G.generateWavesFromVectorList(flowerVectors, 20), [], false))
+
+      //machines.push(new Machine(G.generateRandomWaves(complexity, 1, false, 2)))
+      
+      {
+        let a = 0
+        while (a < 0) {
+          machines.push(new Machine(G.generateWavesFromVectorList(flowerVectors, complexity)))
+          a++    
+        }
+      }
 
       machines.forEach(m => {
-        m.tracePoints(fps, slowdownFactor)
-        m.resize(0.8)
+        m.waves.push(new Wave(p.createVector(R.randomNum(1,5), 0), 1, m.waves[m.waves.length-1], true))
         m.tracePoints(fps, slowdownFactor)
       })
+
+
+      console.log(JSON.stringify(machines[0].waves.map(w => [w.vector.x.toFixed(1), w.vector.y.toFixed(1)])))
+
 
       let i = 0
       const temp = []
@@ -381,15 +426,20 @@ let sketch = (config) => {
        knob.display()
       })
 
+for (let ii = 0; ii < 4; ii++) {
+for (let i = 0; i < 4; i++) {
+  p.push()
+      p.translate(250*i + 50*ii, 250 * ii)
 
       machines.forEach(m => {
         //p.translate(40, 1)
         //draw shape
         p.push()
-        p.translate(p.width/2, p.height/2)
+        //p.translate(p.width/2, p.height/2)
         m.display(weight, false, 1, null, null)
         p.pop()
       
+      /*
         //draw tracer
         p.push()
         p.translate(p.width/2, p.height/2)
@@ -397,20 +447,25 @@ let sketch = (config) => {
           wave.display()
         })
         p.pop()
+      
+      */
+         })
 
-      /*
-      */
-      /*
-      */
+p.pop()
+}
+}
+      machines.forEach(m => {
+
         //rotate tracers
         m.waves.forEach(wave => { 
           if (!paused) 
-          wave.rotate(); 
-          
+                    if (!wave.frozen)
+          wave.rotate();
         })
 
-      })
+        m.tracePoints(fps, slowdownFactor)
 
+      })
 
 
       if (p.mouseIsPressed) {
