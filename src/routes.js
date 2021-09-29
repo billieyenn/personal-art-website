@@ -18,6 +18,7 @@ import Test from './components/Test/Test.vue'
 import TestAbout from './components/Test/TestAbout.vue'
 import Practice from './components/Practice/Practice.vue'
 import Flower from './components/Practice/Flower.vue'
+import Fibonacci from './components/Practice/Fibonacci.vue'
 import PracticeAbout from './components/Practice/PracticeAbout.vue'
 import FourierPlaygroundAbout from './components/FourierPlayground/FourierPlaygroundAbout.vue'
 import FourierPlayground from './components/FourierPlayground/FourierPlayground.vue'
@@ -84,6 +85,7 @@ export const routes = [
       { path: 'test/1', component: Test },
       { path: 'fourier', component: FourierPlayground },
       { path: 'practice/placeholder', component: Practice },
+      { path: 'practice/fibonacci', component: Fibonacci },
       { path: 'practice/flower', component: Flower }
     ]
   },
