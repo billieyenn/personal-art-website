@@ -29,7 +29,7 @@ let sketch = (config) => {
 
     const drawGoldenRectangle = (width, steps, until) => {
       p.push()
-      let u = width / fibonacci(steps)
+      let u = width / fibonacci(steps) / G
       if (steps % 4 == 0)
         p.translate(-fibonacci(steps+1)*u, 0*u)
       if (steps % 4 == 1)
@@ -63,18 +63,34 @@ let sketch = (config) => {
       p.stroke(0)
       p.strokeWeight(5)
 
-      let recursions = 14
-      let width = fibonacci(13)
+      let recursions = 15
+      let width = (p.width - p.width / G / G / G / G) / 2
       let u = 1
-      p.translate(p.width / 2 - width, p.height / 2 - width / G)
 
       p.push()
+// centered
+//      p.translate(p.width / 2 - width / 2, p.height / 2 - width / G / 2)
 
-      drawGoldenRectangle(fibonacci(11), recursions, recursions - 9)
+      p.translate( p.width / G / G / G / G / G / G / G, p.width / G / G / G / G / G / G / G / G)
+      drawGoldenRectangle(width, recursions, 5)
+
+      p.translate(p.width / 2 , 0)
+      drawGoldenRectangle(width, recursions, 10)
+
+
+      p.translate(- p.width / 2 , p.height / 2) 
+      drawGoldenRectangle(width, recursions, 13)
+
+      p.translate(p.width / 2, 0)
+      drawGoldenRectangle(width, recursions, 14)
+
+//      p.translate(p.width / 2 - width, p.height / 2 - width / G)
       
+      /*
       p.translate(width * 2, width * G)
       p.rotate(p.PI)
       drawGoldenRectangle(width, recursions, recursions - 5)
+      */
       
       p.pop()
     }
