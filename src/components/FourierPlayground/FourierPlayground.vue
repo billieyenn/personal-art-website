@@ -213,7 +213,7 @@ let sketch = (config) => {
         p.push()
         p.translate(this.waves[0].vector.x, this.waves[0].vector.y)
         p.beginShape()
-        for (let ii = 0; ii < 0 + traceLength - 1; ii++) {
+        for (let ii = 0; ii < 0 + traceLength + 3; ii++) {
           const i = ii + 0 % this.trace.length
           p.curveVertex(this.trace[(i) % this.trace.length].x, this.trace[(i) % this.trace.length].y)
         }
