@@ -31,6 +31,10 @@
 /* eslint-enable */
 /* eslint-disable */
 
+
+
+import { flower as colors } from '../../colors.js'
+
 let sketch = (config) => {
   return function (p) {
     const randomHash = function () {
@@ -121,7 +125,7 @@ let sketch = (config) => {
 
     class Wave {
       constructor (vector, f, parent, frozen) {
-        this.frequency = (f * p.TWO_PI) / fps / slowdownFactor // full circle performed after
+        this.frequency = (f * math.PI * 2) / fps / slowdownFactor // full circle performed after
         this.vector = vector
         this.parent = parent
         this.frozen = frozen || false
@@ -305,13 +309,12 @@ let sketch = (config) => {
 
     let seed
     let R
-    //let m
     const windowSize = 1000
-
     const fps = 60
     let slowdownFactor// = 8 * complexity // bigger number is slower drawing
     let complexity
     const weight = windowSize / 2400 * 10
+
     let knobs = []
     const knobSize = 100
     let knobSelected = false
@@ -335,7 +338,7 @@ let sketch = (config) => {
 
 
       p.createCanvas(windowSize, windowSize);
-      p.background(250)
+      p.background(p.color(colors.pearlBush))
 
 
       let vectors = vectorPrefixes.map(w => p.createVector(w[0], w[1]))
@@ -371,10 +374,10 @@ let sketch = (config) => {
 
 
       //rose
-      machines.push(new Machine(G.generateWavesFromVectorList(flowerStemVectors, 2), [], true, p.color('#238004')))
-      machines.push(new Machine(G.generateWavesFromVectorList(flowerLeafRightVectors, 3), [], true, p.color('#238004')))
-      machines.push(new Machine(G.generateWavesFromVectorList(flowerLeafLeftVectors, 3), [], true, p.color('#238004')))
-      machines.push(new Machine(G.generateWavesFromVectorList(flowerBGVectors, 3), [], true, p.color('#c21e56')))
+      machines.push(new Machine(G.generateWavesFromVectorList(flowerStemVectors, 2), [], true, p.color(colors.millbrook)))
+      machines.push(new Machine(G.generateWavesFromVectorList(flowerLeafRightVectors, 3), [], true, p.color(colors.goblin)))
+      machines.push(new Machine(G.generateWavesFromVectorList(flowerLeafLeftVectors, 3), [], true, p.color(colors.goblin)))
+      machines.push(new Machine(G.generateWavesFromVectorList(flowerBGVectors, 3), [], true, p.color(colors.roseBud)))
       machines.push(new Machine(G.generateWavesFromVectorList(flowerVectors, 20), [], false))
 
       //machines.push(new Machine(G.generateRandomWaves(complexity, 1, false, 2)))
@@ -401,7 +404,7 @@ let sketch = (config) => {
       for (const wave of machines[0].waves) {
         temp.push(new Knob(
           p.createVector(knobSize / 2 + i * p.width / machines[0].waves.length, p.height - knobSize), 
-          p.ceil(wave.frequency / p.TWO_PI * fps * slowdownFactor), 
+          p.ceil(wave.frequency / math.PI * 2 * fps * slowdownFactor), 
           knobSize, 
           wave)
         )
@@ -411,7 +414,7 @@ let sketch = (config) => {
       // console.log(knobs)
     }
     p.draw = function () {
-      p.background(250)
+      p.background(p.color(colors.pearlBush))
 
 
 

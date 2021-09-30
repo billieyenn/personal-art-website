@@ -15,7 +15,10 @@
 /* eslint-enable */
 /* eslint-disable */
 
-import colors from '../../colors.js'
+import {colors as colors} from '../../colors.js'
+import blob from '../../linemachine.js'
+
+//console.log(blob)
 
 let sketch = (config) => {
   return function (p) {
@@ -48,20 +51,43 @@ let sketch = (config) => {
           p.translate(-fibonacci(i)*u, fibonacci(i-1)*u)
         if (i % 4 == 1)
           p.translate(-0, -fibonacci(i)*u)
-        p.fill(p.color(colors[Object.keys(colors)[Math.floor(Math.random()*Object.keys(colors).length)]]))
+        const keys = Object.keys(colors)
+        const colLen = keys.length
+        const col = colors[keys[Math.floor(Math.random()*colLen)]]
+        p.fill(p.color(col))
         p.rect(0, 0, fibonacci(i)*u, fibonacci(i)*u, p.sqrt(fibonacci(i)*u))
+//        p.ellipseMode(p.CORNER)
+//        p.ellipse(0, 0, fibonacci(i)*u, fibonacci(i)*u)
       }
       p.pop()
     }
 
 
 
+
+let L
+
     p.setup = function () {
       p.createCanvas(1404, 1404 / G)
       p.background(p.color(colors.pearlBush))
+
+
+
+    const LineMachine = blob(config)
+    L = LineMachine(p)
+    L.waves = L.generator.generateRandomWaves(3, 1, false)
+    L.tracePoints()
+    L.resize(0.5)
+    L.tracePoints()
+
+    console.log(L)
+
+
+
       //p.noFill()
-      p.stroke(0)
-      p.strokeWeight(5)
+      //p.stroke(0)
+      //p.strokeWeight(5)
+      p.noStroke()
 
       let recursions = 15
       let width = (p.width - p.width / G / G / G / G) / 2
@@ -82,7 +108,7 @@ let sketch = (config) => {
       drawGoldenRectangle(width, recursions, 13)
 
       p.translate(p.width / 2, 0)
-      drawGoldenRectangle(width, recursions, 14)
+      drawGoldenRectangle(width, recursions, recursions - 1)
 
 //      p.translate(p.width / 2 - width, p.height / 2 - width / G)
       
@@ -93,6 +119,10 @@ let sketch = (config) => {
       */
       
       p.pop()
+    
+
+
+    L.display()
     }
 
   }
