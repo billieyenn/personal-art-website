@@ -40,6 +40,7 @@
       <router-link tag='li' to='/sketches/practice/placeholder' style='cursor: pointer;'>Placeholder</router-link>
       <router-link tag='li' to='/sketches/practice/flower' style='cursor: pointer;'>Flower</router-link>
       <router-link tag='li' to='/sketches/practice/fibonacci' style='cursor: pointer;'>Fibonacci</router-link>
+      <router-link tag='li' to='/sketches/practice/goodmorning' style='cursor: pointer;'>gm</router-link>
   </ul>
 
   <hr>

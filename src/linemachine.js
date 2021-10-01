@@ -62,6 +62,18 @@ export default function sketch(config) {
       mult (a) {
         this.vector.mult(a)
       }
+
+      freeze () {
+        this.frozen = true
+      }
+
+      unFreeze () {
+        this.frozen = false
+      }
+
+      toggleFreeze () {
+        this.frozen != this.frozen
+      }
     }
 
 
@@ -76,7 +88,9 @@ export default function sketch(config) {
         let w1 = new Wave(
           vectorlist[0],
           0,
-          fps, slowdownFactor
+          null,
+          false,
+          this.fps, this.slowdownFactor
           );
         waves.push(w1);
         let ii = 1;
@@ -84,9 +98,9 @@ export default function sketch(config) {
         for (let i = 1; i < vectorlist.length / 2; i++) {
           if (waves.length >= complexity*2 - 1 && complexity != 1)
             break
-          waves.push(new Wave(vectorlist[ii], i, waves[waves.length - 1], fps, slowdownFactor));
+          waves.push(new Wave(vectorlist[ii], i, waves[waves.length - 1], false, this.fps, this.slowdownFactor));
           ii++;
-          waves.push(new Wave(vectorlist[ii], -i, waves[waves.length - 1], fps, slowdownFactor));
+          waves.push(new Wave(vectorlist[ii], -i, waves[waves.length - 1], false, this.fps, this.slowdownFactor));
           ii++;
         }
         return waves
@@ -95,13 +109,13 @@ export default function sketch(config) {
       constructWaveFunctions (c, complexity) {
         const waves = []
 
-        const w1 = new Wave(c[0], 0, fps, slowdownFactor)
+        const w1 = new Wave(c[0], 0, this.fps, this.slowdownFactor)
         waves.push(w1)
         let ii = 1
         for (let i = 1; i < complexity; i++) {
-          waves.push(new Wave(c[ii], i, waves[waves.length - 1], fps, slowdownFactor))
+          waves.push(new Wave(c[ii], i, waves[waves.length - 1], false, this.fps, this.slowdownFactor))
           ii++
-          waves.push(new Wave(c[ii], -i, waves[waves.length - 1], fps, slowdownFactor))
+          waves.push(new Wave(c[ii], -i, waves[waves.length - 1], false, this.fps, this.slowdownFactor))
           ii++
         }
         return waves
@@ -113,7 +127,9 @@ export default function sketch(config) {
         const w1 = new Wave(
           newvect,
           0, 
-          fps, slowdownFactor
+          null,
+          false,
+          this.fps, this.slowdownFactor
         )
         waves.push(w1)
         // loop condition keeps wave counts small by not letting too many pointless vectors to exist
@@ -136,10 +152,10 @@ export default function sketch(config) {
           }
 
           newvect = p.createVector(randomNumbers[0], randomNumbers[1])
-          waves.push(new Wave(newvect, i, waves[waves.length - 1], fps, slowdownFactor))
+          waves.push(new Wave(newvect, i, waves[waves.length - 1], false, this.fps, this.slowdownFactor))
 
           newvect = p.createVector(randomNumbers[2], randomNumbers[3])
-          waves.push(new Wave(newvect, -i, waves[waves.length - 1], fps, slowdownFactor))
+          waves.push(new Wave(newvect, -i, waves[waves.length - 1], false, this.fps, this.slowdownFactor))
         }
         return waves
       }
@@ -158,7 +174,7 @@ export default function sketch(config) {
         const trace = []
         const wavesIncluded = this.waves.slice(0, this.waves.length)
         // accumulate points until full cycle complete
-        while (this.generator.fps * this.generator.slowdownFactor > trace.length) { // -2 bc then first and last point are same
+        while (this.generator.fps * this.generator.slowdownFactor > trace.length) { // -2 bc then first and last point are same          
           p.push()
           wavesIncluded.forEach((el) => {
             el.rotate()
@@ -172,35 +188,66 @@ export default function sketch(config) {
         this.trace = trace
       }
 
-      display (weight, filled = false, cycleRatio) {
+      display (weight, cycleRatio) {
         // line art
         const traceLength = this.trace.length * cycleRatio
         // the trace goes around
         if (this.fill) {
           p.fill(this.color)
           p.noStroke()
+          p.push()
+          p.beginShape()
+          for (let ii = 0; ii < 0 + traceLength + 3; ii++) {
+            const i = ii + 0 % this.trace.length
+            p.curveVertex(this.trace[(i) % this.trace.length].x, this.trace[(i) % this.trace.length].y)
+          }
+          p.endShape()
+          p.pop()
         } else {
           p.noFill()
-          p.strokeWeight(1)
+          p.stroke(this.color)
+
+
+
+          let prevStrokeWeight = 0
+          const strokeWeightChangeLimit = 0.5 // limit change rapidity, otherwise corners get weird circles. Experimentally found value
+        
+          for (let ii = 0; ii < 0 + traceLength + 3; ii++) {
+            //p.beginShape()
+            const i = ii + 0 % this.trace.length
+            const distance = this.trace[(i) % this.trace.length].dist(this.trace[(i + 3) % this.trace.length])
+            //console.log(distance)
+            let newWeight = p.min(weight, weight * 3 / distance)
+
+            if (p.abs(newWeight - prevStrokeWeight) > strokeWeightChangeLimit) {
+              if (newWeight > prevStrokeWeight) {
+                newWeight = prevStrokeWeight + strokeWeightChangeLimit
+              } else {
+                newWeight = prevStrokeWeight - strokeWeightChangeLimit
+              }
+            }
+            //console.log(newWeight)
+            p.strokeWeight(newWeight)
+            const p1x = this.trace[(i) % this.trace.length].x
+            const p1y = this.trace[(i) % this.trace.length].y
+            const p2x = this.trace[(i+1) % this.trace.length].x
+            const p2y = this.trace[(i+1) % this.trace.length].y
+
+            p.line(p1x, p1y, p2x, p2y)
+            //p.endShape()
+            prevStrokeWeight = newWeight
+          }
 
         }
         /*
         */
         //p.noStroke()
-        p.push()
-        p.translate(this.waves[0].vector.x, this.waves[0].vector.y)
-        p.beginShape()
-        for (let ii = 0; ii < 0 + traceLength + 3; ii++) {
-          const i = ii + 0 % this.trace.length
-          p.curveVertex(this.trace[(i) % this.trace.length].x, this.trace[(i) % this.trace.length].y)
-        }
-        p.endShape()
-        p.pop()
+        //p.translate(this.waves[0].vector.x, this.waves[0].vector.y)
       }
 
       resize (scale) {
         let traceInfoObj = this.traceInfo()
-        const resizeFactor = p.width * scale / traceInfoObj.traceSize
+        const resizeFactor = p.min(p.width, p.height) * scale / traceInfoObj.traceSize
         console.log(resizeFactor)
         this.waves.forEach(w => w.vector.mult(resizeFactor))
 
@@ -239,6 +286,8 @@ export default function sketch(config) {
     const R = new Mulberry32(seed)
 
     return new Machine(null, null, null, null, fps, slowdownFactor)
+
+//    return Machine
 
   }
 }
