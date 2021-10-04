@@ -30,6 +30,13 @@ let sketch = (config) => {
       return fibonacci(n - 1) + fibonacci(n - 2);
     }
 
+    const randomColor = (colors) => {
+      const keys = Object.keys(colors)
+      const colLen = keys.length
+      const col = colors[keys[Math.floor(Math.random()*colLen)]]
+      return col
+    }
+
     const drawGoldenRectangle = (width, steps, until) => {
       p.push()
       let u = width / fibonacci(steps) / G
@@ -51,44 +58,50 @@ let sketch = (config) => {
           p.translate(-fibonacci(i)*u, fibonacci(i-1)*u)
         if (i % 4 == 1)
           p.translate(-0, -fibonacci(i)*u)
-        const keys = Object.keys(colors)
-        const colLen = keys.length
-        const col = colors[keys[Math.floor(Math.random()*colLen)]]
-        p.fill(p.color(col))
-        p.rect(0, 0, fibonacci(i)*u, fibonacci(i)*u, p.sqrt(fibonacci(i)*u))
-//        p.ellipseMode(p.CORNER)
-//        p.ellipse(0, 0, fibonacci(i)*u, fibonacci(i)*u)
+
+        p.fill(p.color(randomColor(colors)))
+//        p.rect(0, 0, fibonacci(i)*u, fibonacci(i)*u, p.sqrt(fibonacci(i+1)*u))
+        p.ellipseMode(p.CORNER)
+        p.ellipse(0, 0, fibonacci(i)*u, fibonacci(i)*u)
+
+        // add some other element in the rect
+        p.push()
+        p.translate(fibonacci(i)*u / 2, fibonacci(i)*u / 2)
+        let newMachine = LineMachine(p)
+        newMachine.waves = newMachine.generator.generateRandomWaves(i, 1/G, false)
+        newMachine.tracePoints()
+        const resize = fibonacci(i - 1)*u / p.min(p.width, p.height)
+        newMachine.resize(resize)
+        newMachine.tracePoints()
+        newMachine.fill = false
+        newMachine.color = randomColor(colors)
+        newMachine.display(25, 1)
+        p.pop()
       }
       p.pop()
     }
 
 
-
-
-let L
+    let LineMachine// = blob(config)
 
     p.setup = function () {
-      p.createCanvas(1404, 1404 / G)
+      p.createCanvas(1404 / G, 1404)
       p.background(p.color(colors.pearlBush))
+    
+    LineMachine = blob(config)
 
 
 
-    const LineMachine = blob(config)
-    L = LineMachine(p)
-    L.waves = L.generator.generateRandomWaves(3, 1, false)
-    L.tracePoints()
-    L.resize(0.5)
-    L.tracePoints()
-
-    console.log(L)
-
-
-
-      //p.noFill()
-      //p.stroke(0)
-      //p.strokeWeight(5)
       p.noStroke()
+  
+      let recursions = 18
+      let width = (p.width - p.width / G /G /G) * 2 
+      let u = 1
+      p.translate( p.width / G / G / G / G / G / G / G / G, p.width / G / G / G / G / G / G / G / G / G)
 
+      drawGoldenRectangle(width, recursions, 5)
+  
+/*
       let recursions = 15
       let width = (p.width - p.width / G / G / G / G) / 2
       let u = 1
@@ -99,7 +112,7 @@ let L
 
       p.translate( p.width / G / G / G / G / G / G / G, p.width / G / G / G / G / G / G / G / G)
       drawGoldenRectangle(width, recursions, 5)
-
+  
       p.translate(p.width / 2 , 0)
       drawGoldenRectangle(width, recursions, 10)
 
@@ -110,6 +123,7 @@ let L
       p.translate(p.width / 2, 0)
       drawGoldenRectangle(width, recursions, recursions - 1)
 
+*/
 //      p.translate(p.width / 2 - width, p.height / 2 - width / G)
       
       /*
@@ -118,11 +132,9 @@ let L
       drawGoldenRectangle(width, recursions, recursions - 5)
       */
       
-      p.pop()
+//      p.pop()
     
 
-
-    L.display()
     }
 
   }

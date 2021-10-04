@@ -40,7 +40,7 @@ const colors =  {
 	bayOfMany: '#204973',		// nice blue
 	mauvelous: '#f29191',		// nice pink
 	elephant: '#15314d',		// dark blue
-	lightApricot: '#fcd9b1',	// a warm yellow
+	lightApricot: '#fcd9b1',	// a warm yellow / pink
 	bigStone: '#121a33',		// almost black. purplish
 	springWood: '#faf8f5',		// almost white. beige-ish
 	cabaret: '#d53e57',
@@ -113,6 +113,11 @@ const flower = {
 	mandysPink: colors.mandysPink,
 	millbrook: colors.millbrook,
 }
+
+const nicePairs = [
+	[colors.springWood, colors.mineShaft],
+	[colors.brickRed, colors.springWood],
+]
 
 
 export  {colors, blackWhite, fidenza_6, fidenza_32, ringers, flower, fidenza_98}

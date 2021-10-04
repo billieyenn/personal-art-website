@@ -207,7 +207,8 @@ export default function sketch(config) {
           p.noFill()
           p.stroke(this.color)
 
-
+          const traceInfoObj = this.traceInfo()
+          const size = (traceInfoObj.maxX - traceInfoObj.minX + traceInfoObj.maxY - traceInfoObj.minY) / 2 // average of width and height
 
           let prevStrokeWeight = 0
           const strokeWeightChangeLimit = 0.5 // limit change rapidity, otherwise corners get weird circles. Experimentally found value
@@ -217,7 +218,7 @@ export default function sketch(config) {
             const i = ii + 0 % this.trace.length
             const distance = this.trace[(i) % this.trace.length].dist(this.trace[(i + 3) % this.trace.length])
             //console.log(distance)
-            let newWeight = p.min(weight, weight * 3 / distance)
+            let newWeight = p.min(weight, weight * 10 / distance)
 
             if (p.abs(newWeight - prevStrokeWeight) > strokeWeightChangeLimit) {
               if (newWeight > prevStrokeWeight) {
@@ -227,13 +228,20 @@ export default function sketch(config) {
               }
             }
             //console.log(newWeight)
-            p.strokeWeight(newWeight)
+            p.strokeWeight(newWeight * size / p.max(p.width, p.height))
+
             const p1x = this.trace[(i) % this.trace.length].x
             const p1y = this.trace[(i) % this.trace.length].y
             const p2x = this.trace[(i+1) % this.trace.length].x
             const p2y = this.trace[(i+1) % this.trace.length].y
+p.beginShape()
+            for(let a = 0; a < 4; a++) {
+              p.curveVertex(this.trace[(i + a) % this.trace.length].x, this.trace[(i + a) % this.trace.length].y)
+            }
+p.endShape()
 
-            p.line(p1x, p1y, p2x, p2y)
+//            p.point(p1x, p1y)
+//            p.line(p1x, p1y, p2x, p2y)
             //p.endShape()
             prevStrokeWeight = newWeight
           }

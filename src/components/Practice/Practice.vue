@@ -14,7 +14,7 @@
 <script>
 /* eslint-enable */
 /* eslint-disable */
-import {fidenza_98 as colors} from '../../colors.js'
+import {colors as colors} from '../../colors.js'
 
 let sketch = (config) => {
   return function (p) {
@@ -199,13 +199,20 @@ let sketch = (config) => {
         grid.cells[i]?.setObject(new Circle(grid.cells[i].width * 0.5))
       }
 
+/*
       p.background(colors.springWood)
       p.strokeWeight(1)
       p.stroke(colors.bigStone)
       p.fill(colors.bigStone)
+
+*/
+      p.background(colors.codGray)
+      p.strokeWeight(1)
+      p.stroke(colors.ronchi)
+      p.fill(colors.ronchi)
       grid.display()
       p.noFill()
-      grid.displayGrid()
+      //grid.displayGrid()
 
     }
     p.draw = function () {
