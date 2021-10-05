@@ -18,6 +18,7 @@ import Test from './components/Test/Test.vue'
 import TestAbout from './components/Test/TestAbout.vue'
 import Practice from './components/Practice/Practice.vue'
 import GoodMorning from './components/Practice/GoodMorning.vue'
+import Fly from './components/Practice/Fly.vue'
 import Flower from './components/Practice/Flower.vue'
 import Fibonacci from './components/Practice/Fibonacci.vue'
 import PracticeAbout from './components/Practice/PracticeAbout.vue'
@@ -88,7 +89,8 @@ export const routes = [
       { path: 'practice/placeholder', component: Practice },
       { path: 'practice/fibonacci', component: Fibonacci },
       { path: 'practice/flower', component: Flower },
-      { path: 'practice/goodmorning', component: GoodMorning }
+      { path: 'practice/goodmorning', component: GoodMorning },
+      { path: 'practice/fly', component: Fly }
     ]
   },
   {

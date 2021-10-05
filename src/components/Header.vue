@@ -41,6 +41,7 @@
       <router-link tag='li' to='/sketches/practice/flower' style='cursor: pointer;'>Flower</router-link>
       <router-link tag='li' to='/sketches/practice/fibonacci' style='cursor: pointer;'>Fibonacci</router-link>
       <router-link tag='li' to='/sketches/practice/goodmorning' style='cursor: pointer;'>gm</router-link>
+      <router-link tag='li' to='/sketches/practice/fly' style='cursor: pointer;'>Fly</router-link>
   </ul>
 
   <hr>

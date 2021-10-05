@@ -100,40 +100,6 @@ let sketch = (config) => {
       p.translate( p.width / G / G / G / G / G / G / G / G, p.width / G / G / G / G / G / G / G / G / G)
 
       drawGoldenRectangle(width, recursions, 5)
-  
-/*
-      let recursions = 15
-      let width = (p.width - p.width / G / G / G / G) / 2
-      let u = 1
-
-      p.push()
-// centered
-//      p.translate(p.width / 2 - width / 2, p.height / 2 - width / G / 2)
-
-      p.translate( p.width / G / G / G / G / G / G / G, p.width / G / G / G / G / G / G / G / G)
-      drawGoldenRectangle(width, recursions, 5)
-  
-      p.translate(p.width / 2 , 0)
-      drawGoldenRectangle(width, recursions, 10)
-
-
-      p.translate(- p.width / 2 , p.height / 2) 
-      drawGoldenRectangle(width, recursions, 13)
-
-      p.translate(p.width / 2, 0)
-      drawGoldenRectangle(width, recursions, recursions - 1)
-
-*/
-//      p.translate(p.width / 2 - width, p.height / 2 - width / G)
-      
-      /*
-      p.translate(width * 2, width * G)
-      p.rotate(p.PI)
-      drawGoldenRectangle(width, recursions, recursions - 5)
-      */
-      
-//      p.pop()
-    
 
     }
 

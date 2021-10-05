@@ -133,7 +133,7 @@ export default function sketch(config) {
         )
         waves.push(w1)
         // loop condition keeps wave counts small by not letting too many pointless vectors to exist
-        for (let i = 1; i < complexity && p.pow(decay, i - 1) > 0.01; i++) {
+        for (let i = 1; i < complexity && p.pow(decay, i - 1) > 0.001; i++) {
           const dec = p.pow(decay, i - 1)
           const randomNumbers = []
           if (symmetricity) { // if symmetrical
@@ -172,25 +172,30 @@ export default function sketch(config) {
 
       tracePoints () {
         const trace = []
-        const wavesIncluded = this.waves.slice(0, this.waves.length)
         // accumulate points until full cycle complete
         while (this.generator.fps * this.generator.slowdownFactor > trace.length) { // -2 bc then first and last point are same          
-          p.push()
-          wavesIncluded.forEach((el) => {
-            el.rotate()
-            // el.display() //show the vectors as they go
-          })
-          p.pop()
-
+          this.rotate()
           const newPoint = p.createVector(this.waves[0].vector.x, this.waves[0].vector.y)
           trace.push(this.waves.reduce((_, wave) => newPoint.add(wave.vector)))
         }
         this.trace = trace
       }
 
+      rotate (steps) {
+        this.waves.forEach((el) => {
+          let i = 0
+          let until = steps || 1
+          if (!el.frozen)
+          while (i < until) {
+            el.rotate()
+            i++
+          }
+        })
+      }
+
       display (weight, cycleRatio) {
         // line art
-        const traceLength = this.trace.length * cycleRatio
+        const traceLength = this.trace.length * (cycleRatio || 1)
         // the trace goes around
         if (this.fill) {
           p.fill(this.color)
@@ -239,28 +244,19 @@ p.beginShape()
               p.curveVertex(this.trace[(i + a) % this.trace.length].x, this.trace[(i + a) % this.trace.length].y)
             }
 p.endShape()
-
-//            p.point(p1x, p1y)
-//            p.line(p1x, p1y, p2x, p2y)
-            //p.endShape()
             prevStrokeWeight = newWeight
           }
-
         }
-        /*
-        */
-        //p.noStroke()
-        //p.translate(this.waves[0].vector.x, this.waves[0].vector.y)
       }
 
       resize (scale) {
         let traceInfoObj = this.traceInfo()
         const resizeFactor = p.min(p.width, p.height) * scale / traceInfoObj.traceSize
-        console.log(resizeFactor)
+        //console.log(resizeFactor)
         this.waves.forEach(w => w.vector.mult(resizeFactor))
 
         // rerun machine with corrected scale
-        this.trace = this.tracePoints(fps, slowdownFactor)
+        this.trace = this.tracePoints()
       }
 
       traceInfo () {
@@ -288,7 +284,7 @@ p.endShape()
     const fps = 60
     const slowdownFactor = config?.speed || 4
     const hash = config?.hash || tokenData.hash
-    console.log('hash: ' + hash)
+    //console.log('hash: ' + hash)
 
     const seed = parseInt(hash.slice(0, 16), 16)
     const R = new Mulberry32(seed)
