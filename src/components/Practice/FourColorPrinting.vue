@@ -16,6 +16,7 @@
 /* eslint-disable */
 import {colors as colors} from '../../colors.js'
 import {flowField as FlowField} from '../../utils.js'
+import {FlowField as FlowFieldClass} from '../../utils.js'
 
 
 let sketch = (config) => {
@@ -45,6 +46,12 @@ let sketch = (config) => {
       p.pop()
     }
 
+    const displayF = (scale, color, colorAlpha) => {
+      return (x, y, val) => {
+        displayDot(p, x, y, val, scale, color, colorAlpha)  
+      }
+    }
+
 
     p.setup = function () {
       p.createCanvas(500, 500);
@@ -58,49 +65,21 @@ let sketch = (config) => {
       p.push()
       p.translate(p.width/2, p.height/2)
       //YELLOW
-
-      FlowField(p, rows, cols, increment).forEach((row, y) => {
-        row.forEach((val, x) => {
-          displayDot(p, x, y, val, scale, p.color('#FFFF00'), colorAlpha)
-        })
-      })
-      
+      new FlowFieldClass(p, rows, cols, increment).display(displayF(scale, p.color('#FFFF00'), colorAlpha))
 
       p.rotate(15)
       //CYAN
-
-      FlowField(p, rows, cols, increment).forEach((row, y) => {
-        row.forEach((val, x) => {
-          displayDot(p, x, y, val, scale, p.color('#00FFFF'), colorAlpha)
-        })
-      })
-      
-
+      new FlowFieldClass(p, rows, cols, increment).display(displayF(scale, p.color('#00FFFF'), colorAlpha))
 
       p.rotate(30)
       //MAGENTA
+      new FlowFieldClass(p, rows, cols, increment).display(displayF(scale, p.color('#FF00FF'), colorAlpha))
 
-      FlowField(p, rows, cols, increment).forEach((row, y) => {
-        row.forEach((val, x) => {
-          displayDot(p, x, y, val, scale, p.color('#FF00FF'), colorAlpha)
-        })
-      })
- 
       p.rotate(30)
       //BLACK
-
-      FlowField(p, rows, cols, increment).forEach((row, y) => {
-        row.forEach((val, x) => {
-          displayDot(p, x, y, val, scale, p.color('#000000'), colorAlpha)
-        })
-      })
-
-
-
+      new FlowFieldClass(p, rows, cols, increment).display(displayF(scale, p.color('#000000'), colorAlpha))
 
       p.pop()
-
-
     }
   }
 }
@@ -117,11 +96,6 @@ export default {
     }
   },
   async mounted () {
-    /*
-    const baseURI = 'https://raw.githubusercontent.com/billieyenn/test-art/main/sketch.js'
-    let sketch = await this.getSketch(baseURI, this.config)
-    console.log(sketch)
-    */
 
     this.p5canvas = new P5(sketch(), 'canvas')
 
