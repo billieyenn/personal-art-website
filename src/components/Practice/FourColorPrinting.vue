@@ -34,6 +34,16 @@ let sketch = (config) => {
     let dotSize = 2
 
 
+    const displayDot = (p, x, y, val, scale, color, colorAlpha) => {
+      p.noStroke()
+      color.setAlpha(colorAlpha)
+      p.fill(color)
+      let size = val * scale * 2
+      p.push()
+      p.translate(x * scale - p.width/2, y * scale - p.height/2)
+      p.ellipse(0,0,size,size)
+      p.pop()
+    }
 
 
     p.setup = function () {
@@ -47,39 +57,21 @@ let sketch = (config) => {
       // pivot around center of screen 
       p.push()
       p.translate(p.width/2, p.height/2)
-
       //YELLOW
-      p.noStroke()
-      let color = p.color('#FFFF00')
-      color.setAlpha(colorAlpha)
-      p.fill(color)
 
       FlowField(p, rows, cols, increment).forEach((row, y) => {
         row.forEach((val, x) => {
-          let size = val * scale * dotSize
-          p.push()
-          p.translate(x * scale - p.width/2, y * scale - p.height/2)
-          p.ellipse(0,0,size,size)
-          p.pop()
+          displayDot(p, x, y, val, scale, p.color('#FFFF00'), colorAlpha)
         })
       })
       
 
       p.rotate(15)
-
       //CYAN
-      p.noStroke()
-      color = p.color('#00FFFF')
-      color.setAlpha(colorAlpha)
-      p.fill(color)
 
       FlowField(p, rows, cols, increment).forEach((row, y) => {
         row.forEach((val, x) => {
-          let size = val * scale * dotSize
-          p.push()
-          p.translate(x * scale - p.width/2, y * scale - p.height/2)
-          p.ellipse(0,0,size,size)
-          p.pop()
+          displayDot(p, x, y, val, scale, p.color('#00FFFF'), colorAlpha)
         })
       })
       
@@ -87,35 +79,19 @@ let sketch = (config) => {
 
       p.rotate(30)
       //MAGENTA
-      p.noStroke()
-      color = p.color('#FF00FF')
-      color.setAlpha(colorAlpha)
-      p.fill(color)
 
       FlowField(p, rows, cols, increment).forEach((row, y) => {
         row.forEach((val, x) => {
-          let size = val * scale * dotSize
-          p.push()
-          p.translate(x * scale - p.width/2, y * scale - p.height/2)
-          p.ellipse(0,0,size,size)
-          p.pop()
+          displayDot(p, x, y, val, scale, p.color('#FF00FF'), colorAlpha)
         })
       })
  
       p.rotate(30)
       //BLACK
-      p.noStroke()
-      color = p.color('#000000')
-      color.setAlpha(colorAlpha)
-      p.fill(color)
 
       FlowField(p, rows, cols, increment).forEach((row, y) => {
         row.forEach((val, x) => {
-          let size = val * scale * dotSize
-          p.push()
-          p.translate(x * scale - p.width/2, y * scale - p.height/2)
-          p.ellipse(0,0,size,size)
-          p.pop()
+          displayDot(p, x, y, val, scale, p.color('#000000'), colorAlpha)
         })
       })
 
