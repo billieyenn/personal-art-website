@@ -28,6 +28,7 @@ import FourierPlayground from './components/FourierPlayground/FourierPlayground.
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
 import SketchesAbout from './components/SketchesAbout.vue'
+import FourColorPrinting from './components/Practice/FourColorPrinting.vue'
 
 export const routes = [
   {
@@ -92,7 +93,8 @@ export const routes = [
       { path: 'practice/flower', component: Flower },
       { path: 'practice/goodmorning', component: GoodMorning },
       { path: 'practice/fly', component: Fly },
-      { path: 'practice/perlinnoiseflowfield', component: PerlinNoiseFlowField }
+      { path: 'practice/perlinnoiseflowfield', component: PerlinNoiseFlowField },
+      { path: 'practice/fourcolorprinting', component: FourColorPrinting }
     ]
   },
   {

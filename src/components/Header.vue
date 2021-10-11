@@ -43,6 +43,7 @@
       <router-link tag='li' to='/sketches/practice/goodmorning' style='cursor: pointer;'>gm</router-link>
       <router-link tag='li' to='/sketches/practice/fly' style='cursor: pointer;'>Fly</router-link>
       <router-link tag='li' to='/sketches/practice/perlinnoiseflowfield' style='cursor: pointer;'>PerlinNoiseFlowField</router-link>
+      <router-link tag='li' to='/sketches/practice/fourcolorprinting' style='cursor: pointer;'>Four Color Printing</router-link>
   </ul>
 
   <hr>
