@@ -15,12 +15,13 @@
 /* eslint-enable */
 /* eslint-disable */
 import {colors as colors} from '../../colors.js'
+import {flowField as FlowField} from '../../utils.js'
 
 
 let sketch = (config) => {
   return function (p) {
-    const scale = 5
-    const increment = 0.02 // kind of 'zoom'
+    let scale = 5
+    const increment = 0.01 // kind of 'zoom'
     let flowField
     let flowField2
     let flowField3
@@ -29,135 +30,102 @@ let sketch = (config) => {
     let cols
     let offsetY = 0
     let rotationAngle = 137.5
-    let colorAlpha = 255
+    let colorAlpha = 255 / 2
+    let dotSize = 2
 
 
 
 
     p.setup = function () {
-      p.createCanvas(700, 700);
-      p.background(p.color(colors.pearlBush))
+      p.createCanvas(500, 500);
+      p.background(p.color(colors.springWood))
       rows = p.floor(p.width / scale)
       cols = p.floor(p.height / scale)
       p.angleMode(p.DEGREES)
       p.blendMode(p.MULTIPLY)
 
-
-            //YELLOW
-      {
-        flowField3 = new Array(cols).fill(0).map(a => [...new Array(rows).fill(0)])
-
-        for (let y = 0; y < rows; y++) {
-          let offsetX = 0
-          for (let x = 0; x < cols; x++) {
-            let size = p.noise(offsetX, offsetY) * scale
-            let v = p.createVector(1,0)
-            offsetX += increment
-            p.noStroke()
-            let color = p.color('#FFFF00')
-            color.setAlpha(colorAlpha)
-            p.fill(color)
-            p.push()
-            p.translate(x * scale, y * scale)
-
-            p.ellipse(0,0,size,size)
-            p.pop()
-          }
-          offsetY += increment
-        }
-      }
-
-
-
-p.push()
+      // pivot around center of screen 
+      p.push()
       p.translate(p.width/2, p.height/2)
 
+      //YELLOW
+      p.noStroke()
+      let color = p.color('#FFFF00')
+      color.setAlpha(colorAlpha)
+      p.fill(color)
 
-            p.rotate(15)
-
-      //CYAN
-      {
-        flowField = new Array(cols).fill(0).map(a => [...new Array(rows).fill(0)])
-
-        for (let y = 0; y < rows; y++) {
-          let offsetX = 0
-          for (let x = 0; x < cols; x++) {
-            let size = p.noise(offsetX, offsetY) * scale
-            let v = p.createVector(1,0)
-            offsetX += increment
-            p.noStroke()
-            let color = p.color('#00FFFF')
-            color.setAlpha(colorAlpha)
-            p.fill(color)
-            p.push()
-            p.translate(x * scale - p.width/2, y * scale - p.height/2)
-
-            p.ellipse(0,0,size,size)
-            p.pop()
-          }
-          offsetY += increment
-        }
-      }
-
+      FlowField(p, rows, cols, increment).forEach((row, y) => {
+        row.forEach((val, x) => {
+          let size = val * scale * dotSize
+          p.push()
+          p.translate(x * scale - p.width/2, y * scale - p.height/2)
+          p.ellipse(0,0,size,size)
+          p.pop()
+        })
+      })
       
 
-      p.rotate(30)
-            //BLACK
-      {
-        flowField4 = new Array(cols).fill(0).map(a => [...new Array(rows).fill(0)])
+      p.rotate(15)
 
-        for (let y = 0; y < rows; y++) {
-          let offsetX = 0
-          for (let x = 0; x < cols; x++) {
-            let size = p.noise(offsetX, offsetY) * scale
-            let v = p.createVector(1,0)
-            offsetX += increment
-            p.noStroke()
-            let color = p.color('#000000')
-            color.setAlpha(colorAlpha)
-            p.fill(color)
-            p.push()
-            p.translate(x * scale - p.width/2, y * scale - p.height/2)
+      //CYAN
+      p.noStroke()
+      color = p.color('#00FFFF')
+      color.setAlpha(colorAlpha)
+      p.fill(color)
 
-            p.ellipse(0,0,size,size)
-            p.pop()
-          }
-          offsetY += increment
-        }
-      }
+      FlowField(p, rows, cols, increment).forEach((row, y) => {
+        row.forEach((val, x) => {
+          let size = val * scale * dotSize
+          p.push()
+          p.translate(x * scale - p.width/2, y * scale - p.height/2)
+          p.ellipse(0,0,size,size)
+          p.pop()
+        })
+      })
+      
 
 
       p.rotate(30)
       //MAGENTA
-      {
-        flowField2 = new Array(cols).fill(0).map(a => [...new Array(rows).fill(0)])
+      p.noStroke()
+      color = p.color('#FF00FF')
+      color.setAlpha(colorAlpha)
+      p.fill(color)
 
-        for (let y = 0; y < rows; y++) {
-          let offsetX = 0
-          for (let x = 0; x < cols; x++) {
-            let size = p.noise(offsetX, offsetY) * scale
-            let v = p.createVector(1,0)
-            offsetX += increment
-            p.noStroke()
-            let color = p.color('#FF00FF')
-            color.setAlpha(colorAlpha)
-            p.fill(color)
-            p.push()
-            p.translate(x * scale - p.width/2, y * scale - p.height/2)
+      FlowField(p, rows, cols, increment).forEach((row, y) => {
+        row.forEach((val, x) => {
+          let size = val * scale * dotSize
+          p.push()
+          p.translate(x * scale - p.width/2, y * scale - p.height/2)
+          p.ellipse(0,0,size,size)
+          p.pop()
+        })
+      })
+ 
+      p.rotate(30)
+      //BLACK
+      p.noStroke()
+      color = p.color('#000000')
+      color.setAlpha(colorAlpha)
+      p.fill(color)
 
-            p.ellipse(0,0,size,size)
-            p.pop()
-          }
-          offsetY += increment
-        }
-      }
+      FlowField(p, rows, cols, increment).forEach((row, y) => {
+        row.forEach((val, x) => {
+          let size = val * scale * dotSize
+          p.push()
+          p.translate(x * scale - p.width/2, y * scale - p.height/2)
+          p.ellipse(0,0,size,size)
+          p.pop()
+        })
+      })
 
 
 
-            p.pop()
+
+      p.pop()
+
 
     }
-
   }
 }
 /* eslint-disable */
