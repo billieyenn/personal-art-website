@@ -49,4 +49,4 @@ class FlowField {
 	}
 }
 
-export  {FlowField}
+export  {FlowField, Grid}
