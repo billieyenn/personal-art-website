@@ -20,70 +20,97 @@ import {FlowField as FlowFieldClass} from '../../utils.js'
 
 let sketch = (config) => {
   return function (p) {
-    let scale = 5
-    const increment = 0.01 // kind of 'zoom'
-    let flowField
-    let flowField2
-    let flowField3
-    let flowField4
-    let rows
-    let cols
-    let offsetY = 0
-    let rotationAngle = 137.5
-    let colorAlpha = 255 / 2
-    let dotSize = 2
 
-
-    const displayDot = (p, x, y, val, scale, color, colorAlpha) => {
-      const v1 = p.createVector(x*scale, y*scale)
-      const v2 = p.createVector(p.width/2, p.height/2)
-      if (v1.dist(v2) < p.width/2) {
-
+    const displayDot = (p, x, y, val, scale, r, radius, color, colorAlpha) => {
+        let size = val * scale * 2
         p.noStroke()
         color.setAlpha(colorAlpha)
         p.fill(color)
-        let size = val * scale * 2
         p.push()
-        p.translate(x * scale - p.width/2, y * scale - p.height/2)
-        p.ellipse(0,0,size,size)
+        p.rotate(r)
+        p.translate(-radius, -radius)
+        p.translate(x * scale, y * scale)
+        p.ellipse(0, 0, size, size)
         p.pop()
-      }
     }
 
-    const displayF = (scale, color, colorAlpha) => {
+    const displayF = (scale, r, radius, color, colorAlpha) => {
       return (x, y, val) => {
-        displayDot(p, x, y, val, scale, color, colorAlpha)  
+        displayDot(p, x, y, val, scale, r, radius, color, colorAlpha)  
+      }
+    }
+
+    // seems to work
+    const isInCircle = (x_c, y_c, r) => {
+      return (x_p, y_p) => {
+        return p.sqrt( (x_p * scale - x_c) * (x_p * scale - x_c) + (y_p * scale - y_c) * (y_p * scale - y_c) ) < r
       }
     }
 
 
-    p.setup = function () {
-      p.createCanvas(500, 500);
-      p.background(p.color(colors.springWood))
-      rows = p.floor(p.width / scale)
-      cols = p.floor(p.height / scale)
+    const CYMKCircle = (p, diameter, scale) => {
+
+      rows = p.floor(diameter / scale)
+      cols = p.floor(diameter / scale)
       p.angleMode(p.DEGREES)
       p.blendMode(p.MULTIPLY)
 
-      // pivot around center of screen 
       p.push()
-      p.translate(p.width/2, p.height/2)
-      //YELLOW
-      new FlowFieldClass(p, rows, cols, increment).display(displayF(scale, p.color('#FFFF00'), colorAlpha))
+//      p.translate(x, y) // pivot around center of shape 
 
-      p.rotate(15)
-      //CYAN
-      new FlowFieldClass(p, rows, cols, increment).display(displayF(scale, p.color('#00FFFF'), colorAlpha))
+      // YELLOW
+      new FlowFieldClass(p, rows, cols, increment).display(
+        displayF(scale, 0, diameter/2, p.color('#FFFF00'), colorAlpha), 
+        isInCircle(diameter / 2 , diameter / 2 , diameter / 2 )
+        )
 
-      p.rotate(30)
-      //MAGENTA
-      new FlowFieldClass(p, rows, cols, increment).display(displayF(scale, p.color('#FF00FF'), colorAlpha))
+      // CYAN
+      new FlowFieldClass(p, rows, cols, increment).display(
+        displayF(scale, 15, diameter/2, p.color('#00FFFF'), colorAlpha), 
+        isInCircle(diameter / 2 , diameter / 2 , diameter / 2 )
+        )
 
-      p.rotate(30)
-      //BLACK
-      new FlowFieldClass(p, rows, cols, increment).display(displayF(scale, p.color('#000000'), colorAlpha))
+      // MAGENTA
+      new FlowFieldClass(p, rows, cols, increment).display(
+        displayF(scale, 45, diameter/2, p.color('#FF00FF'), colorAlpha), 
+        isInCircle(diameter / 2 , diameter / 2 , diameter / 2 )
+        )
+
+      // BLACK
+      
+      new FlowFieldClass(p, rows, cols, increment).display(
+        displayF(scale, 75, diameter/2, p.color('#000000'), colorAlpha), 
+        isInCircle(diameter / 2 , diameter / 2 , diameter / 2 )
+        )
+
 
       p.pop()
+    }
+
+    let scale = 10
+    const increment = 0.01 // kind of 'zoom'
+    let rows
+    let cols
+    let rotationAngle = 137.5
+    let colorAlpha = 255 / 2
+
+    p.setup = function () {
+      p.createCanvas(1000, 1000);
+      p.background(p.color(colors.springWood))
+
+      const size = 500
+      p.translate(250, 250)
+      CYMKCircle(p, size, scale)
+
+      p.translate(500, 0)
+      CYMKCircle(p, size, scale)
+
+      p.translate(-500, 500)
+      CYMKCircle(p, size, scale)
+
+      p.translate(500, 0)
+      CYMKCircle(p, size, scale)
+
     }
   }
 }
