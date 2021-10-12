@@ -15,7 +15,6 @@
 /* eslint-enable */
 /* eslint-disable */
 import {colors as colors} from '../../colors.js'
-import {flowField as FlowField} from '../../utils.js'
 import {FlowField as FlowFieldClass} from '../../utils.js'
 
 
@@ -36,14 +35,19 @@ let sketch = (config) => {
 
 
     const displayDot = (p, x, y, val, scale, color, colorAlpha) => {
-      p.noStroke()
-      color.setAlpha(colorAlpha)
-      p.fill(color)
-      let size = val * scale * 2
-      p.push()
-      p.translate(x * scale - p.width/2, y * scale - p.height/2)
-      p.ellipse(0,0,size,size)
-      p.pop()
+      const v1 = p.createVector(x*scale, y*scale)
+      const v2 = p.createVector(p.width/2, p.height/2)
+      if (v1.dist(v2) < p.width/2) {
+
+        p.noStroke()
+        color.setAlpha(colorAlpha)
+        p.fill(color)
+        let size = val * scale * 2
+        p.push()
+        p.translate(x * scale - p.width/2, y * scale - p.height/2)
+        p.ellipse(0,0,size,size)
+        p.pop()
+      }
     }
 
     const displayF = (scale, color, colorAlpha) => {
