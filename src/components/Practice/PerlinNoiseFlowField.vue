@@ -22,7 +22,7 @@ let sketch = (config) => {
 
     let rows
     let cols
-    const scale = 10
+    const scale = 5
     const increment = 0.01 // kind of 'zoom'
     const particles = []
     let flowField
@@ -35,8 +35,8 @@ let sketch = (config) => {
       return col
     }
 
-    const randomParticleColor = randomColor(colors)
-    const randomBGColor = randomColor(colors)
+    const randomParticleColor = p.color(colors.codGray)//randomColor(colors)
+    const randomBGColor = p.color(colors.pearlBush)//randomColor(colors)
     p.setup = function () {
       p.createCanvas(1000, 1000);
       p.background(randomBGColor)
