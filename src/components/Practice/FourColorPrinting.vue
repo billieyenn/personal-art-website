@@ -48,8 +48,14 @@ let sketch = (config) => {
       }
     }
 
-//    const isInSquare
-
+    const isInRect = (x, y, w, h) => {
+      return (x_p, y_p) => {
+        return x_p > x
+            && x_p < x + w
+            && y_p > y
+            && y_p < y + h
+      }
+    }
 
     const CYMKCircle = (p, diameter, scale, increment, colorAlpha) => {
 
@@ -64,6 +70,7 @@ let sketch = (config) => {
       new FlowField(p, rows, cols, increment).display(
         displayF(scale, 0, diameter/2, p.color('#FFFF00'), colorAlpha), 
         isInCircle(diameter / 2 , diameter / 2 , diameter / 2 )
+
         )
 
       // CYAN
@@ -82,6 +89,7 @@ let sketch = (config) => {
       new FlowField(p, rows, cols, increment).display(
         displayF(scale, 75, diameter/2, p.color('#000000'), colorAlpha), 
         isInCircle(diameter / 2 , diameter / 2 , diameter / 2 )
+        //isInRect(0, 0, diameter, diameter)
         )
 
 

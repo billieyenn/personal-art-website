@@ -29,6 +29,7 @@ import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
 import SketchesAbout from './components/SketchesAbout.vue'
 import FourColorPrinting from './components/Practice/FourColorPrinting.vue'
+import Collision from './components/Practice/Collision.vue'
 
 export const routes = [
   {
@@ -94,7 +95,8 @@ export const routes = [
       { path: 'practice/goodmorning', component: GoodMorning },
       { path: 'practice/fly', component: Fly },
       { path: 'practice/perlinnoiseflowfield', component: PerlinNoiseFlowField },
-      { path: 'practice/fourcolorprinting', component: FourColorPrinting }
+      { path: 'practice/fourcolorprinting', component: FourColorPrinting },
+      { path: 'practice/collision', component: Collision }
     ]
   },
   {
