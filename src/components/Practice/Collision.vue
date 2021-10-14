@@ -19,8 +19,8 @@ import {Grid as Grid} from '../../utils.js'
 
 
 let count = 0
-let g
-let scale = 10
+// let g
+// let scale = 10
 let size = 710
 let sketch = (config) => {
   return function (p) {
@@ -116,8 +116,8 @@ const closestPoint = (points, x, y) => {
 }
 
 
-const drawShapeOutline = (points) => {
-  p.stroke(0)
+const drawShapeOutline = (points, stroke) => {
+  p.stroke(stroke || 0)
   p.strokeWeight(1)
   for (let i = 0; i < points.length - 1; i++) {
     let point1 = points[i]
@@ -128,20 +128,21 @@ const drawShapeOutline = (points) => {
   }
 }
 
-      let x = 710/4
-      let y = 710/4
+    let x = 710/4
+    let y = 710/4
+
     p.setup = function () {
       p.createCanvas(710, 710);
-      let cols = p.floor(size / scale)
-      let rows = p.floor(size / scale)
-      g = new Grid(rows, cols)
+      // let cols = p.floor(size / scale)
+      // let rows = p.floor(size / scale)
+      // g = new Grid(rows, cols)
 
       p.background(250)
       p.push()
       // populate points
-      g.forEach( (x, y, val) => {
-        g.setVal(x, y, p.createVector(x * scale, y * scale))
-      } )
+      // g.forEach( (x, y, val) => {
+      //   g.setVal(x, y, p.createVector(x * scale, y * scale))
+      // } )
 
       // display points
       p.angleMode(p.DEGREES)
@@ -225,35 +226,92 @@ const drawShapeOutline = (points) => {
         // just show where the shape is for debugging
         p.stroke(0)
         p.noFill()
-        // p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
+        // draw bounding box
+        p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
 
         let resolution = 5
+        let scale = 10
 
-        // iterate over each pixel
-        for (let x = x_min; x < x_max; x += resolution) {
-          for (let y = y_min; y < y_max; y += resolution) {
+        let width = (x_max - x_min)
+        let height = (y_max - y_min)
 
-            p.noStroke()
-            p.noFill()
-            p.strokeWeight(1)
+        let cols = p.floor(width / scale)
+        let rows = p.floor(height / scale)
 
-            if (isInPoly(points2, x, y))
-              p.stroke(0)
-            p.point(x, y)
-
-
-            // if (isLeftOf(points2, x, y) > 0) // if pixel is to the left of the shape
-            //   p.stroke(0)
-
-            // // can skip computing pixels until distance to closest pixel is travelled
-            // let dist = closestPoint(points2, x, y).dist(p.createVector(x, y))
-            // let width = p.min(x - x_min, p.min(x_max - x, dist))
-            // let height = p.min(y - y_min, p.min(y_max - y, dist))
-            // p.line(x, y, x, y + height)
-            // y += height/2            
-
-          }
+        let g = new Grid(rows, cols)
+        let angle = 30
+        const displayPoint = (x, y, val) => {
+          p.stroke(0)
+          p.push()
+          p.translate(x_min + width / 2, y_min + height / 2)
+          p.rotate(angle)
+          p.translate(-width/2, -height/2)
+          p.translate(scale * (x + 1/2), scale * (y + 1/2))
+          p.point(0, 0)
+          p.pop()
         }
+
+
+        p.angleMode(p.DEGREES)
+        let s = p.sin(angle)
+        let c = p.cos(angle)
+
+        let points_rotated = points2.map((point) => {
+          let new_p = p.createVector(point.x, point.y)
+          new_p.x -= (x_min + width / 2)
+          new_p.y -= (y_min + height / 2)
+
+          let x_new = new_p.x * c - new_p.y * s
+          let y_new = new_p.x * s + new_p.y * c
+
+          new_p.x = x_new + (x_min + width / 2)
+          new_p.y = y_new + (y_min + height / 2)
+
+          return new_p
+        })
+
+
+        // console.log(points_rotated)
+        // p.translate(100, 0)
+        // p.stroke(255,0,0)
+        drawShapeOutline(points_rotated, p.color(255,0,0))
+
+        
+        const condition = (x, y, val) => {
+          return isInPoly(points2, ((x + 1/2) * scale + x_min), ((y + 1/2) * scale + y_min))
+          // return isInPoly(points2, ((x + 1/2) * scale + x_min), ((y + 1/2) * scale + y_min))
+        }
+        
+
+        g.forEach(displayPoint, condition)
+
+        // // iterate over each pixel in bounding box
+        // for (let x = x_min; x < x_max; x += resolution) {
+        //   for (let y = y_min; y < y_max; y += resolution) {
+
+        //     p.noStroke()
+        //     p.noFill()
+        //     p.strokeWeight(1)
+
+        //     if (isInPoly(points2, x, y))
+        //       // p.stroke(0)
+        //       p.fill(0)
+        //     // p.point(x, y)
+
+
+        //     // if (isLeftOf(points2, x, y) > 0) // if pixel is to the left of the shape
+        //     //   p.stroke(0)
+
+        //     // can skip computing pixels until distance to closest pixel is travelled
+        //     let dist = closestPoint(points2, x, y).dist(p.createVector(x, y))
+        //     let width = p.min(x - x_min, p.min(x_max - x, dist))
+        //     let height = p.min(y - y_min, p.min(y_max - y, dist))
+        //     // p.line(x, y, x, y + height)
+        //     p.ellipse(x, y, width, height)
+        //     y += height/1.618
+
+        //   }
+        // }
 
       count++
     }

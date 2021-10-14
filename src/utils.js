@@ -4,7 +4,7 @@
 
 class Grid {
 	constructor(rows, cols) {
-		this.grid = new Array(cols).fill(0).map(a => [...new Array(rows).fill(0)])
+		this.grid = new Array(rows).fill(0).map(a => [...new Array(cols).fill(0)])
 	}
 
 	// higher order function, can optionally provide condition
