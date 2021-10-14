@@ -44,8 +44,89 @@ const isInRect = (x_r, y_r, w, h) => {
       }
     }
 
+const isInPoly = (points, x, y) => {
+  // collision detection
+  // source http://www.jeffreythompson.org/collision-detection/poly-poly.php?fbclid=IwAR3pveFV5i-hQD3e6G1jWsTNc5LL8SmHd74yX6tDQ7KP2apj9JX4th1mcjA
+  let collision = false
+
+  // iterate over each point in shape
+  points.forEach((po, i) => {
+
+    // for each pair of consecutive points along shape
+    const vc = po
+    const vn = points[(i + 1)%points.length]
+
+    // if y-coord of those points are on different sides of the pixel
+    const cond_1 = (vc.y > y && vn.y < y)
+    const cond_2 = (vc.y < y && vn.y > y)
+    // and if the below condition
+    const cond_3 = (x < (vn.x - vc.x) * (y - vc.y) / (vn.y - vc.y) + vc.x)
 
 
+    // then collision
+    if ((cond_1 || cond_2) && cond_3) {
+      collision = !collision
+    }
+
+  })
+  return collision
+}
+
+const isLeftOf = (points, x, y) => {
+  let closestPointObj = closestPoint(points, x, y)// points2[closestPointIndex] // assume it is point 0
+
+  // create local variable for clear naming
+  let currentPoint = p.createVector(x, y)
+
+
+  // create vector along the direction of the shape's outline
+  let v1 = p.createVector(closestPointObj.x, closestPointObj.y)
+  let v2 = p.createVector(points[(points.indexOf(closestPointObj)+1)%points.length].x, points[(points.indexOf(closestPointObj)+1)%points.length].y)
+  let closestToPlusOne = p.createVector(v2.x - v1.x, v2.y - v1.y)
+
+  // and closestpoint to currentpoint
+  // create vector from current pixel to closest point
+  let closestToCurrent = p.createVector(currentPoint.x - v1.x, currentPoint.y - v1.y)
+
+  // The sign of the angle between those two vectors indicates which side of the shape the pixel is (relative to the curve's orientation)
+  let angleBetween = closestToCurrent.angleBetween(closestToPlusOne)
+  let dist = closestPointObj.dist(currentPoint) 
+
+  
+  p.noStroke()
+  p.noFill()
+  return angleBetween > 0 // if pixel is to the left of the shape
+}
+
+const closestPoint = (points, x, y) => {
+
+  let closestPointIndex = 0 // assume it is point 0
+  let closestPoint = points[closestPointIndex] // assume it is point 0
+  let currentPoint = p.createVector(x, y)
+
+  // find closest point of the shape to this pixel
+  points.forEach((po, i) => {
+    if (currentPoint.dist(po) < currentPoint.dist(closestPoint)) {
+      closestPoint = po
+      closestPointIndex = i
+    }
+  })
+
+  return closestPoint
+}
+
+
+const drawShapeOutline = (points) => {
+  p.stroke(0)
+  p.strokeWeight(1)
+  for (let i = 0; i < points.length - 1; i++) {
+    let point1 = points[i]
+    let point2 = points[i+1]
+    let v1 = p.createVector(point1.x, point1.y)
+    let v2 = p.createVector(point2.x, point2.y)
+    p.line(point1.x, point1.y, point2.x, point2.y)
+  }
+}
 
       let x = 710/4
       let y = 710/4
@@ -119,7 +200,6 @@ const isInRect = (x_r, y_r, w, h) => {
         }
         
         
-        // let totalRotation = 0
         // first pass to quickly get outline size
         let steps = 100 // less steps used to figure out 
         for (let i = 0; i < points.length; i++) {
@@ -132,36 +212,9 @@ const isInRect = (x_r, y_r, w, h) => {
           }
         }
 
-        // for (let i = 0; i < points2.length - 2; i++) {
-        //   let point1 = points2[i]
-        //   let point2 = points2[i + 1]
-        //   let point3 = points2[i + 2]
 
-        //   let v1 = p.createVector(point2.x - point1.x, point2.y - point1.y)
-        //   let v2 = p.createVector(point3.x - point2.x, point3.y - point2.y)
-        //   totalRotation += v2.heading() - v1.heading()
-        // }
-
-        // console.log(totalRotation)
-
-
-/*        //debugging
-        for (let i = 0; i < points2.length - 1; i++) {
-          let point1 = points2[i]
-          let point2 = points2[i+1]
-          let v1 = p.createVector(point1.x, point1.y)
-          let v2 = p.createVector(point2.x, point2.y)
-          let heading = v1.sub(v2).rotate(90).heading()
-          // let heading = v1.sub(v2).rotate(-90).heading()
-          p.push()
-          p.translate(v2.x, v2.y)
-          p.rotate(heading)
-          // if(heading !== 0)
-          //   p.line(0, 0, 10, 0)
-          p.pop()
-          p.line(point1.x, point1.y, point2.x, point2.y)
-        }
-*/
+        // debugging shape outline
+        drawShapeOutline(points2)
 
         // calculate the bounding box of the shape
         const x_max = p.max(points2.map(p => p.x))
@@ -174,55 +227,33 @@ const isInRect = (x_r, y_r, w, h) => {
         p.noFill()
         // p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
 
-        let closestPointIndex = 0 // assume it is point 0
-        let closestPoint = points2[closestPointIndex] // assume it is point 0
-        let resolution = 2
+        let resolution = 5
 
         // iterate over each pixel
         for (let x = x_min; x < x_max; x += resolution) {
           for (let y = y_min; y < y_max; y += resolution) {
 
-            // create local variable for clear naming
-            let currentPoint = p.createVector(x, y)
-
-            // find closest point of the shape to this pixel
-            points2.forEach((po, i) => {
-              if (currentPoint.dist(po) < currentPoint.dist(closestPoint)) {
-                closestPoint = po
-                closestPointIndex = i
-              }
-            })
-
-            // create vector along the direction of the shape's outline
-            let v1 = p.createVector(closestPoint.x, closestPoint.y)
-            let v2 = p.createVector(points2[(closestPointIndex+1)%points2.length].x, points2[(closestPointIndex+1)%points2.length].y)
-            let closestToPlusOne = p.createVector(v2.x - v1.x, v2.y - v1.y)
-
-            // and closestpoint to currentpoint
-            // create vector from current pixel to closest point
-            let closestToCurrent = p.createVector(currentPoint.x - v1.x, currentPoint.y - v1.y)
-
-            // The sign of the angle between those two vectors indicates which side of the shape the pixel is (relative to the curve's orientation)
-            let angleBetween = closestToCurrent.angleBetween(closestToPlusOne)
-            let dist = closestPoint.dist(currentPoint) 
-
-            
             p.noStroke()
             p.noFill()
-            if (angleBetween > 0) // if pixel is to the left of the shape
-              // p.fill(200)
-              p.stroke(0)
-            // p.rect(x, y, resolution, resolution)
+            p.strokeWeight(1)
 
-            // can skip computing pixels until distance to closest pixel is travelled
-            let width = p.min(x - x_min, p.min(x_max - x, dist))
-            let height = p.min(y - y_min, p.min(y_max - y, dist))
-            p.line(x, y, x, y + height)
-//            p.ellipse(x, y, width, height)
-            y += height/2
+            if (isInPoly(points2, x, y))
+              p.stroke(0)
+            p.point(x, y)
+
+
+            // if (isLeftOf(points2, x, y) > 0) // if pixel is to the left of the shape
+            //   p.stroke(0)
+
+            // // can skip computing pixels until distance to closest pixel is travelled
+            // let dist = closestPoint(points2, x, y).dist(p.createVector(x, y))
+            // let width = p.min(x - x_min, p.min(x_max - x, dist))
+            // let height = p.min(y - y_min, p.min(y_max - y, dist))
+            // p.line(x, y, x, y + height)
+            // y += height/2            
+
           }
         }
-
 
       count++
     }
