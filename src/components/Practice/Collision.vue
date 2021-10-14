@@ -110,8 +110,8 @@ const isInRect = (x_r, y_r, w, h) => {
 
       p.pop()
 
-      let points = []
-      let points2 = []
+      let points = [] // generate a few points around which a curve is created
+      let points2 = [] // store the outline of the curvy shape
 
         // generate some random curvy shape
         for (let i = 0; i < 5; i++) {
@@ -119,7 +119,7 @@ const isInRect = (x_r, y_r, w, h) => {
         }
         
         
-        let totalRotation = 0
+        // let totalRotation = 0
         // first pass to quickly get outline size
         let steps = 100 // less steps used to figure out 
         for (let i = 0; i < points.length; i++) {
@@ -132,17 +132,17 @@ const isInRect = (x_r, y_r, w, h) => {
           }
         }
 
-        for (let i = 0; i < points2.length - 2; i++) {
-          let point1 = points2[i]
-          let point2 = points2[i + 1]
-          let point3 = points2[i + 2]
+        // for (let i = 0; i < points2.length - 2; i++) {
+        //   let point1 = points2[i]
+        //   let point2 = points2[i + 1]
+        //   let point3 = points2[i + 2]
 
-          let v1 = p.createVector(point2.x - point1.x, point2.y - point1.y)
-          let v2 = p.createVector(point3.x - point2.x, point3.y - point2.y)
-          totalRotation += v2.heading() - v1.heading()
-        }
+        //   let v1 = p.createVector(point2.x - point1.x, point2.y - point1.y)
+        //   let v2 = p.createVector(point3.x - point2.x, point3.y - point2.y)
+        //   totalRotation += v2.heading() - v1.heading()
+        // }
 
-        console.log(totalRotation)
+        // console.log(totalRotation)
 
 
 /*        //debugging
@@ -174,13 +174,18 @@ const isInRect = (x_r, y_r, w, h) => {
         p.noFill()
         // p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
 
-        // find closest point
         let closestPointIndex = 0 // assume it is point 0
         let closestPoint = points2[closestPointIndex] // assume it is point 0
         let resolution = 2
+
+        // iterate over each pixel
         for (let x = x_min; x < x_max; x += resolution) {
           for (let y = y_min; y < y_max; y += resolution) {
+
+            // create local variable for clear naming
             let currentPoint = p.createVector(x, y)
+
+            // find closest point of the shape to this pixel
             points2.forEach((po, i) => {
               if (currentPoint.dist(po) < currentPoint.dist(closestPoint)) {
                 closestPoint = po
@@ -188,36 +193,35 @@ const isInRect = (x_r, y_r, w, h) => {
               }
             })
 
+            // create vector along the direction of the shape's outline
             let v1 = p.createVector(closestPoint.x, closestPoint.y)
             let v2 = p.createVector(points2[(closestPointIndex+1)%points2.length].x, points2[(closestPointIndex+1)%points2.length].y)
-
-            // angle between closestpoint to closestpoint + 1
-            // and closestpoint to currentpoint
             let closestToPlusOne = p.createVector(v2.x - v1.x, v2.y - v1.y)
+
+            // and closestpoint to currentpoint
+            // create vector from current pixel to closest point
             let closestToCurrent = p.createVector(currentPoint.x - v1.x, currentPoint.y - v1.y)
 
+            // The sign of the angle between those two vectors indicates which side of the shape the pixel is (relative to the curve's orientation)
             let angleBetween = closestToCurrent.angleBetween(closestToPlusOne)
-            let dist = closestPoint.dist(currentPoint)
+            let dist = closestPoint.dist(currentPoint) 
 
             
             p.noStroke()
-            p.noFill()            
-            if (angleBetween > 0)
-
-              p.fill(200)
+            p.noFill()
+            if (angleBetween > 0) // if pixel is to the left of the shape
+              // p.fill(200)
+              p.stroke(0)
             // p.rect(x, y, resolution, resolution)
+
+            // can skip computing pixels until distance to closest pixel is travelled
             let width = p.min(x - x_min, p.min(x_max - x, dist))
             let height = p.min(y - y_min, p.min(y_max - y, dist))
-            p.ellipse(x, y, width, height)
+            p.line(x, y, x, y + height)
+//            p.ellipse(x, y, width, height)
             y += height/2
           }
         }
-
-
-
-      // for each point in shape bounding box, 
-      // find pair of points on curve closest to that point
-      // 
 
 
       count++
