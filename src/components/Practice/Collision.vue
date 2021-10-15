@@ -119,7 +119,7 @@ const drawShapeOutline = (points, stroke) => {
 
 
         // debugging shape outline
-        drawShapeOutline(points2)
+        // drawShapeOutline(points2)
 
         // calculate the bounding box of the shape
         let x_max = p.max(points2.map(p => p.x))
@@ -147,54 +147,81 @@ const drawShapeOutline = (points, stroke) => {
         p.stroke(0)
         p.noFill()
         // draw bounding box
-        p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
+        // p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
 
         let scale = 8
 
         let cols = p.floor(width / scale)
         let rows = p.floor(height / scale)
-
         let g = new Grid(rows, cols)
-        let angle = 30
-        const displayPoint = (x, y, val) => {
-          p.stroke(0)
-          p.push()
-          p.translate(x_min + width / 2, y_min + height / 2)
-          p.rotate(angle)
-          p.translate(-width/2, -height/2)
-          p.translate(scale * (x + 1/2), scale * (y + 1/2))
-          p.point(0, 0)
-          p.pop()
+
+        const displayPointF = (angle) => {
+          return (x, y, val) => {
+            p.stroke(0)
+            p.push()
+            p.translate(x_min + width / 2, y_min + height / 2)
+            p.rotate(angle)
+            p.translate(-width/2, -height/2)
+            p.translate(scale * (x + 1/2), scale * (y + 1/2))
+            p.point(0, 0)
+            p.pop()
+          }
         }
 
+        const conditionF = (points) => {
+          return (x, y, val) => {
+            return isInPoly(points, ((x + 1/2) * scale + x_min), ((y + 1/2) * scale + y_min))
+          }
+        }
 
         // rotate the shape for collision detection
         p.angleMode(p.DEGREES)
-        let s = p.sin(-angle) // calculate outside of loop for comp eff
-        let c = p.cos(-angle)
-
-        let points_rotated = points2.map((point) => {
-          let new_p = p.createVector(point.x, point.y)
-          new_p.x -= (x_min + width / 2)
-          new_p.y -= (y_min + height / 2)
-
-          let x_new = new_p.x * c - new_p.y * s
-          let y_new = new_p.x * s + new_p.y * c
-
-          new_p.x = x_new + (x_min + width / 2)
-          new_p.y = y_new + (y_min + height / 2)
-
-          return new_p
-        })
 
 
+        // rotate the shape around the center of the bounding box
+        const rotatePoints = (points, angle) => {
+          let s = p.sin(-angle) // calculate outside of loop for comp eff
+          let c = p.cos(-angle)
+          // console.log(angle)
+          let res = points.map((point) => {
+            let new_p = p.createVector(point.x, point.y)
+            new_p.x -= (x_min + width / 2)
+            new_p.y -= (y_min + height / 2)
 
-        const condition = (x, y, val) => {
-          return isInPoly(points_rotated, ((x + 1/2) * scale + x_min), ((y + 1/2) * scale + y_min))
+            let x_new = new_p.x * c - new_p.y * s
+            let y_new = new_p.x * s + new_p.y * c
+
+            new_p.x = x_new + (x_min + width / 2)
+            new_p.y = y_new + (y_min + height / 2)
+
+            return new_p
+          })
+          return res
         }
         
 
-        g.forEach(displayPoint, condition)
+        let angle = 0
+        g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
+        
+        angle = 15
+        g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
+        
+        angle = 45
+        g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
+        
+        angle = 75
+        g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
+
+
+
+
+
+
+
+
+
+
+
 
 
         // // iterate over each pixel in bounding box
