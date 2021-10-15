@@ -18,10 +18,6 @@
 import {Grid as Grid} from '../../utils.js'
 
 
-let count = 0
-// let g
-// let scale = 10
-let size = 710
 let sketch = (config) => {
   return function (p) {
 
@@ -133,64 +129,11 @@ const drawShapeOutline = (points, stroke) => {
 
     p.setup = function () {
       p.createCanvas(710, 710);
-      // let cols = p.floor(size / scale)
-      // let rows = p.floor(size / scale)
-      // g = new Grid(rows, cols)
 
       p.background(250)
-      p.push()
-      // populate points
-      // g.forEach( (x, y, val) => {
-      //   g.setVal(x, y, p.createVector(x * scale, y * scale))
-      // } )
 
-      // display points
       p.angleMode(p.DEGREES)
-      p.fill(0)
-      // p.ellipse(x, y, 10)
-      // p.translate(x, y)
-//      p.translate(p.width / 2, p.height / 2)
 
-
-
-/*
-      p.translate(-size / 4, -size / 4)
-
-      g.forEach((x, y, val) => {
-        p.push()
-        // p.translate(x, y)
-        p.translate(x * scale, y * scale)
-        p.strokeWeight(2)
-        p.point(0, 0)
-        p.pop()
-      }
-      , isInCircle(size/2, size/2, 710/4 )
-      )
-
-
-
-      p.translate(p.width, p.height / 2)
-      p.rotate(count)
-      let x_1 = 0
-      let y_1 = 0
-      let w = 300
-      let h = 300
-      p.translate(-w/2, -h/2)
-
-      g.forEach((x, y, val) => {
-        p.push()
-        // p.translate(x, y)
-        p.translate(x * scale, y * scale)
-        p.strokeWeight(2)
-        p.point(0, 0)
-        p.pop()
-      }
-      , isInRect(x_1, y_1, x_1 + w, y_1 + h)
-      )
-
-*/
-
-      p.pop()
 
       let points = [] // generate a few points around which a curve is created
       let points2 = [] // store the outline of the curvy shape
@@ -215,25 +158,37 @@ const drawShapeOutline = (points, stroke) => {
 
 
         // debugging shape outline
-        drawShapeOutline(points2)
+        // drawShapeOutline(points2)
 
         // calculate the bounding box of the shape
-        const x_max = p.max(points2.map(p => p.x))
-        const y_max = p.max(points2.map(p => p.y))
-        const x_min = p.min(points2.map(p => p.x))
-        const y_min = p.min(points2.map(p => p.y))
+        let x_max = p.max(points2.map(p => p.x))
+        let y_max = p.max(points2.map(p => p.y))
+        let x_min = p.min(points2.map(p => p.x))
+        let y_min = p.min(points2.map(p => p.y))
+        let width = (x_max - x_min)
+        let height = (y_max - y_min)
+
+        // to fully cover any possible point within bounding box at any rotation
+        // the actual bounding box to be used shall have width and height of length until corner
+
+        // get length from corner to corner
+        const newLength = p.createVector(x_min, y_min).dist(p.createVector(x_max, y_max))
+
+        // adjust both min and max of both x and y 
+        x_min -= (newLength - width) / 2
+        y_min -= (newLength - height) / 2
+        x_max += (newLength - width) / 2
+        y_max += (newLength - width) / 2
+        width = (x_max - x_min)
+        height = (y_max - y_min)
 
         // just show where the shape is for debugging
         p.stroke(0)
         p.noFill()
         // draw bounding box
-        p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
+        // p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
 
-        let resolution = 5
-        let scale = 10
-
-        let width = (x_max - x_min)
-        let height = (y_max - y_min)
+        let scale = 8
 
         let cols = p.floor(width / scale)
         let rows = p.floor(height / scale)
@@ -252,9 +207,10 @@ const drawShapeOutline = (points, stroke) => {
         }
 
 
+        // rotate the shape for collision detection
         p.angleMode(p.DEGREES)
-        let s = p.sin(angle)
-        let c = p.cos(angle)
+        let s = p.sin(-angle) // calculate outside of loop for comp eff
+        let c = p.cos(-angle)
 
         let points_rotated = points2.map((point) => {
           let new_p = p.createVector(point.x, point.y)
@@ -271,21 +227,17 @@ const drawShapeOutline = (points, stroke) => {
         })
 
 
-        // console.log(points_rotated)
-        // p.translate(100, 0)
-        // p.stroke(255,0,0)
-        drawShapeOutline(points_rotated, p.color(255,0,0))
 
-        
         const condition = (x, y, val) => {
-          return isInPoly(points2, ((x + 1/2) * scale + x_min), ((y + 1/2) * scale + y_min))
-          // return isInPoly(points2, ((x + 1/2) * scale + x_min), ((y + 1/2) * scale + y_min))
+          return isInPoly(points_rotated, ((x + 1/2) * scale + x_min), ((y + 1/2) * scale + y_min))
         }
         
 
         g.forEach(displayPoint, condition)
 
+
         // // iterate over each pixel in bounding box
+        // let resolution = 5 // directional collision 
         // for (let x = x_min; x < x_max; x += resolution) {
         //   for (let y = y_min; y < y_max; y += resolution) {
 
@@ -313,7 +265,6 @@ const drawShapeOutline = (points, stroke) => {
         //   }
         // }
 
-      count++
     }
     p.draw = function () {
 
