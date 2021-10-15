@@ -1,6 +1,7 @@
 /* eslint-enable */
 /* eslint-disable */
 
+import { sqrt } from 'mathjs'
 
 class Grid {
 	constructor(rows, cols) {
@@ -49,4 +50,90 @@ class FlowField {
 	}
 }
 
-export  {FlowField, Grid}
+
+// collision detection
+/*
+input: 
+- points: array of p5 vectors
+- x: x-coordinate of point to be tested
+- y: y-coordinate of point to be tested
+
+Output:
+- boolean: is point 'inside' the polygon
+*/
+const isInPoly = (points, x, y) => {
+  // source http://www.jeffreythompson.org/collision-detection/poly-poly.php?fbclid=IwAR3pveFV5i-hQD3e6G1jWsTNc5LL8SmHd74yX6tDQ7KP2apj9JX4th1mcjA
+  let collision = false
+
+  // iterate over each point in shape
+  points.forEach((po, i) => {
+
+    // for each pair of consecutive points along shape
+    const vc = po
+    const vn = points[(i + 1)%points.length]
+
+    // if y-coord of those points are on different sides of the pixel
+    const cond_1 = (vc.y > y && vn.y < y)
+    const cond_2 = (vc.y < y && vn.y > y)
+    // and if the below condition
+    const cond_3 = (x < (vn.x - vc.x) * (y - vc.y) / (vn.y - vc.y) + vc.x)
+
+    // then collision
+    if ((cond_1 || cond_2) && cond_3) {
+      collision = !collision
+    }
+  })
+  return collision
+}
+
+/*
+input
+- x0: x-coord of point 0
+- x1: y-coord of point 0
+- y0: x-coord of point 1
+- y1: y-coord of point 1
+output
+- distance between the two points
+*/
+const dist = (x0, x1, y0, y1) => {
+	return sqrt((x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1) )
+} 
+
+/*
+input: 
+- points: array of p5 vectors
+- x: x-coordinate of point to be tested
+- y: y-coordinate of point to be tested
+
+output:
+- p5 vector representing a point of points with least distance to (x, y)
+*/
+const closestPoint = (points, x, y) => {
+  let closestPoint = points[0] // assume it is point 0
+  // let currentPoint = p.createVector(x, y)
+
+  // find closest point of the shape to this pixel
+  points.forEach((po) => {
+  	if (dist(x, y, po.x, po.y) < dist(x, y, closestPoint.x, closestPoint.y))
+      closestPoint = po
+  })
+
+  return closestPoint
+}
+/*
+const closestPoint = (points, x, y) => {
+  let closestPoint = points[0] // assume it is point 0
+  let currentPoint = p.createVector(x, y)
+
+  // find closest point of the shape to this pixel
+  points.forEach((po) => {
+    if (currentPoint.dist(po) < currentPoint.dist(closestPoint)) {
+      closestPoint = po
+    }
+  })
+
+  return closestPoint
+}
+*/
+
+export  { FlowField, Grid, isInPoly, closestPoint, dist }

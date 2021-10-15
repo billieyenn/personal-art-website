@@ -15,58 +15,34 @@
 /* eslint-enable */
 /* eslint-disable */
 
-import {Grid as Grid} from '../../utils.js'
+import { Grid } from '../../utils.js'
+import { isInPoly } from '../../utils.js'
+import { closestPoint } from '../../utils.js'
 
 
 let sketch = (config) => {
   return function (p) {
 
 
-const isInCircle = (x_c, y_c, r) => {
-  const c = p.createVector(x_c, y_c)
-  return (x_p, y_p) => {
-    const point = p.createVector(x_p * scale, y_p * scale)
-    const dist = c.dist(point)
-    return dist < r
+  const isInCircle = (x_c, y_c, r) => {
+    const c = p.createVector(x_c, y_c)
+    return (x_p, y_p) => {
+      const point = p.createVector(x_p * scale, y_p * scale)
+      const dist = c.dist(point)
+      return dist < r
+    }
   }
-}
 
-const isInRect = (x_r, y_r, w, h) => {
-      return (x_p, y_p) => {
-        return x_p * scale > x_r
-            && x_p * scale < x_r + w
-            && y_p * scale > y_r
-            && y_p * scale < y_r + h
+  const isInRect = (x_r, y_r, w, h) => {
+    return (x_p, y_p) => {
+      return x_p * scale > x_r
+          && x_p * scale < x_r + w
+          && y_p * scale > y_r
+          && y_p * scale < y_r + h
       }
     }
 
-const isInPoly = (points, x, y) => {
-  // collision detection
-  // source http://www.jeffreythompson.org/collision-detection/poly-poly.php?fbclid=IwAR3pveFV5i-hQD3e6G1jWsTNc5LL8SmHd74yX6tDQ7KP2apj9JX4th1mcjA
-  let collision = false
 
-  // iterate over each point in shape
-  points.forEach((po, i) => {
-
-    // for each pair of consecutive points along shape
-    const vc = po
-    const vn = points[(i + 1)%points.length]
-
-    // if y-coord of those points are on different sides of the pixel
-    const cond_1 = (vc.y > y && vn.y < y)
-    const cond_2 = (vc.y < y && vn.y > y)
-    // and if the below condition
-    const cond_3 = (x < (vn.x - vc.x) * (y - vc.y) / (vn.y - vc.y) + vc.x)
-
-
-    // then collision
-    if ((cond_1 || cond_2) && cond_3) {
-      collision = !collision
-    }
-
-  })
-  return collision
-}
 
 const isLeftOf = (points, x, y) => {
   let closestPointObj = closestPoint(points, x, y)// points2[closestPointIndex] // assume it is point 0
@@ -94,22 +70,7 @@ const isLeftOf = (points, x, y) => {
   return angleBetween > 0 // if pixel is to the left of the shape
 }
 
-const closestPoint = (points, x, y) => {
 
-  let closestPointIndex = 0 // assume it is point 0
-  let closestPoint = points[closestPointIndex] // assume it is point 0
-  let currentPoint = p.createVector(x, y)
-
-  // find closest point of the shape to this pixel
-  points.forEach((po, i) => {
-    if (currentPoint.dist(po) < currentPoint.dist(closestPoint)) {
-      closestPoint = po
-      closestPointIndex = i
-    }
-  })
-
-  return closestPoint
-}
 
 
 const drawShapeOutline = (points, stroke) => {
@@ -158,7 +119,7 @@ const drawShapeOutline = (points, stroke) => {
 
 
         // debugging shape outline
-        // drawShapeOutline(points2)
+        drawShapeOutline(points2)
 
         // calculate the bounding box of the shape
         let x_max = p.max(points2.map(p => p.x))
@@ -178,7 +139,7 @@ const drawShapeOutline = (points, stroke) => {
         x_min -= (newLength - width) / 2
         y_min -= (newLength - height) / 2
         x_max += (newLength - width) / 2
-        y_max += (newLength - width) / 2
+        y_max += (newLength - height) / 2
         width = (x_max - x_min)
         height = (y_max - y_min)
 
@@ -186,7 +147,7 @@ const drawShapeOutline = (points, stroke) => {
         p.stroke(0)
         p.noFill()
         // draw bounding box
-        // p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
+        p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
 
         let scale = 8
 
