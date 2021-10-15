@@ -119,5 +119,11 @@ const nicePairs = [
 	[colors.brickRed, colors.springWood],
 ]
 
+const randomColor = () => {
+	const keys = Object.keys(colors)
+	const colLen = keys.length
+	const col = colors[keys[Math.floor(Math.random()*colLen)]]
+	return col
+}
 
-export  {colors, blackWhite, fidenza_6, fidenza_32, ringers, flower, fidenza_98}
+export  {colors, blackWhite, fidenza_6, fidenza_32, ringers, flower, fidenza_98, randomColor}
