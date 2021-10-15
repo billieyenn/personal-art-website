@@ -149,7 +149,7 @@ const drawShapeOutline = (points, stroke) => {
         // draw bounding box
         // p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
 
-        let scale = 8
+        let scale = 4
 
         let cols = p.floor(width / scale)
         let rows = p.floor(height / scale)
@@ -203,6 +203,7 @@ const drawShapeOutline = (points, stroke) => {
         let angle = 0
         g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
         
+        /*
         angle = 15
         g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
         
@@ -211,6 +212,7 @@ const drawShapeOutline = (points, stroke) => {
         
         angle = 75
         g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
+        */
 
 
 
