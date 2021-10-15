@@ -18,6 +18,9 @@
 import { Grid } from '../../utils.js'
 import { isInPoly } from '../../utils.js'
 import { closestPoint } from '../../utils.js'
+import LineMachine from '../../linemachine.js'
+import {colors as colors} from '../../colors.js'
+
 
 
 let sketch = (config) => {
@@ -85,20 +88,19 @@ const drawShapeOutline = (points, stroke) => {
   }
 }
 
-    let x = 710/4
-    let y = 710/4
 
     p.setup = function () {
       p.createCanvas(710, 710);
 
       p.background(250)
 
-      p.angleMode(p.DEGREES)
 
 
-      let points = [] // generate a few points around which a curve is created
+      // let points = [] // generate a few points around which a curve is created
       let points2 = [] // store the outline of the curvy shape
 
+
+/*
         // generate some random curvy shape
         for (let i = 0; i < 5; i++) {
           points.push(p.createVector(p.random(50, p.width - 50), p.random(50, p.height - 50)))
@@ -116,10 +118,45 @@ const drawShapeOutline = (points, stroke) => {
              points2.push(p.createVector(x, y))
           }
         }
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+        p.translate(p.width / 2, p.height / 2)
+
+
+        p.angleMode(p.RADIANS)
+        let newMachine = LineMachine(config)(p)
+        newMachine.waves = newMachine.generator.generateRandomWaves(18, 1/1.618, false)
+        newMachine.tracePoints()
+        newMachine.resize(0.8)
+        newMachine.tracePoints()
+
+        points2 = newMachine.trace
+
+
+
 
 
         // debugging shape outline
         // drawShapeOutline(points2)
+
+
+
 
         // calculate the bounding box of the shape
         let x_max = p.max(points2.map(p => p.x))
@@ -159,10 +196,10 @@ const drawShapeOutline = (points, stroke) => {
           return (x, y, val) => {
             p.stroke(0)
             p.push()
-            p.translate(x_min + width / 2, y_min + height / 2)
+            p.translate(x_min + width / 2, y_min + height / 2) // to center of bounding box (BB)
             p.rotate(angle)
-            p.translate(-width/2, -height/2)
-            p.translate(scale * (x + 1/2), scale * (y + 1/2))
+            p.translate(-width/2, -height/2) // to 'top left' corner of BB (origin)
+            p.translate(scale * (x + 1/2), scale * (y + 1/2)) // to each pixel's position
             p.point(0, 0)
             p.pop()
           }
@@ -174,15 +211,11 @@ const drawShapeOutline = (points, stroke) => {
           }
         }
 
-        // rotate the shape for collision detection
-        p.angleMode(p.DEGREES)
-
-
         // rotate the shape around the center of the bounding box
         const rotatePoints = (points, angle) => {
+          p.angleMode(p.DEGREES)
           let s = p.sin(-angle) // calculate outside of loop for comp eff
           let c = p.cos(-angle)
-          // console.log(angle)
           let res = points.map((point) => {
             let new_p = p.createVector(point.x, point.y)
             new_p.x -= (x_min + width / 2)
@@ -203,6 +236,12 @@ const drawShapeOutline = (points, stroke) => {
         let angle = 0
         g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
         
+
+
+
+
+
+
         /*
         angle = 15
         g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
@@ -274,11 +313,6 @@ export default {
     }
   },
   async mounted () {
-    /*
-    const baseURI = 'https://raw.githubusercontent.com/billieyenn/test-art/main/sketch.js'
-    let sketch = await this.getSketch(baseURI, this.config)
-    console.log(sketch)
-    */
 
     this.p5canvas = new P5(sketch(), 'canvas')
 
@@ -287,12 +321,6 @@ export default {
     refresh () {
       this.p5canvas.setup(this.config)
     },
-    async getSketch(url, config) {
-      let result = await this.$http.get(url)
-      const curry = new Function(result.data)()(config) // eslint-disable-line no-new-func
-      console.log(curry)
-      return curry
-    }
   }
 
 

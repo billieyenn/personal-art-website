@@ -110,8 +110,6 @@ output:
 */
 const closestPoint = (points, x, y) => {
   let closestPoint = points[0] // assume it is point 0
-  // let currentPoint = p.createVector(x, y)
-
   // find closest point of the shape to this pixel
   points.forEach((po) => {
   	if (dist(x, y, po.x, po.y) < dist(x, y, closestPoint.x, closestPoint.y))
@@ -120,20 +118,5 @@ const closestPoint = (points, x, y) => {
 
   return closestPoint
 }
-/*
-const closestPoint = (points, x, y) => {
-  let closestPoint = points[0] // assume it is point 0
-  let currentPoint = p.createVector(x, y)
-
-  // find closest point of the shape to this pixel
-  points.forEach((po) => {
-    if (currentPoint.dist(po) < currentPoint.dist(closestPoint)) {
-      closestPoint = po
-    }
-  })
-
-  return closestPoint
-}
-*/
 
 export  { FlowField, Grid, isInPoly, closestPoint, dist }
