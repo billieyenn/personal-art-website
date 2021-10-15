@@ -48,6 +48,10 @@ class FlowField {
 	display(f, c) {
 		this.flowField.forEach(f, c)
 	}
+
+	forEach(f, c) {
+		this.flowField.forEach(f, c)
+	}
 }
 
 

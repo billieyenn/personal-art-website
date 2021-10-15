@@ -16,10 +16,12 @@
 /* eslint-disable */
 
 import { Grid } from '../../utils.js'
+import { FlowField } from '../../utils.js'
 import { isInPoly } from '../../utils.js'
 import { closestPoint } from '../../utils.js'
 import LineMachine from '../../linemachine.js'
-import {colors as colors} from '../../colors.js'
+import { colors } from '../../colors.js'
+import { randomColor } from '../../colors.js'
 
 
 
@@ -92,7 +94,7 @@ const drawShapeOutline = (points, stroke) => {
     p.setup = function () {
       p.createCanvas(710, 710);
 
-      p.background(250)
+      p.background(p.color(randomColor()))
 
 
 
@@ -119,29 +121,15 @@ const drawShapeOutline = (points, stroke) => {
           }
         }
 */
-
-
-
-
-
-
-
-
-
-
-
-
-
     
 
 
 
         p.translate(p.width / 2, p.height / 2)
 
-
         p.angleMode(p.RADIANS)
         let newMachine = LineMachine(config)(p)
-        newMachine.waves = newMachine.generator.generateRandomWaves(18, 1/1.618, false)
+        newMachine.waves = newMachine.generator.generateRandomWaves(18, 1/1.618, true)
         newMachine.tracePoints()
         newMachine.resize(0.8)
         newMachine.tracePoints()
@@ -149,11 +137,6 @@ const drawShapeOutline = (points, stroke) => {
         points2 = newMachine.trace
 
 
-
-
-
-        // debugging shape outline
-        // drawShapeOutline(points2)
 
 
 
@@ -180,17 +163,33 @@ const drawShapeOutline = (points, stroke) => {
         width = (x_max - x_min)
         height = (y_max - y_min)
 
-        // just show where the shape is for debugging
-        p.stroke(0)
-        p.noFill()
-        // draw bounding box
-        // p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
 
-        let scale = 4
+        let scale = 8
 
         let cols = p.floor(width / scale)
         let rows = p.floor(height / scale)
-        let g = new Grid(rows, cols)
+        // let g = new Grid(rows, cols)
+        let g = new FlowField(p, rows, cols, 0.05)
+
+
+        const displayDot = (p, x, y, val, scale, r, radius, color, colorAlpha) => {
+            let size = val * scale * 1.5
+            p.noStroke()
+            color.setAlpha(colorAlpha)
+            p.fill(color)
+            p.push()
+            p.rotate(r)
+            p.translate(-radius, -radius)
+            p.translate(x * scale, y * scale)
+            p.ellipse(0, 0, size, size)
+            p.pop()
+        }
+
+        const displayF = (scale, r, radius, color, colorAlpha) => {
+          return (x, y, val) => {
+            displayDot(p, x, y, val, scale, r, radius, color, colorAlpha)  
+          }
+        }
 
         const displayPointF = (angle) => {
           return (x, y, val) => {
@@ -233,25 +232,31 @@ const drawShapeOutline = (points, stroke) => {
         }
         
 
+        // p.blendMode(p.LIGHTER)
         let angle = 0
-        g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
-        
+        // g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
 
+        g.forEach(displayF(scale, angle, width/2, p.color('#FFFF00'), 255), conditionF(rotatePoints(points2, angle)))
 
-
-
-
-
-        /*
         angle = 15
-        g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
+        g.forEach(displayF(scale, angle, width/2, p.color('#00FFFF'), 255), conditionF(rotatePoints(points2, angle)))
         
         angle = 45
-        g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
-        
+        g.forEach(displayF(scale, angle, width/2, p.color('#FF00FF'), 255), conditionF(rotatePoints(points2, angle)))
+
         angle = 75
-        g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
-        */
+        g.forEach(displayF(scale, angle, width/2, p.color('#000000'), 255), conditionF(rotatePoints(points2, angle)))
+
+
+
+        // // debugging shape outline
+        // drawShapeOutline(points2)
+
+        // // debugging  bounding box
+        // p.stroke(0)
+        // p.noFill()
+        // p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
+
 
 
 
