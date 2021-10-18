@@ -30,88 +30,110 @@ let sketch = (config) => {
   return function (p) {
 
 
-  const isInCircle = (x_c, y_c, r) => {
-    const c = p.createVector(x_c, y_c)
-    return (x_p, y_p) => {
-      const point = p.createVector(x_p * scale, y_p * scale)
-      const dist = c.dist(point)
-      return dist < r
+    const isInCircle = (x_c, y_c, r) => {
+      const c = p.createVector(x_c, y_c)
+      return (x_p, y_p) => {
+        const point = p.createVector(x_p * scale, y_p * scale)
+        const dist = c.dist(point)
+        return dist < r
+      }
     }
-  }
 
-  const isInRect = (x_r, y_r, w, h) => {
-    return (x_p, y_p) => {
-      return x_p * scale > x_r
-          && x_p * scale < x_r + w
-          && y_p * scale > y_r
-          && y_p * scale < y_r + h
+    const isInRect = (x_r, y_r, w, h) => {
+      return (x_p, y_p) => {
+        return x_p * scale > x_r
+            && x_p * scale < x_r + w
+            && y_p * scale > y_r
+            && y_p * scale < y_r + h
       }
     }
 
 
 
-const isLeftOf = (points, x, y) => {
-  let closestPointObj = closestPoint(points, x, y)// points2[closestPointIndex] // assume it is point 0
+    const isLeftOf = (points, x, y) => {
+      let closestPointObj = closestPoint(points, x, y)// points2[closestPointIndex] // assume it is point 0
 
-  // create local variable for clear naming
-  let currentPoint = p.createVector(x, y)
-
-
-  // create vector along the direction of the shape's outline
-  let v1 = p.createVector(closestPointObj.x, closestPointObj.y)
-  let v2 = p.createVector(points[(points.indexOf(closestPointObj)+1)%points.length].x, points[(points.indexOf(closestPointObj)+1)%points.length].y)
-  let closestToPlusOne = p.createVector(v2.x - v1.x, v2.y - v1.y)
-
-  // and closestpoint to currentpoint
-  // create vector from current pixel to closest point
-  let closestToCurrent = p.createVector(currentPoint.x - v1.x, currentPoint.y - v1.y)
-
-  // The sign of the angle between those two vectors indicates which side of the shape the pixel is (relative to the curve's orientation)
-  let angleBetween = closestToCurrent.angleBetween(closestToPlusOne)
-  let dist = closestPointObj.dist(currentPoint) 
-
-  
-  p.noStroke()
-  p.noFill()
-  return angleBetween > 0 // if pixel is to the left of the shape
-}
+      // create local variable for clear naming
+      let currentPoint = p.createVector(x, y)
 
 
+      // create vector along the direction of the shape's outline
+      let v1 = p.createVector(closestPointObj.x, closestPointObj.y)
+      let v2 = p.createVector(points[(points.indexOf(closestPointObj)+1)%points.length].x, points[(points.indexOf(closestPointObj)+1)%points.length].y)
+      let closestToPlusOne = p.createVector(v2.x - v1.x, v2.y - v1.y)
 
+      // and closestpoint to currentpoint
+      // create vector from current pixel to closest point
+      let closestToCurrent = p.createVector(currentPoint.x - v1.x, currentPoint.y - v1.y)
 
-const drawShapeOutline = (points, stroke) => {
-  p.stroke(stroke || 0)
-  p.strokeWeight(1)
-  for (let i = 0; i < points.length - 1; i++) {
-    let point1 = points[i]
-    let point2 = points[i+1]
-    let v1 = p.createVector(point1.x, point1.y)
-    let v2 = p.createVector(point2.x, point2.y)
-    p.line(point1.x, point1.y, point2.x, point2.y)
-  }
-}
+      // The sign of the angle between those two vectors indicates which side of the shape the pixel is (relative to the curve's orientation)
+      let angleBetween = closestToCurrent.angleBetween(closestToPlusOne)
+      let dist = closestPointObj.dist(currentPoint) 
+
+      
+      p.noStroke()
+      p.noFill()
+      return angleBetween > 0 // if pixel is to the left of the shape
+    }
 
 
 
-const displayDot = (p, x, y, val, scale, r, radius, color, colorAlpha) => {
-    let size = val * scale * 1
-    p.noStroke()
-    color.setAlpha(colorAlpha)
-    p.fill(color)
-    p.push()
-    p.rotate(r)
-    p.translate(-radius, -radius)
-    p.translate(x * scale, y * scale)
-    p.ellipse(0, 0, size, size)
-    p.pop()
-}
 
-const displayF = (scale, r, radius, color, colorAlpha) => {
-  return (x, y, val) => {
-    displayDot(p, x, y, val, scale, r, radius, color, colorAlpha)  
-  }
-}
+    const drawShapeOutline = (points, stroke) => {
+      p.stroke(stroke || 0)
+      p.strokeWeight(1)
+      for (let i = 0; i < points.length - 1; i++) {
+        let point1 = points[i]
+        let point2 = points[i+1]
+        let v1 = p.createVector(point1.x, point1.y)
+        let v2 = p.createVector(point2.x, point2.y)
+        p.line(point1.x, point1.y, point2.x, point2.y)
+      }
+    }
 
+
+
+    const displayDot = (p, x, y, val, scale, r, radius, color, colorAlpha) => {
+      let size = val * scale * 1
+      p.noStroke()
+      color.setAlpha(colorAlpha)
+      p.fill(color)
+      p.push()
+      p.rotate(r)
+      p.translate(-radius, -radius)
+      p.translate(x * scale, y * scale)
+      p.ellipse(0, 0, size, size)
+      p.pop()
+    }
+
+    const displayF = (scale, r, radius, color, colorAlpha) => {
+      return (x, y, val) => {
+        displayDot(p, x, y, val, scale, r, radius, color, colorAlpha)  
+      }
+    }
+
+    const rotationSafeBoundingBox = (machine) => {
+      let x_max, y_max, x_min, y_min, width, height
+      ({maxX: x_max, maxY: y_max, minX: x_min, minY: y_min} = machine.traceInfo())
+
+      width = (x_max - x_min)
+      height = (y_max - y_min)
+
+      // to fully cover any possible point within bounding box at any rotation
+      // the actual bounding box to be used shall have width and height of length until corner
+
+      // get length from corner to corner
+      const newLength = p.createVector(x_min, y_min).dist(p.createVector(x_max, y_max))
+
+      // adjust both min and max of both x and y 
+      x_min -= (newLength - width) / 2
+      y_min -= (newLength - height) / 2
+      x_max += (newLength - width) / 2
+      y_max += (newLength - height) / 2
+      width = (x_max - x_min)
+      height = (y_max - y_min)
+      return {x_max, y_max, x_min, y_min, width, height}
+    }
 
     p.setup = function () {
       p.createCanvas(710, 710);
@@ -138,29 +160,10 @@ const displayF = (scale, r, radius, color, colorAlpha) => {
 
 
 
+        
 
-
-        // calculate the bounding box of the shape
-        let x_max = p.max(points2.map(p => p.x))
-        let y_max = p.max(points2.map(p => p.y))
-        let x_min = p.min(points2.map(p => p.x))
-        let y_min = p.min(points2.map(p => p.y))
-        let width = (x_max - x_min)
-        let height = (y_max - y_min)
-
-        // to fully cover any possible point within bounding box at any rotation
-        // the actual bounding box to be used shall have width and height of length until corner
-
-        // get length from corner to corner
-        const newLength = p.createVector(x_min, y_min).dist(p.createVector(x_max, y_max))
-
-        // adjust both min and max of both x and y 
-        x_min -= (newLength - width) / 2
-        y_min -= (newLength - height) / 2
-        x_max += (newLength - width) / 2
-        y_max += (newLength - height) / 2
-        width = (x_max - x_min)
-        height = (y_max - y_min)
+        let x_max, y_max, x_min, y_min, width, height
+        ({ x_max,  y_max,  x_min,  y_min, width, height} = rotationSafeBoundingBox(newMachine))
 
 
         let scale = 2
@@ -204,7 +207,7 @@ const displayF = (scale, r, radius, color, colorAlpha) => {
 
         // rgb(63, 140, 70)
         let cyan, magenta, yellow, black  
-        [cyan, magenta, yellow, black] = RGBtoCMYK(67, 129, 193)
+        [cyan, magenta, yellow, black] = RGBtoCMYK(209, 42, 47)
         // rgb()
         // console.log([cyan, magenta, yellow, black])
 
@@ -216,19 +219,19 @@ const displayF = (scale, r, radius, color, colorAlpha) => {
         g.forEach((x, y, val) => {
           g.setVal(x, y, cyan)
         })
-        angle = 15
+        angle = p.random(90)//15
         g.forEach(displayF(scale, angle, width/2, p.color('#00FFFF'), 255), conditionF(rotatePoints(points2, angle)))
         
         g.forEach((x, y, val) => {
           g.setVal(x, y, magenta)
         })
-        angle = 45
+        angle = p.random(90)//45
         g.forEach(displayF(scale, angle, width/2, p.color('#FF00FF'), 255), conditionF(rotatePoints(points2, angle)))
 
         g.forEach((x, y, val) => {
           g.setVal(x, y, black)
         })
-        angle = 75
+        angle = p.random(90)//75
         g.forEach(displayF(scale, angle, width/2, p.color('#000000'), 255), conditionF(rotatePoints(points2, angle)))
 
 
