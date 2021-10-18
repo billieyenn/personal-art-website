@@ -30,6 +30,7 @@ import Footer from './components/Footer.vue'
 import SketchesAbout from './components/SketchesAbout.vue'
 import FourColorPrinting from './components/Practice/FourColorPrinting.vue'
 import Collision from './components/Practice/Collision.vue'
+import Unnamed from './components/Unnamed/Unnamed.vue'
 
 export const routes = [
   {
@@ -53,7 +54,8 @@ export const routes = [
       { path: 'perdurable', component: LineArtAbout },
       { path: 'test', component: TestAbout },
       { path: 'fourierplayground', component: FourierPlaygroundAbout },
-      { path: 'practice', component: PracticeAbout }
+      { path: 'practice', component: PracticeAbout },
+      { path: 'unnamed', component: Unnamed }
     ]
   },
   {
@@ -89,6 +91,7 @@ export const routes = [
       { path: 'perdurable/12', component: LineArtPolySymmetrical },
       { path: 'test/1', component: Test },
       { path: 'fourier', component: FourierPlayground },
+      { path: 'unnamed', component: Unnamed },
       { path: 'practice/placeholder', component: Practice },
       { path: 'practice/fibonacci', component: Fibonacci },
       { path: 'practice/flower', component: Flower },

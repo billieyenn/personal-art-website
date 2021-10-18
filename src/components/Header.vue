@@ -47,6 +47,11 @@
       <router-link tag='li' to='/sketches/practice/collision' style='cursor: pointer;'>Collision</router-link>
   </ul>
 
+   <router-link tag='li' to='/about/unnamed' style='cursor: pointer;'>Unnamed</router-link>
+  <ul>
+      <router-link tag='li' to='/sketches/unnamed' style='cursor: pointer;'>Unnamed</router-link>
+  </ul>
+
   <hr>
 </div>
 </div>

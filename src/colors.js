@@ -119,13 +119,42 @@ const nicePairs = [
 	[colors.brickRed, colors.springWood],
 ]
 
-const randomColor = () => {
-	const keys = Object.keys(colors)
+const unnamedColorScheme = {
+	mineShaft: colors.mineShaft, 
+	ronchi: colors.ronchi, 
+	mojo: colors.mojo, 
+	steelBlue: colors.steelBlue, 
+	chateauGreen: colors.chateauGreen,	
+	bunting: colors.bunting,
+	oceanGreen: colors.oceanGreen,
+	elephant: colors.elephant,
+	bayOfMany: colors.bayOfMany,
+	tomThumb: colors.tomThumb,
+	grainBrown: colors.grainBrown,
+	mandy: colors.mandy,
+	chestnutRose: colors.chestnutRose,
+	falcon: colors.falcon,
+	keppel: colors.keppel,
+	oceanGreen: colors.oceanGreen,
+	jetStream: colors.jetStream,
+	millbrook: colors.millbrook,
+	zest: colors.zest,
+	cello: colors.cello,
+	roseBud: colors.roseBud,
+	lightningYellow: colors.lightningYellow,
+	persianRed: colors.persianRed,
+	goblin: colors.goblin
+}
+
+
+const randomColor = (grouping) => {
+	const keys = Object.keys(grouping || colors)
 	const colLen = keys.length
 	const col = colors[keys[Math.floor(Math.random()*colLen)]]
 	return col
 }
 
+// inspired from https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 const hexToRgb = (hex) => {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? [
@@ -143,5 +172,6 @@ export {colors,
 		flower, 
 		fidenza_98, 
 		randomColor,
-		hexToRgb
+		hexToRgb,
+		unnamedColorScheme
 	}

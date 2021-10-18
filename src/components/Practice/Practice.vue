@@ -206,13 +206,13 @@ let sketch = (config) => {
       p.fill(colors.bigStone)
 
 */
-      p.background(colors.codGray)
+      p.background(colors.springWood)
       p.strokeWeight(1)
       p.stroke(colors.ronchi)
       p.fill(colors.ronchi)
       grid.display()
       p.noFill()
-      //grid.displayGrid()
+      grid.displayGrid()
 
     }
     p.draw = function () {
