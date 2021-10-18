@@ -2,6 +2,7 @@
 /* eslint-disable */
 
 import { sqrt } from 'mathjs'
+import { max } from 'mathjs'
 
 class Grid {
 	constructor(rows, cols) {
@@ -123,4 +124,30 @@ const closestPoint = (points, x, y) => {
   return closestPoint
 }
 
-export  { FlowField, Grid, isInPoly, closestPoint, dist }
+
+const CMYKtoRGB = (c, m, y, k) => {
+	let r = 255 * (1 - c) * (1 - k)
+	let g = 255 * (1 - m) * (1 - k)
+	let b = 255 * (1 - y) * (1 - k)
+	return [r, g, b]
+}
+
+const RGBtoCMYK = (r, g, b) => {
+	let r_ = r / 255
+	let g_ = g / 255
+	let b_ = b / 255
+
+	let k = 1 - max(r_, g_, b_)
+	let c = (1 - r_ - k) / (1 - k)
+	let m = (1 - g_ - k) / (1 - k)
+	let y = (1 - b_ - k) / (1 - k)
+	return [c, m, y, k]
+}
+
+export {FlowField, 
+		Grid, 
+		isInPoly, 
+		closestPoint, 
+		dist, 
+		RGBtoCMYK, 
+		CMYKtoRGB }

@@ -19,6 +19,7 @@ import { Grid } from '../../utils.js'
 import { FlowField } from '../../utils.js'
 import { isInPoly } from '../../utils.js'
 import { closestPoint } from '../../utils.js'
+import { RGBtoCMYK } from '../../utils.js'
 import LineMachine from '../../linemachine.js'
 import { colors } from '../../colors.js'
 import { randomColor } from '../../colors.js'
@@ -91,38 +92,36 @@ const drawShapeOutline = (points, stroke) => {
 }
 
 
+
+const displayDot = (p, x, y, val, scale, r, radius, color, colorAlpha) => {
+    let size = val * scale * 1
+    p.noStroke()
+    color.setAlpha(colorAlpha)
+    p.fill(color)
+    p.push()
+    p.rotate(r)
+    p.translate(-radius, -radius)
+    p.translate(x * scale, y * scale)
+    p.ellipse(0, 0, size, size)
+    p.pop()
+}
+
+const displayF = (scale, r, radius, color, colorAlpha) => {
+  return (x, y, val) => {
+    displayDot(p, x, y, val, scale, r, radius, color, colorAlpha)  
+  }
+}
+
+
     p.setup = function () {
       p.createCanvas(710, 710);
 
-      p.background(p.color(randomColor()))
+      // p.background(p.color(randomColor()))
 
 
 
       // let points = [] // generate a few points around which a curve is created
       let points2 = [] // store the outline of the curvy shape
-
-
-/*
-        // generate some random curvy shape
-        for (let i = 0; i < 5; i++) {
-          points.push(p.createVector(p.random(50, p.width - 50), p.random(50, p.height - 50)))
-        }
-        
-        
-        // first pass to quickly get outline size
-        let steps = 100 // less steps used to figure out 
-        for (let i = 0; i < points.length; i++) {
-          for (let ii = 0; ii <= steps; ii++) {
-            let t = ii / steps;
-            let l = points.length
-            let x = p.curvePoint(points[(i)%l].x, points[(i + 1)%l].x, points[(i + 2)%l].x, points[(i + 3)%l].x, t);
-            let y = p.curvePoint(points[(i)%l].y, points[(i + 1)%l].y, points[(i + 2)%l].y, points[(i + 3)%l].y, t);
-             points2.push(p.createVector(x, y))
-          }
-        }
-*/
-    
-
 
 
         p.translate(p.width / 2, p.height / 2)
@@ -164,45 +163,13 @@ const drawShapeOutline = (points, stroke) => {
         height = (y_max - y_min)
 
 
-        let scale = 8
+        let scale = 2
 
         let cols = p.floor(width / scale)
         let rows = p.floor(height / scale)
-        // let g = new Grid(rows, cols)
-        let g = new FlowField(p, rows, cols, 0.05)
+        let g = new Grid(rows, cols)
 
-
-        const displayDot = (p, x, y, val, scale, r, radius, color, colorAlpha) => {
-            let size = val * scale * 1.5
-            p.noStroke()
-            color.setAlpha(colorAlpha)
-            p.fill(color)
-            p.push()
-            p.rotate(r)
-            p.translate(-radius, -radius)
-            p.translate(x * scale, y * scale)
-            p.ellipse(0, 0, size, size)
-            p.pop()
-        }
-
-        const displayF = (scale, r, radius, color, colorAlpha) => {
-          return (x, y, val) => {
-            displayDot(p, x, y, val, scale, r, radius, color, colorAlpha)  
-          }
-        }
-
-        const displayPointF = (angle) => {
-          return (x, y, val) => {
-            p.stroke(0)
-            p.push()
-            p.translate(x_min + width / 2, y_min + height / 2) // to center of bounding box (BB)
-            p.rotate(angle)
-            p.translate(-width/2, -height/2) // to 'top left' corner of BB (origin)
-            p.translate(scale * (x + 1/2), scale * (y + 1/2)) // to each pixel's position
-            p.point(0, 0)
-            p.pop()
-          }
-        }
+    
 
         const conditionF = (points) => {
           return (x, y, val) => {
@@ -234,16 +201,33 @@ const drawShapeOutline = (points, stroke) => {
 
         // p.blendMode(p.LIGHTER)
         let angle = 0
-        // g.forEach(displayPointF(angle), conditionF(rotatePoints(points2, angle)))
 
+        // rgb(63, 140, 70)
+        let cyan, magenta, yellow, black  
+        [cyan, magenta, yellow, black] = RGBtoCMYK(67, 129, 193)
+        // rgb()
+        // console.log([cyan, magenta, yellow, black])
+
+        g.forEach((x, y, val) => {
+          g.setVal(x, y, yellow)
+        })
         g.forEach(displayF(scale, angle, width/2, p.color('#FFFF00'), 255), conditionF(rotatePoints(points2, angle)))
-
+        
+        g.forEach((x, y, val) => {
+          g.setVal(x, y, cyan)
+        })
         angle = 15
         g.forEach(displayF(scale, angle, width/2, p.color('#00FFFF'), 255), conditionF(rotatePoints(points2, angle)))
         
+        g.forEach((x, y, val) => {
+          g.setVal(x, y, magenta)
+        })
         angle = 45
         g.forEach(displayF(scale, angle, width/2, p.color('#FF00FF'), 255), conditionF(rotatePoints(points2, angle)))
 
+        g.forEach((x, y, val) => {
+          g.setVal(x, y, black)
+        })
         angle = 75
         g.forEach(displayF(scale, angle, width/2, p.color('#000000'), 255), conditionF(rotatePoints(points2, angle)))
 
