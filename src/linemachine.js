@@ -202,7 +202,7 @@ export default function sketch(config) {
           p.noStroke()
           p.push()
           p.beginShape()
-          for (let ii = 0; ii < 0 + traceLength + 3; ii++) {
+          for (let ii = 0; ii < 0 + traceLength + 4; ii++) {
             const i = ii + 0 % this.trace.length
             p.curveVertex(this.trace[(i) % this.trace.length].x, this.trace[(i) % this.trace.length].y)
           }
