@@ -167,7 +167,7 @@ let sketch = (config) => {
     }
 
     p.setup = function () {
-      p.createCanvas(710, 710);
+      p.createCanvas(710, 710 / 1.618);
 
       p.background(p.color(colors.springWood))
       // p.background(p.color(randomColor()))
@@ -183,7 +183,7 @@ let sketch = (config) => {
       let newMachine = LineMachine(config)(p)
       newMachine.waves = newMachine.generator.generateRandomWaves(18, 1/(1.618), false)
       newMachine.tracePoints()
-      newMachine.resize(p.width / 1.618)
+      newMachine.resize(1 / 1.618)
       newMachine.tracePoints()
 
       points2 = newMachine.trace
