@@ -23,6 +23,7 @@ import { RGBtoCMYK } from '../../utils.js'
 import LineMachine from '../../linemachine.js'
 import { colors } from '../../colors.js'
 import { randomColor } from '../../colors.js'
+import { hexToRgb } from '../../colors.js'
 
 
 
@@ -81,7 +82,7 @@ let sketch = (config) => {
 
     const drawShapeOutline = (points, stroke) => {
       p.stroke(stroke || 0)
-      p.strokeWeight(1)
+      p.strokeWeight(5)
       for (let i = 0; i < points.length - 1; i++) {
         let point1 = points[i]
         let point2 = points[i+1]
@@ -112,8 +113,10 @@ let sketch = (config) => {
       }
     }
 
+    // get a square just big enough so that no rotation of a set of points around its bounding box center results in a point going beyond the bigger square
     const rotationSafeBoundingBox = (machine) => {
       let x_max, y_max, x_min, y_min, width, height
+      // get the bounds of the list of points
       ({maxX: x_max, maxY: y_max, minX: x_min, minY: y_min} = machine.traceInfo())
 
       width = (x_max - x_min)
@@ -135,159 +138,120 @@ let sketch = (config) => {
       return {x_max, y_max, x_min, y_min, width, height}
     }
 
+    // wrapper for use with grid iteration
+    const isInPolyF = (points, s, minX, minY) => {
+      return (x, y) => {
+        return isInPoly(points, ((x + 1/2) * s + minX), ((y + 1/2) * s + minY))
+      }
+    }
+
+    // rotate the shape around the center of its extended bounding box
+    const rotatePoints = (points, angle, minX, minY, w, h) => {
+      p.angleMode(p.DEGREES)
+      let s = p.sin(-angle) // calculate outside of loop for comp eff
+      let c = p.cos(-angle)
+      let res = points.map((point) => {
+        let new_p = p.createVector(point.x, point.y)
+        new_p.x -= (minX + w / 2)
+        new_p.y -= (minY + h / 2)
+
+        let x_new = new_p.x * c - new_p.y * s
+        let y_new = new_p.x * s + new_p.y * c
+
+        new_p.x = x_new + (minX + w / 2)
+        new_p.y = y_new + (minY + h / 2)
+
+        return new_p
+      })
+      return res
+    }
+
     p.setup = function () {
       p.createCanvas(710, 710);
 
+      p.background(p.color(colors.springWood))
       // p.background(p.color(randomColor()))
-
-
 
       // let points = [] // generate a few points around which a curve is created
       let points2 = [] // store the outline of the curvy shape
 
 
-        p.translate(p.width / 2, p.height / 2)
+      p.push()
+      p.translate(p.width / 2, p.height / 2)
 
-        p.angleMode(p.RADIANS)
-        let newMachine = LineMachine(config)(p)
-        newMachine.waves = newMachine.generator.generateRandomWaves(18, 1/1.618, true)
-        newMachine.tracePoints()
-        newMachine.resize(0.8)
-        newMachine.tracePoints()
+      p.angleMode(p.RADIANS)
+      let newMachine = LineMachine(config)(p)
+      newMachine.waves = newMachine.generator.generateRandomWaves(18, 1/(1.618), false)
+      newMachine.tracePoints()
+      newMachine.resize(p.width / 1.618)
+      newMachine.tracePoints()
 
-        points2 = newMachine.trace
+      points2 = newMachine.trace
 
+      let x_max, y_max, x_min, y_min, width, height
 
+      // get an extended bounding box
+      ({ x_max,  y_max,  x_min,  y_min, width, height} = rotationSafeBoundingBox(newMachine))
 
+      // scale also known as resolution. smaller number -> more computation needed
+      let scale = 2
 
-        
+      let cols = p.floor(width / scale)
+      let rows = p.floor(height / scale)
+      let g = new Grid(rows, cols)
+ 
 
-        let x_max, y_max, x_min, y_min, width, height
-        ({ x_max,  y_max,  x_min,  y_min, width, height} = rotationSafeBoundingBox(newMachine))
+      const rgb = hexToRgb(randomColor())
+      let cyan, magenta, yellow, black  
+      [cyan, magenta, yellow, black] = RGBtoCMYK(...rgb)
 
+      let angle = 0 // helper variable to keep track of f parameters
+      g.forEach((x, y, val) => {
+        g.setVal(x, y, yellow)
+      })
+      g.forEach(displayF(scale, angle, width/2, p.color('#FFFF00'), 255), isInPolyF(rotatePoints(points2, angle, x_min, y_min, width, height), scale, x_min, y_min))
+      
+      g.forEach((x, y, val) => {
+        g.setVal(x, y, cyan)
+      })
+      angle = p.random(90)//15
+      g.forEach(displayF(scale, angle, width/2, p.color('#00FFFF'), 255), isInPolyF(rotatePoints(points2, angle, x_min, y_min, width, height), scale, x_min, y_min))
+      
+      g.forEach((x, y, val) => {
+        g.setVal(x, y, magenta)
+      })
+      angle = p.random(90)//45
+      g.forEach(displayF(scale, angle, width/2, p.color('#FF00FF'), 255), isInPolyF(rotatePoints(points2, angle, x_min, y_min, width, height), scale, x_min, y_min))
 
-        let scale = 2
+      g.forEach((x, y, val) => {
+        g.setVal(x, y, black)
+      })
+      angle = p.random(90)//75
+      g.forEach(displayF(scale, angle, width/2, p.color('#000000'), 255), isInPolyF(rotatePoints(points2, angle, x_min, y_min, width, height), scale, x_min, y_min))
 
-        let cols = p.floor(width / scale)
-        let rows = p.floor(height / scale)
-        let g = new Grid(rows, cols)
-
-    
-
-        const conditionF = (points) => {
-          return (x, y, val) => {
-            return isInPoly(points, ((x + 1/2) * scale + x_min), ((y + 1/2) * scale + y_min))
-          }
-        }
-
-        // rotate the shape around the center of the bounding box
-        const rotatePoints = (points, angle) => {
-          p.angleMode(p.DEGREES)
-          let s = p.sin(-angle) // calculate outside of loop for comp eff
-          let c = p.cos(-angle)
-          let res = points.map((point) => {
-            let new_p = p.createVector(point.x, point.y)
-            new_p.x -= (x_min + width / 2)
-            new_p.y -= (y_min + height / 2)
-
-            let x_new = new_p.x * c - new_p.y * s
-            let y_new = new_p.x * s + new_p.y * c
-
-            new_p.x = x_new + (x_min + width / 2)
-            new_p.y = y_new + (y_min + height / 2)
-
-            return new_p
-          })
-          return res
-        }
-        
-
-        // p.blendMode(p.LIGHTER)
-        let angle = 0
-
-        // rgb(63, 140, 70)
-        let cyan, magenta, yellow, black  
-        [cyan, magenta, yellow, black] = RGBtoCMYK(209, 42, 47)
-        // rgb()
-        // console.log([cyan, magenta, yellow, black])
-
-        g.forEach((x, y, val) => {
-          g.setVal(x, y, yellow)
-        })
-        g.forEach(displayF(scale, angle, width/2, p.color('#FFFF00'), 255), conditionF(rotatePoints(points2, angle)))
-        
-        g.forEach((x, y, val) => {
-          g.setVal(x, y, cyan)
-        })
-        angle = p.random(90)//15
-        g.forEach(displayF(scale, angle, width/2, p.color('#00FFFF'), 255), conditionF(rotatePoints(points2, angle)))
-        
-        g.forEach((x, y, val) => {
-          g.setVal(x, y, magenta)
-        })
-        angle = p.random(90)//45
-        g.forEach(displayF(scale, angle, width/2, p.color('#FF00FF'), 255), conditionF(rotatePoints(points2, angle)))
-
-        g.forEach((x, y, val) => {
-          g.setVal(x, y, black)
-        })
-        angle = p.random(90)//75
-        g.forEach(displayF(scale, angle, width/2, p.color('#000000'), 255), conditionF(rotatePoints(points2, angle)))
-
-
-
-        // // debugging shape outline
-        // drawShapeOutline(points2)
-
-        // // debugging  bounding box
-        // p.stroke(0)
-        // p.noFill()
-        // p.rect(x_min, y_min, x_max - x_min, y_max - y_min)
+      p.pop()
 
 
 
 
+      // frame and debugging
+      p.push()
+      p.translate(p.width / 2 - x_min - width / 2, p.height / 2 - y_min - height / 2)
 
+      // debugging shape outline
+      drawShapeOutline(points2, p.color(colors.mineShaft))
 
+      // // debugging bounding box
+      // p.noFill()
+      // p.rect(x_min, y_min, width, height)
+      
+      const info = newMachine.traceInfo()
+      const margin = 30
+      p.strokeWeight(margin - 10)
+      p.noFill()
+      p.rect(info.minX - margin/2, info.minY - margin/2, info.maxX -  info.minX + margin,  info.maxY -  info.minY + margin)
 
-
-
-
-
-
-
-
-        // // iterate over each pixel in bounding box
-        // let resolution = 5 // directional collision 
-        // for (let x = x_min; x < x_max; x += resolution) {
-        //   for (let y = y_min; y < y_max; y += resolution) {
-
-        //     p.noStroke()
-        //     p.noFill()
-        //     p.strokeWeight(1)
-
-        //     if (isInPoly(points2, x, y))
-        //       // p.stroke(0)
-        //       p.fill(0)
-        //     // p.point(x, y)
-
-
-        //     // if (isLeftOf(points2, x, y) > 0) // if pixel is to the left of the shape
-        //     //   p.stroke(0)
-
-        //     // can skip computing pixels until distance to closest pixel is travelled
-        //     let dist = closestPoint(points2, x, y).dist(p.createVector(x, y))
-        //     let width = p.min(x - x_min, p.min(x_max - x, dist))
-        //     let height = p.min(y - y_min, p.min(y_max - y, dist))
-        //     // p.line(x, y, x, y + height)
-        //     p.ellipse(x, y, width, height)
-        //     y += height/1.618
-
-        //   }
-        // }
-
-    }
-    p.draw = function () {
+      p.pop()
 
     }
   }
@@ -301,12 +265,14 @@ export default {
   },
   data () {
     return {
-      config: {}
+      config: {
+        speed: 10 //used by tracePoints
+      }
     }
   },
   async mounted () {
 
-    this.p5canvas = new P5(sketch(), 'canvas')
+    this.p5canvas = new P5(sketch(this.config), 'canvas')
 
   },
   methods: {
