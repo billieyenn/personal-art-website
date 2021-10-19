@@ -93,7 +93,7 @@ export default {
     console.log(sketch)
     */
 
-    this.p5canvas = new P5(sketch(), 'canvas')
+    this.p5canvas = new P5(sketch(this.config), 'canvas')
 
   },
   methods: {
