@@ -45,6 +45,7 @@
       <router-link tag='li' to='/sketches/practice/perlinnoiseflowfield' style='cursor: pointer;'>PerlinNoiseFlowField</router-link>
       <router-link tag='li' to='/sketches/practice/fourcolorprinting' style='cursor: pointer;'>Four Color Printing</router-link>
       <router-link tag='li' to='/sketches/practice/collision' style='cursor: pointer;'>Collision</router-link>
+      <router-link tag='li' to='/sketches/practice/grids' style='cursor: pointer;'>Grids</router-link>
   </ul>
 
    <router-link tag='li' to='/about/unnamed' style='cursor: pointer;'>Unnamed</router-link>
