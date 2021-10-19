@@ -100,7 +100,7 @@ let sketch = (config) => {
     const displayDot = (p, x, y, val, scale, r, radius, color, colorAlpha) => {
       let size = val * scale * 1
       p.noStroke()
-      color.setAlpha(colorAlpha)
+      color.setAlpha(colorAlpha || 255)
       p.fill(color)
       p.push()
       p.rotate(r)
@@ -144,7 +144,7 @@ let sketch = (config) => {
     // wrapper for use with grid iteration
     const isInPolyF = (points, s, minX, minY) => {
       return (x, y) => {
-        return isInPoly(points, ((x + 1/2) * s + minX), ((y + 1/2) * s + minY))
+        return isInPoly(points, (x * s + minX), (y * s + minY))
       }
     }
 
@@ -203,25 +203,25 @@ let sketch = (config) => {
       g.forEach((x, y, val) => {
         g.setVal(x, y, yellow)
       })
-      g.forEach(displayF(scale, angle, width/2, p.color('#FFFF00'), 255), isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min))
+      g.forEach(displayF(scale, angle, width/2, p.color('#FFFF00')), isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min))
       
       g.forEach((x, y, val) => {
         g.setVal(x, y, cyan)
       })
-      angle = p.random(90)//15
-      g.forEach(displayF(scale, angle, width/2, p.color('#00FFFF'), 255), isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min))
+      angle = 15
+      g.forEach(displayF(scale, angle, width/2, p.color('#00FFFF')), isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min))
       
       g.forEach((x, y, val) => {
         g.setVal(x, y, magenta)
       })
-      angle = p.random(90)//45
-      g.forEach(displayF(scale, angle, width/2, p.color('#FF00FF'), 255), isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min))
+      angle = 45
+      g.forEach(displayF(scale, angle, width/2, p.color('#FF00FF')), isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min))
 
       g.forEach((x, y, val) => {
         g.setVal(x, y, black)
       })
-      angle = p.random(90)//75
-      g.forEach(displayF(scale, angle, width/2, p.color('#000000'), 255), isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min))
+      angle = 75
+      g.forEach(displayF(scale, angle, width/2, p.color('#000000')), isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min))
 
       p.pop()
 
@@ -233,7 +233,8 @@ let sketch = (config) => {
       p.translate(offsetX - x_min - width / 2, offsetY - y_min - height / 2)
 
       // debugging shape outline
-      drawShapeOutline(newMachine.trace, p.color(colors.mineShaft))
+      // drawShapeOutline(newMachine.trace, p.color(colors.springWood))//mineShaft))
+      drawShapeOutline(newMachine.trace, p.color(...rgb))//mineShaft))
 
       // // debugging bounding box
       // p.noFill()
@@ -250,7 +251,10 @@ let sketch = (config) => {
 
     const displayThingF = (rows, cols) => {
       return (x, y) => {
-        let resize = p.random(p.min(p.width/cols, p.height/rows) / 2, p.min(p.width/cols, p.height/rows) / 1.2) / (p.width/cols < p.height/rows ? p.height : p.width)
+        let resize = p.random(
+          p.min(p.width/cols, p.height/rows) / 2, // lower threshold
+          p.min(p.width/cols, p.height/rows) / 1 // higher threshold
+          ) / (p.width/cols < p.height/rows ? p.height : p.width)
         let scale = 4
         let color = randomColor(unnamedColorScheme)
         let symmetricity = p.random(1) < 0.2
