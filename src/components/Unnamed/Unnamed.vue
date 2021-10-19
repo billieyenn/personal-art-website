@@ -208,19 +208,19 @@ let sketch = (config) => {
       g.forEach((x, y, val) => {
         g.setVal(x, y, cyan)
       })
-      angle = 15
+      angle = p.random(90)//15
       g.forEach(displayF(scale, angle, width/2, p.color('#00FFFF')), isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min))
       
       g.forEach((x, y, val) => {
         g.setVal(x, y, magenta)
       })
-      angle = 45
+      angle = p.random(90)//45
       g.forEach(displayF(scale, angle, width/2, p.color('#FF00FF')), isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min))
 
       g.forEach((x, y, val) => {
         g.setVal(x, y, black)
       })
-      angle = 75
+      angle = p.random(90)//75
       g.forEach(displayF(scale, angle, width/2, p.color('#000000')), isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min))
 
       p.pop()
@@ -233,8 +233,12 @@ let sketch = (config) => {
       p.translate(offsetX - x_min - width / 2, offsetY - y_min - height / 2)
 
       // debugging shape outline
-      // drawShapeOutline(newMachine.trace, p.color(colors.springWood))//mineShaft))
-      drawShapeOutline(newMachine.trace, p.color(...rgb))//mineShaft))
+      drawShapeOutline(newMachine.trace, p.color(colors.mineShaft))
+      // drawShapeOutline(newMachine.trace, p.color(...rgb))//mineShaft))
+
+      // newMachine.fill = false
+      // newMachine.color = p.color(rgb)
+      // newMachine.display(30, 1)
 
       // // debugging bounding box
       // p.noFill()
@@ -255,23 +259,112 @@ let sketch = (config) => {
           p.min(p.width/cols, p.height/rows) / 2, // lower threshold
           p.min(p.width/cols, p.height/rows) / 1 // higher threshold
           ) / (p.width/cols < p.height/rows ? p.height : p.width)
-        let scale = 4
+        let scale = 16
         let color = randomColor(unnamedColorScheme)
         let symmetricity = p.random(1) < 0.2
         let padding = p.width / math.pow(1.618, 5)
         return displayThing(padding + (x + 0.5) * (p.width - 2 * padding) / cols, padding + (y + 0.5) * (p.height - 2 * padding) / rows, resize, scale, color, symmetricity)
       }
     }
+
+const displayRect = (x, y, width, height, offsetX, offsetY, stroke) => {
+      p.stroke(stroke || colors.bigStone)
+      let strokeWeight = p.sqrt(p.min(width,height))
+      p.strokeWeight(strokeWeight)
+      p.noFill()
+      p.push()
+      p.translate(offsetX, offsetY)
+      p.rect(width * x + strokeWeight, height * y + strokeWeight, width - strokeWeight*2, height - strokeWeight*2, p.sqrt(p.min(width,height)))
+      p.pop()
+    }
+
+    const nestedGridF = (width, height, offsetX, offsetY) => {
+      return (x, y, val) => {
+        if (val instanceof Grid) {
+          val.forEach(nestedGridF(width / val.cols, height / val.rows, (offsetX || 0) + x * width, (offsetY || 0) + y * height))
+        } else {
+
+          p.push()
+          p.translate(offsetX, offsetY)
+          // let resize = p.random(
+          //   p.min(width, height) / 10, // lower threshold
+          //   p.min(width, height) / 5 // higher threshold
+          //   ) / (width > height ? height : width)
+
+          let resize = p.min(width, height) / p.height * 1.4//(width > height ? p.height : p.width)
+
+          let scale = 4
+          let color = randomColor(unnamedColorScheme)
+          let symmetricity = p.random(1) < 0.2
+          displayThing((x + 0.5) * width, (y + 0.5) * height, resize, scale, color, symmetricity)
+          p.pop()
+          displayRect(x, y, width, height, (offsetX || 0), (offsetY || 0), color)
+
+        }
+      }
+    }
+
+    const noisyBackground = (color, std) => {
+      let c = color
+      p.loadPixels();
+      let noiseStandardDeviation = std
+      let d = p.pixelDensity();
+      let image = 4 * (p.width * d) * (p.height * d);
+      for (let i = 0; i < image; i += 4) {
+        p.pixels[i] = p.randomGaussian(c[0], noiseStandardDeviation);
+        p.pixels[i + 1] = p.randomGaussian(c[1], noiseStandardDeviation);
+        p.pixels[i + 2] = p.randomGaussian(c[2], noiseStandardDeviation);
+        p.pixels[i + 3] = 255;
+      }
+      p.updatePixels();
+    }
+
+    const noiseEverywhere = (std) => {
+      p.loadPixels();
+      let noiseStandardDeviation = std
+      let d = p.pixelDensity();
+      let image = 4 * (p.width * d) * (p.height * d);
+      for (let i = 0; i < image; i += 4) {
+        p.pixels[i] = p.randomGaussian(p.pixels[i], noiseStandardDeviation);
+        p.pixels[i + 1] = p.randomGaussian(p.pixels[i + 1], noiseStandardDeviation);
+        p.pixels[i + 2] = p.randomGaussian(p.pixels[i + 2], noiseStandardDeviation);
+        p.pixels[i + 3] = p.pixels[i + 3];
+      }
+      p.updatePixels();
+    }
+
     p.setup = function () {
       p.createCanvas(4608 / 4, 8192 / 4);
 
       p.background(p.color(colors.springWood))
-      // p.background(p.color(randomColor()))
-      let rows = 6
-      let cols = 3
-      let g = new Grid(rows, cols)
-      g.forEach((() => {return displayThingF(rows, cols)})())
+      noisyBackground(hexToRgb(colors.springWood), 7)
+        
 
+      // p.background(p.color(randomColor()))
+      let rows = p.floor(p.random(1, 5))
+      let cols = p.floor(p.random(1, 3))
+      let g = new Grid(rows, cols)
+
+      g.forEach((x, y) => {
+        if (p.random(1) < 0.75) {
+          let newGrid = new Grid(p.floor(p.random(1, 5)), p.floor(p.random(1, 3)))
+          g.setVal(x, y, newGrid)
+          // newGrid.forEach((a, b) => {
+          //   if (p.random(1) < 0.75){
+          //     newGrid?.setVal(a, b, new Grid(p.floor(p.random(1, 5)), p.floor(p.random(1, 3)))) 
+          //   }
+          // })
+        }
+      })
+
+      p.push()
+      p.translate(p.width * 0.2 / 2, (1 - (p.height - 0.2 * p.width) / p.height) / 2 * p.height)
+      p.scale(0.8, (p.height - 0.2 * p.width) / p.height)
+      // console.log((p.height - 0.2 * p.width) / p.height)
+      // console.log(p.width * 0.8, p.height * (p.height - 0.2 * p.width) / p.height)
+      // g.forEach((() => {return displayThingF(rows, cols)})())
+      g.forEach(nestedGridF(p.width / cols, p.height / rows))
+      p.pop()
 
       // g.forEach(
       //   displayThingF(0.2, 8, randomColor(), false, rows, cols)
@@ -286,6 +379,7 @@ let sketch = (config) => {
       // displayThing(p.width * 3 / 5, p.height / 2, 1 / 1.618, scale, randomColor(), false)
       // displayThing(p.width * 2 / 7, p.height * 4 / 5, 1 / 1.618 / 1.618, scale, randomColor(), false)
 
+      noiseEverywhere(5)
     }
   }
 }

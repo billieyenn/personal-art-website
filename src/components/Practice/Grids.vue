@@ -20,7 +20,7 @@ let sketch = (config) => {
   return function (p) {
 
     const displayRect = (x, y, width, height, offsetX, offsetY) => {
-      p.stroke(0)
+      p.stroke(0, 150)
       p.strokeWeight(1)
       p.push()
       p.translate(offsetX, offsetY)
@@ -47,8 +47,8 @@ let sketch = (config) => {
     p.setup = function () {
       p.createCanvas(4608 / 4, 8192 / 4);
       p.background(250)
-      let cols = 2//p.floor(p.width / width)
-      let rows = 2//p.floor(p.height / height)
+      let cols = p.floor(p.random(1, 3))//p.floor(p.width / width)
+      let rows = p.floor(p.random(1, 4))//p.floor(p.height / height)
       let width = p.width / cols//300 // of cell in grid
       let height = p.height / rows//700 // of cell in grid
 
@@ -57,23 +57,16 @@ let sketch = (config) => {
       let g = new Grid(rows, cols)
       g.forEach((x, y) => {
         if (p.random(1) < 0.75) {
-          let cellRows = p.floor(p.random(1, 4))
-          let cellCols = p.floor(p.random(1, 4))
-          let newGrid = new Grid(cellRows, cellCols)
+          let newGrid = new Grid(p.floor(p.random(1, 5)), p.floor(p.random(1, 3)))
           g.setVal(x, y, newGrid)
-          console.log(newGrid)
           newGrid.forEach((a, b) => {
             if (p.random(1) < 0.75){
-              newGrid?.setVal(
-                a, 
-                b, 
-                new Grid(p.floor(p.random(1, 4)), p.floor(p.random(1, 4)))) 
+              newGrid?.setVal(a, b, new Grid(p.floor(p.random(1, 5)), p.floor(p.random(1, 3)))) 
             }
           })
         }
       })
-      // g.setVal(1, 1, new Grid(2, 2))
-      // g.getVal(1,1).setVal(1, 1, new Grid(8, 3))
+
       g.forEach(nestedGridF(width, height, 0, 0))
     }
   }
