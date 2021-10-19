@@ -6,6 +6,8 @@ import { max } from 'mathjs'
 
 class Grid {
 	constructor(rows, cols) {
+		this.rows = rows
+		this.cols = cols
 		this.grid = new Array(rows).fill(0).map(a => [...new Array(cols).fill(0)])
 	}
 
@@ -20,11 +22,11 @@ class Grid {
 	}
 
 	setVal(x, y, val) {
-		this.grid[x][y] = val
+		this.grid[y][x] = val
 	}
 
 	getVal(x, y) {
-		return this.grid[x][y]
+		return this.grid[y][x]
 	}
 }
 
