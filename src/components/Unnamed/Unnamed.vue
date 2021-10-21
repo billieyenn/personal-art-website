@@ -286,14 +286,10 @@ const displayRect = (x, y, width, height, offsetX, offsetY, stroke) => {
 
           p.push()
           p.translate(offsetX, offsetY)
-          // let resize = p.random(
-          //   p.min(width, height) / 10, // lower threshold
-          //   p.min(width, height) / 5 // higher threshold
-          //   ) / (width > height ? height : width)
 
-          let resize = p.min(width, height) / p.height * 1.4//(width > height ? p.height : p.width)
+          let resize = p.min(width, height) / p.height * 1.3//(width > height ? p.height : p.width)
 
-          let scale = 4
+          let scale = 8
           let color = randomColor(unnamedColorScheme)
           let symmetricity = p.random(1) < 0.2
           displayThing((x + 0.5) * width, (y + 0.5) * height, resize, scale, color, symmetricity)
@@ -341,13 +337,13 @@ const displayRect = (x, y, width, height, offsetX, offsetY, stroke) => {
         
 
       // p.background(p.color(randomColor()))
-      let rows = p.floor(p.random(1, 5))
-      let cols = p.floor(p.random(1, 3))
+      let rows = 6//p.floor(p.random(1, 5))
+      let cols = 3//p.floor(p.random(1, 3))
       let g = new Grid(rows, cols)
 
       g.forEach((x, y) => {
-        if (p.random(1) < 0.75) {
-          let newGrid = new Grid(p.floor(p.random(1, 5)), p.floor(p.random(1, 3)))
+        if (p.random(1) < 1/1.618) {
+          let newGrid = new Grid(p.floor(3/*p.random(1, 5)*/), p.floor(3/*p.random(1, 3)*/))
           g.setVal(x, y, newGrid)
           // newGrid.forEach((a, b) => {
           //   if (p.random(1) < 0.75){
