@@ -72,12 +72,13 @@ const isInPoly = (points, x, y) => {
   // source http://www.jeffreythompson.org/collision-detection/poly-poly.php?fbclid=IwAR3pveFV5i-hQD3e6G1jWsTNc5LL8SmHd74yX6tDQ7KP2apj9JX4th1mcjA
   let collision = false
 
+  let copiedPoints = [...points]
   // iterate over each point in shape
-  points.forEach((po, i) => {
+  copiedPoints.forEach((po, i) => {
 
     // for each pair of consecutive points along shape
     const vc = po
-    const vn = points[(i + 1)%points.length]
+    const vn = copiedPoints[(i + 1)%copiedPoints.length]
 
     // if y-coord of those points are on different sides of the pixel
     const cond_1 = (vc.y > y && vn.y < y)

@@ -251,12 +251,15 @@ p.endShape()
 
       resize (scale) {
         let traceInfoObj = this.traceInfo()
+        // console.log(traceInfoObj)
+        // console.log(p.width, p.height)
         const resizeFactor = p.min(p.width, p.height) * scale / traceInfoObj.traceSize
-        //console.log(resizeFactor)
+        // const resizeFactor = (p.abs(traceInfoObj.maxX - traceInfoObj.minX) / p.width > p.abs(traceInfoObj.maxY - traceInfoObj.minY) / p.height) ? p.width * scale / (traceInfoObj.maxX - traceInfoObj.minX) : p.width * scale / (traceInfoObj.maxY - traceInfoObj.minY)
+        // console.log(p.width, p.height, scale, traceInfoObj.traceSize, resizeFactor)
         this.waves.forEach(w => w.vector.mult(resizeFactor))
 
         // rerun machine with corrected scale
-        this.trace = this.tracePoints()
+        this.tracePoints()
       }
 
       traceInfo () {
@@ -273,7 +276,7 @@ p.endShape()
           totalDistance += this.trace[i].dist(this.trace[i + 1])
         }
         // scale waves to generate shape within bounds
-        const traceSize = p.max(maxX - minX, maxY - minY) // assumption: width == height
+        const traceSize = p.max(p.abs(maxX - minX), p.abs(maxY - minY)) // assumption: width == height
         return {
           maxX, maxY, minX, minY, offsetX, offsetY, traceSize, totalDistance
         }
@@ -289,7 +292,7 @@ p.endShape()
     const seed = parseInt(hash.slice(0, 16), 16)
     const R = new Mulberry32(seed)
 
-    return new Machine(null, null, null, null, fps, slowdownFactor)
+    return new Machine([], [], null, null, fps, slowdownFactor)
 
 //    return Machine
 

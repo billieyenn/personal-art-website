@@ -32,6 +32,7 @@ import FourColorPrinting from './components/Practice/FourColorPrinting.vue'
 import Collision from './components/Practice/Collision.vue'
 import Grids from './components/Practice/Grids.vue'
 import Unnamed from './components/Unnamed/Unnamed.vue'
+import Shape1 from './components/Unnamed/Shape1.vue'
 
 export const routes = [
   {
@@ -93,6 +94,7 @@ export const routes = [
       { path: 'test/1', component: Test },
       { path: 'fourier', component: FourierPlayground },
       { path: 'unnamed', component: Unnamed },
+      { path: 'shape/1', component: Shape1 },
       { path: 'practice/placeholder', component: Practice },
       { path: 'practice/fibonacci', component: Fibonacci },
       { path: 'practice/flower', component: Flower },

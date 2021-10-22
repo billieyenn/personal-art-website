@@ -48,9 +48,10 @@
       <router-link tag='li' to='/sketches/practice/grids' style='cursor: pointer;'>Grids</router-link>
   </ul>
 
-   <router-link tag='li' to='/about/unnamed' style='cursor: pointer;'>Unnamed</router-link>
+   <router-link tag='li' to='/about/unnamed' style='cursor: pointer;'>WIP</router-link>
   <ul>
       <router-link tag='li' to='/sketches/unnamed' style='cursor: pointer;'>Unnamed</router-link>
+      <router-link tag='li' to='/sketches/shape/1' style='cursor: pointer;'>Shape 1</router-link>
   </ul>
 
   <hr>
