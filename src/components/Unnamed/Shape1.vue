@@ -25,6 +25,8 @@ import { colors } from '../../colors.js'
 import { randomColor } from '../../colors.js'
 import { hexToRgb } from '../../colors.js'
 import { unnamedColorScheme } from '../../colors.js'
+import { sin } from 'mathjs'
+import { cos } from 'mathjs'
 
 
 
@@ -100,27 +102,27 @@ let sketch = (config) => {
     }
 
     // rotate the shape around the center of its extended bounding box
-    const rotatePoints = (points, angle, minX, minY, w, h) => {
+    const rotatePoints = (points, angle, pivot_x, pivot_y) => {
       p.angleMode(p.DEGREES)
       let s = p.sin(-angle) // calculate outside of loop for comp eff
       let c = p.cos(-angle)
-      let res = points.map((point) => {
+      let res = [...points].map((point) => {
         let new_p = p.createVector(point.x, point.y)
-        new_p.x -= (minX + w / 2)
-        new_p.y -= (minY + h / 2)
+        // let new_p = point
+        new_p.x -= pivot_x
+        new_p.y -= pivot_y
 
         let x_new = new_p.x * c - new_p.y * s
         let y_new = new_p.x * s + new_p.y * c
 
-        new_p.x = x_new + (minX + w / 2)
-        new_p.y = y_new + (minY + h / 2)
+        new_p.x = x_new + pivot_x
+        new_p.y = y_new + pivot_y
 
         return new_p
       })
       return res
     }
 
-    // const displayThing = (machine, offsetX, offsetY, resolution, color) => {
     const displayThing = (vectorlist, offsetX, offsetY, resize, resolution, color) => {
 
       p.push()
@@ -159,7 +161,7 @@ let sketch = (config) => {
       })
       g.forEach(
         displayF(resolution, angle, width/2, p.color('#FFFF00')), 
-        isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), resolution, x_min, y_min)
+        isInPolyF(rotatePoints(newMachine.trace, angle, x_min + width / 2, y_min + height / 2), resolution, x_min, y_min)
         )
       
       g.forEach((x, y, val) => {
@@ -169,7 +171,7 @@ let sketch = (config) => {
       // angle = p.random(90)//15
       g.forEach(
         displayF(resolution, angle, width/2, p.color('#00FFFF')), 
-        isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), resolution, x_min, y_min)
+        isInPolyF(rotatePoints(newMachine.trace, angle,  x_min + width / 2, y_min + height / 2), resolution, x_min, y_min)
         )
       
       g.forEach((x, y, val) => {
@@ -179,7 +181,7 @@ let sketch = (config) => {
       // angle = p.random(90)//45
       g.forEach(
         displayF(resolution, angle, width/2, p.color('#FF00FF')), 
-        isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), resolution, x_min, y_min)
+        isInPolyF(rotatePoints(newMachine.trace, angle,  x_min + width / 2, y_min + height / 2), resolution, x_min, y_min)
         )
 
       g.forEach((x, y, val) => {
@@ -190,7 +192,7 @@ let sketch = (config) => {
       g.forEach(
         displayF(resolution, angle, width/2, p.color('#000000')), 
         // () => {return true}
-        isInPolyF(rotatePoints(newMachine.trace, angle, x_min, y_min, width, height), resolution, x_min, y_min)
+        isInPolyF(rotatePoints(newMachine.trace, angle,  x_min + width / 2, y_min + height / 2), resolution, x_min, y_min)
         )
 
       p.pop()
