@@ -158,7 +158,7 @@ let sketch = (config) => {
     let masslessParticles = []
     let rows
     let cols
-    let scale = 20
+    let scale = 40
     let flowField
 
 
@@ -166,12 +166,12 @@ let sketch = (config) => {
       p.createCanvas(700, 700);
 
       // particles that cause gravity waves
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 8; i++) {
         particles.push(new Particle(null, p.random(0.5, 2)))
       }
 
       // particles that don't create gravity waves
-      for (let i = 0; i < 2000; i++) {
+      for (let i = 0; i < 4000; i++) {
         masslessParticles.push(new Particle(null, 0))
       }
 
@@ -201,9 +201,10 @@ let sketch = (config) => {
           flowField.getVal(x, y).setMag(0)
         })
 
+
         // each particle creates a force wave
         particles.forEach((particle, i) => {
-          waves.push(new Circle(p.createVector(particle.pos.x, particle.pos.y), forcePropagationSpeed, particle.mass, particle))
+          waves.push(new Circle(p.createVector(particle.pos.x, particle.pos.y), forcePropagationSpeed / 2, particle.mass, particle))
         })
 
         waves.forEach((w, i) => {
@@ -247,10 +248,14 @@ let sketch = (config) => {
           // w.display()
         })
   
-        // p.strokeWeight(1)
-        // flowField.forEach((x, y, val) => {
-        //   p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
-        // })
+        // show flowfield outline
+        p.strokeWeight(1)
+        p.stroke(0)
+        p.noFill()
+        flowField.forEach((x, y, val) => {
+          // p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
+          // p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
+        })
 
         particles.forEach((particle, i) => {
           particle.update()
