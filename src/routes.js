@@ -34,6 +34,7 @@ import Grids from './components/Practice/Grids.vue'
 import Unnamed from './components/Unnamed/Unnamed.vue'
 import Shape1 from './components/Unnamed/Shape1.vue'
 import Forces from './components/Practice/Forces.vue'
+import GaussianNoise from './components/Practice/GaussianNoise.vue'
 
 export const routes = [
   {
@@ -105,7 +106,8 @@ export const routes = [
       { path: 'practice/fourcolorprinting', component: FourColorPrinting },
       { path: 'practice/collision', component: Collision },
       { path: 'practice/grids', component: Grids },
-      { path: 'practice/forces', component: Forces }
+      { path: 'practice/forces', component: Forces },
+      { path: 'practice/gaussiannoise', component: GaussianNoise }
     ]
   },
   {

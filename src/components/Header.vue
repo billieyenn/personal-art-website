@@ -47,6 +47,7 @@
       <router-link tag='li' to='/sketches/practice/collision' style='cursor: pointer;'>Collision</router-link>
       <router-link tag='li' to='/sketches/practice/grids' style='cursor: pointer;'>Grids</router-link>
       <router-link tag='li' to='/sketches/practice/forces' style='cursor: pointer;'>Forces</router-link>
+      <router-link tag='li' to='/sketches/practice/gaussiannoise' style='cursor: pointer;'>Gaussian Noise</router-link>
   </ul>
 
    <router-link tag='li' to='/about/unnamed' style='cursor: pointer;'>WIP</router-link>
