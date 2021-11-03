@@ -205,7 +205,7 @@ let sketch = (config) => {
         flowField.forEach((x, y, val) => {
           flowField.setVal(x, y, p.createVector(0, 0))
         })
-        p.background(p.color(colors.pearlBush))
+      p.background(p.color(colors.pearlBush))
     }
 
 
