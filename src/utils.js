@@ -128,6 +128,7 @@ const closestPoint = (points, x, y) => {
 }
 
 
+// cyan, magenta, yellow, black values converted to red, green, blue 
 const CMYKtoRGB = (c, m, y, k) => {
 	let r = 255 * (1 - c) * (1 - k)
 	let g = 255 * (1 - m) * (1 - k)
@@ -147,10 +148,26 @@ const RGBtoCMYK = (r, g, b) => {
 	return [c, m, y, k]
 }
 
+// use the pixels array and gaussian noise to imitate noise real cameras have
+const noiseEverywhere = (std) => {
+  p.loadPixels();
+  let noiseStandardDeviation = std
+  let d = p.pixelDensity();
+  let image = 4 * (p.width * d) * (p.height * d);
+  for (let i = 0; i < image; i += 4) {
+    p.pixels[i] = p.randomGaussian(p.pixels[i], noiseStandardDeviation);
+    p.pixels[i + 1] = p.randomGaussian(p.pixels[i + 1], noiseStandardDeviation);
+    p.pixels[i + 2] = p.randomGaussian(p.pixels[i + 2], noiseStandardDeviation);
+    p.pixels[i + 3] = p.pixels[i + 3];
+  }
+  p.updatePixels();
+}
+
 export {FlowField, 
 		Grid, 
 		isInPoly, 
 		closestPoint, 
 		dist, 
 		RGBtoCMYK, 
-		CMYKtoRGB }
+		CMYKtoRGB,
+		noiseEverywhere }
