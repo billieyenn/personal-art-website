@@ -71,6 +71,7 @@ let sketch = (config) => {
           }
           if (outOfBounds) {
             this.vel.setMag(this.mass)
+            this.vel.rotate(p.random(360))
             this.pos = this.randomPos()
           }
       }
@@ -156,7 +157,7 @@ let sketch = (config) => {
       // if waves are too far or weak, they will no longer affect the system meaningfully
       checkLiveness () {
         if (this.outOfBounds() 
-          || this.force() < 0.0002
+          || this.force() < 0.00002
           )
           this.die()
       }
@@ -175,7 +176,7 @@ let sketch = (config) => {
     let masslessParticles = []
     let rows
     let cols
-    let scale = 40
+    let scale = 20
     let flowField
 
 
@@ -183,7 +184,7 @@ let sketch = (config) => {
       p.createCanvas(700, 700);
 
       // particles that cause gravity waves
-      const particleTypes = ["PULL", "PUSH", "ROTATE","PUSH", "ROTATE","PUSH", "ROTATE","ROTATE"]
+      const particleTypes = ["PUSH", "PUSH", "PUSH","PUSH", "PUSH", "PUSH", "PUSH", "PUSH"]
       for (let i = 0; i < 3; i++) {
         const newPart = new Particle(null, p.random(0.5, 2))
         newPart.type = particleTypes[i]
@@ -191,7 +192,7 @@ let sketch = (config) => {
       }
 
       // particles that don't create gravity waves
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 8000; i++) {
         masslessParticles.push(new Particle(null, 0))
       }
 
@@ -221,10 +222,10 @@ let sketch = (config) => {
         p.rectMode(p.CORNER)
         p.rect(0, 0, p.width, p.height)
 
-        // reset the flowfield
-        flowField.forEach((x, y, val) => {
-          flowField.getVal(x, y).setMag(0)
-        })
+        // // reset the flowfield
+        // flowField.forEach((x, y, val) => {
+        //   flowField.getVal(x, y).mult(0.99) // force fades away over time
+        // })
 
 
         // each particle creates a force wave
@@ -252,29 +253,60 @@ let sketch = (config) => {
             }
           })
 
-          // each square in the flowfield is affected by massful particles, and later affects massless particles
-          flowField.forEach((x, y, val) => {
-            const dist = p.createVector((x+0.5)*scale, (y+0.5)*scale).dist(w.pos)
+          // // each square in the flowfield is affected by massful particles, and later affects massless particles
+          // flowField.forEach((x, y, val) => {
+          //   const dist = p.createVector((x+0.5)*scale, (y+0.5)*scale).dist(w.pos)
 
-            if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
-              const force = p.createVector(w.pos.x - (x+0.5)*scale, w.pos.y - (y+0.5)*scale)
-              force.setMag(w.force())
-              if (w.parent.type === "ROTATE") {
-                force.rotate(90)
-              } else if (w.parent.type === "PUSH") {
-                force.rotate(180)
+          //   if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
+          //     const force = p.createVector(w.pos.x - (x+0.5)*scale, w.pos.y - (y+0.5)*scale)
+          //     force.setMag(w.force())
+          //     if (w.parent.type === "ROTATE") {
+          //       force.rotate(90)
+          //     } else if (w.parent.type === "PUSH") {
+          //       force.rotate(180)
+          //     }
+          //     let ff = flowField.getVal(x, y)
+          //     const l = lorentz(force.mag(), forcePropagationSpeed)
+          //     force.div(l)
+          //     ff.add(force)
+          //   }
+          // })
+
+          // updating each flowField cell is too intense, lets instead update a small random subset
+          {
+            let i = 0
+            const limit = 50
+            while (i < limit) {
+              const x = p.floor(p.random(cols))
+              const y = p.floor(p.random(rows))
+
+              flowField.getVal(x, y).mult(0.99) // force fades away over time
+
+
+              const dist = p.createVector((x+0.5)*scale, (y+0.5)*scale).dist(w.pos)
+
+              if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
+                const force = p.createVector(w.pos.x - (x+0.5)*scale, w.pos.y - (y+0.5)*scale)
+                force.setMag(w.force())
+                if (w.parent.type === "ROTATE") {
+                  force.rotate(90)
+                } else if (w.parent.type === "PUSH") {
+                  force.rotate(180)
+                }
+                let ff = flowField.getVal(x, y)
+                const l = lorentz(force.mag(), forcePropagationSpeed)
+                force.div(l)
+                ff.add(force)
               }
-              let ff = flowField.getVal(x, y)
-              const l = lorentz(force.mag(), forcePropagationSpeed)
-              force.div(l)
-              ff.add(force)
+
+              i++
             }
-          })
+          }
 
 
           p.stroke(p.color(colors.bigStone))
           p.noFill()
-          // w.display()
+          w.display()
         })
   
         // // show flowfield outline
