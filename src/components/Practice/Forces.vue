@@ -15,7 +15,7 @@
 /* eslint-enable */
 /* eslint-disable */
 import {colors as colors} from '../../colors.js'
-import { Grid } from '../../utils.js'
+import { Grid, noiseEverywhere } from '../../utils.js'
 
 let sketch = (config) => {
   return function (p) {
@@ -32,6 +32,7 @@ let sketch = (config) => {
         // this.vel.limit(forcePropagationSpeed)
         this.acc = p.createVector(0, 0)
         this.mass = mass
+        this.type = "ROTATE"
         // this.inverted = p.random() > 0.5 ? 1 : -1
       }
 
@@ -39,7 +40,10 @@ let sketch = (config) => {
         return p.createVector(p.random(0, p.width), p.random(0, p.height))
       }
 
+
       update(limit) {
+          const friction = this.mass ? 0 : 0.03 // particles without mass have friction
+          this.acc.sub(friction * this.vel.x, friction * this.vel.y) // add friction to acceleration
           this.vel.add(this.acc)
           this.vel = this.vel.limit(forcePropagationSpeed) // the speed of light can't be exceeded
           if(limit)
@@ -48,14 +52,27 @@ let sketch = (config) => {
           this.pos.add(this.vel)
           this.acc.setMag(0)
 
-          if (this.pos.x > p.width)
+          let outOfBounds = false
+          if (this.pos.x > p.width) {
             this.pos.x = 0
-          if (this.pos.x < 0)
+            outOfBounds = true
+          }
+          if (this.pos.x < 0) {
             this.pos.x = p.width
-          if (this.pos.y > p.height)
+            outOfBounds = true
+          }
+          if (this.pos.y > p.height) {
             this.pos.y = 0
-          if (this.pos.y < 0)
+            outOfBounds = true
+          }
+          if (this.pos.y < 0) {
             this.pos.y = p.height
+            outOfBounds = true
+          }
+          if (outOfBounds) {
+            this.vel.setMag(this.mass)
+            this.pos = this.randomPos()
+          }
       }
 
       applyForce(force) {
@@ -151,7 +168,7 @@ let sketch = (config) => {
     // - force formula (inverse square or cube or others)
 
     // const windowSize = 1000
-    const forcePropagationSpeed = 40
+    const forcePropagationSpeed = 10
     const marginOfError = forcePropagationSpeed / 2
     let waves = []
     let particles = []
@@ -166,12 +183,15 @@ let sketch = (config) => {
       p.createCanvas(700, 700);
 
       // particles that cause gravity waves
-      for (let i = 0; i < 8; i++) {
-        particles.push(new Particle(null, p.random(0.5, 2)))
+      const particleTypes = ["PULL", "PUSH", "ROTATE","PUSH", "ROTATE","PUSH", "ROTATE","ROTATE"]
+      for (let i = 0; i < 3; i++) {
+        const newPart = new Particle(null, p.random(0.5, 2))
+        newPart.type = particleTypes[i]
+        particles.push(newPart)
       }
 
       // particles that don't create gravity waves
-      for (let i = 0; i < 4000; i++) {
+      for (let i = 0; i < 1000; i++) {
         masslessParticles.push(new Particle(null, 0))
       }
 
@@ -188,12 +208,17 @@ let sketch = (config) => {
         p.background(p.color(colors.pearlBush))
     }
 
+
+
+
+
     p.draw = function () {
       if (!paused) {
         const color = p.color(colors.pearlBush)
         color.setAlpha(35)
         p.noStroke()
         p.fill(color)
+        p.rectMode(p.CORNER)
         p.rect(0, 0, p.width, p.height)
 
         // reset the flowfield
@@ -207,12 +232,13 @@ let sketch = (config) => {
           waves.push(new Circle(p.createVector(particle.pos.x, particle.pos.y), forcePropagationSpeed / 2, particle.mass, particle))
         })
 
+        // each wave affects the flow/force field when at the right distance
         waves.forEach((w, i) => {
           w.propagate()
-          w.checkLiveness()
+          w.checkLiveness() // within bounds etc
           if (!w.alive)
             waves.splice(i, 1)
-          particles.forEach(particle => {
+          particles.forEach(particle => { // particles affect other particles
             if (particle !== w.parent) { // convenience cheat, todo come up with math to make this redundant
               const dist = particle.pos.dist(w.pos)
               // if distance between particle and wave origin == wave radius, apply force
@@ -220,20 +246,24 @@ let sketch = (config) => {
                 // make vector of magnitude w.force() in the direction of the wave
                 const force = p.createVector(w.pos.x - particle.pos.x, w.pos.y - particle.pos.y)
                 force.setMag(w.force())
-                // force.rotate(90)
+                // force.rotate(90) // alternate physics
                 particle.applyForce(force)
               }
             }
           })
 
-
+          // each square in the flowfield is affected by massful particles, and later affects massless particles
           flowField.forEach((x, y, val) => {
             const dist = p.createVector((x+0.5)*scale, (y+0.5)*scale).dist(w.pos)
 
             if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
               const force = p.createVector(w.pos.x - (x+0.5)*scale, w.pos.y - (y+0.5)*scale)
               force.setMag(w.force())
-              force.rotate(90)
+              if (w.parent.type === "ROTATE") {
+                force.rotate(90)
+              } else if (w.parent.type === "PUSH") {
+                force.rotate(180)
+              }
               let ff = flowField.getVal(x, y)
               const l = lorentz(force.mag(), forcePropagationSpeed)
               force.div(l)
@@ -244,30 +274,21 @@ let sketch = (config) => {
 
           p.stroke(p.color(colors.bigStone))
           p.noFill()
-
           // w.display()
         })
   
-        // show flowfield outline
-        p.strokeWeight(1)
-        p.stroke(0)
-        p.noFill()
-        flowField.forEach((x, y, val) => {
-          // p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
-          // p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
-        })
+        // // show flowfield outline
+        // p.strokeWeight(1)
+        // p.stroke(0)
+        // p.noFill()
+        // p.rectMode(p.CENTER)
+        // flowField.forEach((x, y, val) => {
+        //   p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
+        //   p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
+        // })
 
         particles.forEach((particle, i) => {
           particle.update()
-          // particle.vel.add(particle.acc)
-          // particle.vel.setMag(1)
-          // particle.pos.add(particle.vel)
-          // particle.display()
-          // p.stroke(0)
-          // p.fill(0)
-          // p.strokeWeight(1)
-          // p.textSize(15)
-          // p.text(particle.vel.mag().toFixed(1) + " " + lorentz(particle.vel.mag(), forcePropagationSpeed), 0, 15 * (i+0.5))
         })
 
         const bigStone = p.color(colors.bigStone)
@@ -276,27 +297,18 @@ let sketch = (config) => {
         masslessParticles.forEach((particle) => {
           const x_i = p.max(0, p.floor(particle.pos.x / scale) - 1)
           const y_i = p.max(0, p.floor(particle.pos.y / scale) - 1)
-          // console.log(x_i ,y_i)
-          // console.log(flowField.grid[y_i])
           const localForce = flowField.getVal(x_i, y_i)
-          // console.log(localForce)
           const prevPos = p.createVector(particle.pos.x, particle.pos.y)
           if(localForce) {
             particle.applyForce(localForce)
-            // particle.update(forcePropagationSpeed/8)
-            particle.update(1)
-            // particle.vel.add(particle.acc)
-            // particle.vel.setMag(1)
-            // particle.pos.add(particle.vel)
-
+            particle.update(5)
           }
-          // particle.display()
           p.strokeWeight(1)
-          // p.point(particle.pos.x, particle.pos.y)
-          if (particle.pos.dist(prevPos) < p.width / 2)
-          p.line(particle.pos.x, particle.pos.y, prevPos.x, prevPos.y)
+          if (particle.pos.dist(prevPos) < forcePropagationSpeed + 1) // hack to hide when particles wrap around
+            p.line(particle.pos.x, particle.pos.y, prevPos.x, prevPos.y)
 
         })
+        // noiseEverywhere(p, 7)
       }
     }
 

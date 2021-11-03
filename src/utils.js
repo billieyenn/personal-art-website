@@ -149,7 +149,7 @@ const RGBtoCMYK = (r, g, b) => {
 }
 
 // use the pixels array and gaussian noise to imitate noise real cameras have
-const noiseEverywhere = (std) => {
+const noiseEverywhere = (p, std) => {
   p.loadPixels();
   let noiseStandardDeviation = std
   let d = p.pixelDensity();
