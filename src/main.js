@@ -5,6 +5,8 @@ import { routes } from './routes'
 import axios from 'axios'
 // import VueAxios from 'vue-axios'
 
+import SketchTemplate from './components/UI/SketchTemplate.vue'
+
 Vue.use(VueRouter)
 // Vue.use(VueAxios, axios)
 
@@ -23,7 +25,7 @@ const router = new VueRouter({
     return { x: 0, y: 0 }
   }
 })
-
+Vue.component('sketch-template', SketchTemplate)
 Vue.config.productionTip = false
 
 new Vue({
