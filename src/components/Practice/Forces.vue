@@ -39,7 +39,8 @@ let sketch = (config) => {
 
       update(limit) {
           const friction = this.mass ? 0 : 0.03 // particles without mass have friction
-          this.acc.sub(friction * this.vel.x, friction * this.vel.y) // add friction to acceleration
+          if (particlesHaveFriction)
+            this.acc.sub(friction * this.vel.x, friction * this.vel.y) // add friction to acceleration
           this.vel.add(this.acc)
           this.vel = this.vel.limit(forcePropagationSpeed) // the speed of light can't be exceeded
           if(limit)
@@ -66,9 +67,9 @@ let sketch = (config) => {
             outOfBounds = true
           }
           if (outOfBounds) {
-            this.vel.setMag(this.mass)
-            this.vel.rotate(p.random(360))
-            this.pos = this.randomPos()
+            // this.vel.setMag(this.mass)
+            // this.vel.rotate(p.random(360))
+            // this.pos = this.randomPos()
           }
       }
 
@@ -164,7 +165,8 @@ let sketch = (config) => {
     let scale, limit
     let width, height
     let particlesCount, masslessParticlesCount
-    let showWaves
+    let showWaves, showFlowfield
+    let particlesHaveFriction, flowfieldDecays
     
     // computed at a later stage
     let marginOfError
@@ -204,6 +206,15 @@ let sketch = (config) => {
         showWaves: {
           value: showWaves = false
         } = {},
+        showFlowfield: {
+          value: showFlowfield = false
+        } = {},
+        particlesHaveFriction: {
+          value: particlesHaveFriction = false
+        } = {},
+        flowfieldDecays: {
+          value: flowfieldDecays = false
+        } = {},
       } = config)
 
       marginOfError = forcePropagationSpeed / 2
@@ -213,10 +224,11 @@ let sketch = (config) => {
       particles = []
       masslessParticles = []
       // particles that cause gravity waves
-      const particleTypes = ["PUSH", "PUSH", "PUSH","PUSH", "PUSH", "PUSH", "PUSH", "PUSH"]
+      const particleTypes = ["PUSH", "ROTATE", "PULL","PUSH", "PUSH", "PUSH", "PUSH", "PUSH"]
       for (let i = 0; i < particlesCount; i++) {
         const newPart = new Particle(null, p.random(0.5, 2))
-        newPart.type = particleTypes[i]
+        // newPart.type = particleTypes[i]
+        newPart.type = p.random() < 1/3 ? "PUSH" : p.random() < 1/2 ? "ROTATE" : "PULL"
         particles.push(newPart)
       }
 
@@ -250,10 +262,12 @@ let sketch = (config) => {
       p.rectMode(p.CORNER)
       p.rect(0, 0, p.width, p.height)
 
-      // // reset the flowfield
-      // flowField.forEach((x, y, val) => {
-      //   flowField.getVal(x, y).mult(0.99) // force fades away over time
-      // })
+      // reset the flowfield
+      if (flowfieldDecays) {
+        flowField.forEach((x, y, val) => {
+          flowField.getVal(x, y).mult(0.99) // force fades away over time
+        })
+      }
 
 
       // each particle creates a force wave
@@ -289,7 +303,7 @@ let sketch = (config) => {
             const x = p.floor(p.random(cols))
             const y = p.floor(p.random(rows))
 
-            flowField.getVal(x, y).mult(0.99) // force fades away over time
+            // flowField.getVal(x, y).mult(0.999) // force fades away over time
 
 
             const dist = p.createVector((x+0.5)*scale, (y+0.5)*scale).dist(w.pos)
@@ -308,7 +322,9 @@ let sketch = (config) => {
               let ff = flowField.getVal(x, y)
               const l = lorentz(force.mag(), forcePropagationSpeed)
               force.div(l)
+              // force.limit(1)
               ff.add(force)
+              ff.limit(1)
             }
 
             i++
@@ -322,15 +338,17 @@ let sketch = (config) => {
         }
       })
 
-      // // show flowfield outline
-      // p.strokeWeight(1)
-      // p.stroke(0)
-      // p.noFill()
-      // p.rectMode(p.CENTER)
-      // flowField.forEach((x, y, val) => {
-      //   p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
-      //   p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
-      // })
+      // show flowfield outline
+      if (showFlowfield) {
+        p.strokeWeight(1)
+        p.stroke(0)
+        p.noFill()
+        p.rectMode(p.CENTER)
+        flowField.forEach((x, y, val) => {
+          p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
+          p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
+        })
+      }
 
       particles.forEach((particle, i) => {
         particle.update()
@@ -346,7 +364,7 @@ let sketch = (config) => {
         const prevPos = p.createVector(particle.pos.x, particle.pos.y)
         if(localForce) {
           particle.applyForce(localForce)
-          particle.update(5)
+          particle.update(/*5*/)
         }
         p.strokeWeight(1)
         if (particle.pos.dist(prevPos) < forcePropagationSpeed + 1) // hack to hide when particles wrap around
@@ -397,7 +415,19 @@ export default {
         showWaves: {
           type: 'boolean',
           value: false
-        }
+        },
+        showFlowfield: {
+          type: 'boolean',
+          value: false
+        },
+        particlesHaveFriction: {
+          type: 'boolean',
+          value: false
+        },
+        flowfieldDecays: {
+          type: 'boolean',
+          value: false
+        },
       }
     }
   }

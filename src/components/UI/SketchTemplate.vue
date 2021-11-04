@@ -3,7 +3,9 @@
 
 <template>
   <div>
-    <div class="card">
+    <button @click="toggleConfig">Show Config</button>
+
+    <div v-if="showConfig" class="card">
       <button @click="refresh">Redraw</button>
       <button @click="toggleLoop"> {{ looping ? "Pause Drawing" : "Continue Drawing" }}</button>
       <div v-for="obj in Object.entries(config)" :key="obj[0]">
@@ -26,7 +28,8 @@ import P5 from 'p5'
 export default {
   data () {
     return {
-      looping: true
+      looping: true,
+      showConfig: false
     }
   },
   props: {
@@ -43,6 +46,9 @@ export default {
     toggleLoop () {
       this.looping ? this.p5canvas.noLoop() : this.p5canvas.loop()
       this.looping = !this.looping
+    },
+    toggleConfig () {
+      this.showConfig = !this.showConfig
     }
   }
 }
