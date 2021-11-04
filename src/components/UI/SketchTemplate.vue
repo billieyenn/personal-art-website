@@ -4,11 +4,11 @@
 <template>
   <div>
     <button @click="toggleConfig">Show Config</button>
+    <button @click="nextFrame">Next Frame</button>
+    <button @click="toggleLoop"> {{ looping ? "Pause Drawing" : "Continue Drawing" }}</button>
 
     <div v-if="showConfig" class="card">
-      <button @click="refresh">Redraw</button>
-      <button @click="toggleLoop"> {{ looping ? "Pause Drawing" : "Continue Drawing" }}</button>
-      <button @click="nextFrame">Next Frame</button>
+      <button @click="refresh">Restart</button>
       <div v-for="obj in Object.entries(config)" :key="obj[0]">
         <label :for="obj[0]">{{ obj[0] }}</label>
         <input      v-if="obj[1].type === 'string'"  :name="obj[0]" type="text"     v-model="obj[1].value">
@@ -85,6 +85,7 @@ export default {
     cursor: pointer;
     border-radius: 10px;
     margin-bottom: 0.5rem;
+    margin-right: 0.5rem;
     display: inline-block;
   }
 
