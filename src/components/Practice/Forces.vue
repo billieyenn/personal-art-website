@@ -176,7 +176,9 @@ let sketch = (config) => {
     let masslessParticles = []
     let rows
     let cols
-    let scale = 20
+    const scale = 20 // resolution of force field // reducing scale slows performance by O(n^2)
+    const limit = 50 // flow field random samples per iteration
+
     let flowField
 
 
@@ -275,7 +277,6 @@ let sketch = (config) => {
           // updating each flowField cell is too intense, lets instead update a small random subset
           {
             let i = 0
-            const limit = 50
             while (i < limit) {
               const x = p.floor(p.random(cols))
               const y = p.floor(p.random(rows))
@@ -285,9 +286,12 @@ let sketch = (config) => {
 
               const dist = p.createVector((x+0.5)*scale, (y+0.5)*scale).dist(w.pos)
 
+              // if wave hits the flow field cell
               if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
                 const force = p.createVector(w.pos.x - (x+0.5)*scale, w.pos.y - (y+0.5)*scale)
                 force.setMag(w.force())
+
+                // can get interesting effects with forces in other directions
                 if (w.parent.type === "ROTATE") {
                   force.rotate(90)
                 } else if (w.parent.type === "PUSH") {
@@ -306,7 +310,7 @@ let sketch = (config) => {
 
           p.stroke(p.color(colors.bigStone))
           p.noFill()
-          w.display()
+          // w.display()
         })
   
         // // show flowfield outline
