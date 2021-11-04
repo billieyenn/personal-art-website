@@ -38,39 +38,38 @@ let sketch = (config) => {
 
 
       update(limit) {
-          const friction = this.mass ? 0 : 0.03 // particles without mass have friction
-          if (particlesHaveFriction)
-            this.acc.sub(friction * this.vel.x, friction * this.vel.y) // add friction to acceleration
-          this.vel.add(this.acc)
-          this.vel = this.vel.limit(forcePropagationSpeed) // the speed of light can't be exceeded
-          if(limit)
-            this.vel = this.vel.limit(limit) // additional limit
+        const friction = this.mass ? 0 : particlesHaveFriction // particles without mass have friction
+        this.acc.sub(friction * this.vel.x, friction * this.vel.y) // add friction to acceleration
+        this.vel.add(this.acc)
+        this.vel = this.vel.limit(forcePropagationSpeed) // the speed of light can't be exceeded
+        if(limit)
+          this.vel = this.vel.limit(limit) // additional limit
 
-          this.pos.add(this.vel)
-          this.acc.setMag(0)
+        this.pos.add(this.vel)
+        this.acc.setMag(0)
 
-          let outOfBounds = false
-          if (this.pos.x > p.width) {
-            this.pos.x = 0
-            outOfBounds = true
-          }
-          if (this.pos.x < 0) {
-            this.pos.x = p.width
-            outOfBounds = true
-          }
-          if (this.pos.y > p.height) {
-            this.pos.y = 0
-            outOfBounds = true
-          }
-          if (this.pos.y < 0) {
-            this.pos.y = p.height
-            outOfBounds = true
-          }
-          if (outOfBounds) {
-            // this.vel.setMag(this.mass)
-            // this.vel.rotate(p.random(360))
-            // this.pos = this.randomPos()
-          }
+        let outOfBounds = false
+        if (this.pos.x > p.width) {
+          this.pos.x = 0
+          outOfBounds = true
+        }
+        if (this.pos.x < 0) {
+          this.pos.x = p.width
+          outOfBounds = true
+        }
+        if (this.pos.y > p.height) {
+          this.pos.y = 0
+          outOfBounds = true
+        }
+        if (this.pos.y < 0) {
+          this.pos.y = p.height
+          outOfBounds = true
+        }
+        if (outOfBounds) {
+          this.vel.setMag(this.mass)
+          this.vel.rotate(p.random(360))
+          this.pos = this.randomPos()
+        }
       }
 
       applyForce(force) {
@@ -421,8 +420,8 @@ export default {
           value: false
         },
         particlesHaveFriction: {
-          type: 'boolean',
-          value: false
+          type: 'number',
+          value: 0.06
         },
         flowfieldDecays: {
           type: 'boolean',

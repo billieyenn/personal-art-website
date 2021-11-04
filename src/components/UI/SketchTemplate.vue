@@ -8,6 +8,7 @@
     <div v-if="showConfig" class="card">
       <button @click="refresh">Redraw</button>
       <button @click="toggleLoop"> {{ looping ? "Pause Drawing" : "Continue Drawing" }}</button>
+      <button @click="nextFrame">Next Frame</button>
       <div v-for="obj in Object.entries(config)" :key="obj[0]">
         <label :for="obj[0]">{{ obj[0] }}</label>
         <input      v-if="obj[1].type === 'string'"  :name="obj[0]" type="text"     v-model="obj[1].value">
@@ -49,6 +50,11 @@ export default {
     },
     toggleConfig () {
       this.showConfig = !this.showConfig
+    },
+    nextFrame () {
+      this.p5canvas.draw()
+      this.p5canvas.noLoop()
+      this.looping = false
     }
   }
 }
