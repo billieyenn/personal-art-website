@@ -3,11 +3,7 @@
 
 <template>
   <div>
-    <button @click="refresh">Redraw</button>
-    <div >
-      <div id="canvas"></div>
-    </div>
-
+    <sketch-template :sketch="sketch" :config="config"></sketch-template>
   </div>
 </template>
 
@@ -163,38 +159,69 @@ let sketch = (config) => {
       }
     }
 
-    // what kind of forces to add? Gravi
-    // parameters to tweak
-    // - speed at which forces propagate
-    // - force formula (inverse square or cube or others)
-
-    // const windowSize = 1000
-    const forcePropagationSpeed = 10
-    const marginOfError = forcePropagationSpeed / 2
-    let waves = []
-    let particles = []
-    let masslessParticles = []
+    // provided in config
+    let forcePropagationSpeed
+    let scale, limit
+    let width, height
+    let particlesCount, masslessParticlesCount
+    let showWaves
+    
+    // computed at a later stage
+    let marginOfError
+    let waves
+    let particles
+    let masslessParticles
     let rows
     let cols
-    const scale = 20 // resolution of force field // reducing scale slows performance by O(n^2)
-    const limit = 50 // flow field random samples per iteration
-
     let flowField
 
-
     p.setup = function () {
-      p.createCanvas(700, 700);
 
+      // destructure config for starters
+      // the first ( is a quirk of using let earlier
+      ({
+        scale: { // access the property 'scale'
+          value: scale = 20 // take its property 'value', rename it to 'scale', and if not provided, default to 20 
+        } = {}, // if no 'scale' property provided, default to {}
+        limit: {
+          value: limit = 50
+        } = {},
+        canvasX: {
+          value: width = 700
+        } = {},
+        canvasY: {
+          value: height = 700
+        } = {},
+        forcePropagationSpeed: {
+          value: forcePropagationSpeed = 10
+        } = {},
+        masslessParticles: {
+          value: masslessParticlesCount = 4000
+        } = {},
+        particles: {
+          value: particlesCount = 4
+        } = {},
+        showWaves: {
+          value: showWaves = false
+        } = {},
+      } = config)
+
+      marginOfError = forcePropagationSpeed / 2
+
+      p.createCanvas(width, height);
+      waves = []
+      particles = []
+      masslessParticles = []
       // particles that cause gravity waves
       const particleTypes = ["PUSH", "PUSH", "PUSH","PUSH", "PUSH", "PUSH", "PUSH", "PUSH"]
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < particlesCount; i++) {
         const newPart = new Particle(null, p.random(0.5, 2))
         newPart.type = particleTypes[i]
         particles.push(newPart)
       }
 
       // particles that don't create gravity waves
-      for (let i = 0; i < 8000; i++) {
+      for (let i = 0; i < masslessParticlesCount; i++) {
         masslessParticles.push(new Particle(null, 0))
       }
 
@@ -216,142 +243,118 @@ let sketch = (config) => {
 
 
     p.draw = function () {
-      if (!paused) {
-        const color = p.color(colors.pearlBush)
-        color.setAlpha(35)
-        p.noStroke()
-        p.fill(color)
-        p.rectMode(p.CORNER)
-        p.rect(0, 0, p.width, p.height)
+      const color = p.color(colors.pearlBush)
+      color.setAlpha(35)
+      p.noStroke()
+      p.fill(color)
+      p.rectMode(p.CORNER)
+      p.rect(0, 0, p.width, p.height)
 
-        // // reset the flowfield
-        // flowField.forEach((x, y, val) => {
-        //   flowField.getVal(x, y).mult(0.99) // force fades away over time
-        // })
-
-
-        // each particle creates a force wave
-        particles.forEach((particle, i) => {
-          waves.push(new Circle(p.createVector(particle.pos.x, particle.pos.y), forcePropagationSpeed / 2, particle.mass, particle))
-        })
-
-        // each wave affects the flow/force field when at the right distance
-        waves.forEach((w, i) => {
-          w.propagate()
-          w.checkLiveness() // within bounds etc
-          if (!w.alive)
-            waves.splice(i, 1)
-          particles.forEach(particle => { // particles affect other particles
-            if (particle !== w.parent) { // convenience cheat, todo come up with math to make this redundant
-              const dist = particle.pos.dist(w.pos)
-              // if distance between particle and wave origin == wave radius, apply force
-              if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
-                // make vector of magnitude w.force() in the direction of the wave
-                const force = p.createVector(w.pos.x - particle.pos.x, w.pos.y - particle.pos.y)
-                force.setMag(w.force())
-                // force.rotate(90) // alternate physics
-                particle.applyForce(force)
-              }
-            }
-          })
-
-          // // each square in the flowfield is affected by massful particles, and later affects massless particles
-          // flowField.forEach((x, y, val) => {
-          //   const dist = p.createVector((x+0.5)*scale, (y+0.5)*scale).dist(w.pos)
-
-          //   if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
-          //     const force = p.createVector(w.pos.x - (x+0.5)*scale, w.pos.y - (y+0.5)*scale)
-          //     force.setMag(w.force())
-          //     if (w.parent.type === "ROTATE") {
-          //       force.rotate(90)
-          //     } else if (w.parent.type === "PUSH") {
-          //       force.rotate(180)
-          //     }
-          //     let ff = flowField.getVal(x, y)
-          //     const l = lorentz(force.mag(), forcePropagationSpeed)
-          //     force.div(l)
-          //     ff.add(force)
-          //   }
-          // })
-
-          // updating each flowField cell is too intense, lets instead update a small random subset
-          {
-            let i = 0
-            while (i < limit) {
-              const x = p.floor(p.random(cols))
-              const y = p.floor(p.random(rows))
-
-              flowField.getVal(x, y).mult(0.99) // force fades away over time
+      // // reset the flowfield
+      // flowField.forEach((x, y, val) => {
+      //   flowField.getVal(x, y).mult(0.99) // force fades away over time
+      // })
 
 
-              const dist = p.createVector((x+0.5)*scale, (y+0.5)*scale).dist(w.pos)
+      // each particle creates a force wave
+      particles.forEach((particle, i) => {
+        waves.push(new Circle(p.createVector(particle.pos.x, particle.pos.y), forcePropagationSpeed / 2, particle.mass, particle))
+      })
 
-              // if wave hits the flow field cell
-              if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
-                const force = p.createVector(w.pos.x - (x+0.5)*scale, w.pos.y - (y+0.5)*scale)
-                force.setMag(w.force())
-
-                // can get interesting effects with forces in other directions
-                if (w.parent.type === "ROTATE") {
-                  force.rotate(90)
-                } else if (w.parent.type === "PUSH") {
-                  force.rotate(180)
-                }
-                let ff = flowField.getVal(x, y)
-                const l = lorentz(force.mag(), forcePropagationSpeed)
-                force.div(l)
-                ff.add(force)
-              }
-
-              i++
+      // each wave affects the flow/force field when at the right distance
+      waves.forEach((w, i) => {
+        w.propagate()
+        w.checkLiveness() // within bounds etc
+        if (!w.alive)
+          waves.splice(i, 1)
+        particles.forEach(particle => { // particles affect other particles
+          if (particle !== w.parent) { // convenience cheat, todo come up with math to make this redundant
+            const dist = particle.pos.dist(w.pos)
+            // if distance between particle and wave origin == wave radius, apply force
+            if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
+              // make vector of magnitude w.force() in the direction of the wave
+              const force = p.createVector(w.pos.x - particle.pos.x, w.pos.y - particle.pos.y)
+              force.setMag(w.force())
+              // force.rotate(90) // alternate physics
+              particle.applyForce(force)
             }
           }
+        })
+
+        // updating each flowField cell is too intense, lets instead update a small random subset
+        {
+          // flowField.forEach((x, y, val) => { etc
+          let i = 0
+          while (i < limit) {
+            const x = p.floor(p.random(cols))
+            const y = p.floor(p.random(rows))
+
+            flowField.getVal(x, y).mult(0.99) // force fades away over time
 
 
+            const dist = p.createVector((x+0.5)*scale, (y+0.5)*scale).dist(w.pos)
+
+            // if wave hits the flow field cell
+            if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
+              const force = p.createVector(w.pos.x - (x+0.5)*scale, w.pos.y - (y+0.5)*scale)
+              force.setMag(w.force())
+
+              // can get interesting effects with forces in other directions
+              if (w.parent.type === "ROTATE") {
+                force.rotate(90)
+              } else if (w.parent.type === "PUSH") {
+                force.rotate(180)
+              }
+              let ff = flowField.getVal(x, y)
+              const l = lorentz(force.mag(), forcePropagationSpeed)
+              force.div(l)
+              ff.add(force)
+            }
+
+            i++
+          }
+        }
+
+        if (showWaves) {
           p.stroke(p.color(colors.bigStone))
           p.noFill()
-          // w.display()
-        })
-  
-        // // show flowfield outline
-        // p.strokeWeight(1)
-        // p.stroke(0)
-        // p.noFill()
-        // p.rectMode(p.CENTER)
-        // flowField.forEach((x, y, val) => {
-        //   p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
-        //   p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
-        // })
+          w.display()
+        }
+      })
 
-        particles.forEach((particle, i) => {
-          particle.update()
-        })
+      // // show flowfield outline
+      // p.strokeWeight(1)
+      // p.stroke(0)
+      // p.noFill()
+      // p.rectMode(p.CENTER)
+      // flowField.forEach((x, y, val) => {
+      //   p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
+      //   p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
+      // })
 
-        const bigStone = p.color(colors.bigStone)
-        bigStone.setAlpha(200)
-        p.stroke(bigStone)
-        masslessParticles.forEach((particle) => {
-          const x_i = p.max(0, p.floor(particle.pos.x / scale) - 1)
-          const y_i = p.max(0, p.floor(particle.pos.y / scale) - 1)
-          const localForce = flowField.getVal(x_i, y_i)
-          const prevPos = p.createVector(particle.pos.x, particle.pos.y)
-          if(localForce) {
-            particle.applyForce(localForce)
-            particle.update(5)
-          }
-          p.strokeWeight(1)
-          if (particle.pos.dist(prevPos) < forcePropagationSpeed + 1) // hack to hide when particles wrap around
-            p.line(particle.pos.x, particle.pos.y, prevPos.x, prevPos.y)
+      particles.forEach((particle, i) => {
+        particle.update()
+      })
 
-        })
-        // noiseEverywhere(p, 7)
-      }
-    }
+      const bigStone = p.color(colors.bigStone)
+      bigStone.setAlpha(200)
+      p.stroke(bigStone)
+      masslessParticles.forEach((particle) => {
+        const x_i = p.max(0, p.floor(particle.pos.x / scale) - 1)
+        const y_i = p.max(0, p.floor(particle.pos.y / scale) - 1)
+        const localForce = flowField.getVal(x_i, y_i)
+        const prevPos = p.createVector(particle.pos.x, particle.pos.y)
+        if(localForce) {
+          particle.applyForce(localForce)
+          particle.update(5)
+        }
+        p.strokeWeight(1)
+        if (particle.pos.dist(prevPos) < forcePropagationSpeed + 1) // hack to hide when particles wrap around
+          p.line(particle.pos.x, particle.pos.y, prevPos.x, prevPos.y)
 
-    p.keyPressed = function () {
-      if (p.keyCode === 32) {
-        paused = !paused
-      }
+      })
+      // noiseEverywhere(p, 7)
+    
     }
   }
 }
@@ -359,26 +362,45 @@ let sketch = (config) => {
 
 import P5 from 'p5'
 export default {
-  props: {
-    msg: String
-  },
   data () {
     return {
-      config: {}
-    }
-  },
-  async mounted () {
-    this.p5canvas = new P5(sketch(), 'canvas')
-  },
-  methods: {
-    refresh () {
-      this.p5canvas.setup(this.config)
+      sketch: sketch,
+      config: {
+        canvasX: {
+          type: 'number',
+          value: 700
+        },
+        canvasY: {
+          type: 'number',
+          value: 700
+        },
+        scale: {
+          type: 'number',
+          value: 20
+        },
+        limit: {
+          type: 'number',
+          value: 50
+        },
+        forcePropagationSpeed: {
+          type: 'number',
+          value: 10
+        },
+        masslessParticles: {
+          type: 'number',
+          value: 8000
+        },
+        particles: {
+          type: 'number',
+          value: 3
+        },
+        showWaves: {
+          type: 'boolean',
+          value: false
+        }
+      }
     }
   }
-
-
-
-
 }
 
 </script>

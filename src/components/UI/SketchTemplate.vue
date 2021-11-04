@@ -8,8 +8,8 @@
       <button @click="toggleLoop"> {{ looping ? "Pause Drawing" : "Continue Drawing" }}</button>
       <div v-for="obj in Object.entries(config)" :key="obj[0]">
         <label :for="obj[0]">{{ obj[0] }}</label>
-        <input      v-if="obj[1].type === 'string'"  :name="obj[0]" type="text"      :value="obj[1].value">
-        <input v-else-if="obj[1].type === 'number'"  :name="obj[0]" type="number"    :value="obj[1].value">
+        <input      v-if="obj[1].type === 'string'"  :name="obj[0]" type="text"     v-model="obj[1].value">
+        <input v-else-if="obj[1].type === 'number'"  :name="obj[0]" type="number"   v-model="obj[1].value">
         <input v-else-if="obj[1].type === 'boolean'" :name="obj[0]" type="checkbox" v-model="obj[1].value">
         <input v-else-if="obj[1].type === 'color'"   :name="obj[0]" type="color"    v-model="obj[1].value">
       </div>
