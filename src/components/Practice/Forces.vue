@@ -408,11 +408,11 @@ export default {
         },
         scale: {
           type: 'number',
-          value: 20
+          value: 10
         },
         limit: {
           type: 'number',
-          value: 50
+          value: 200
         },
         forcePropagationSpeed: {
           type: 'number',
@@ -420,7 +420,7 @@ export default {
         },
         masslessParticles: {
           type: 'number',
-          value: 4000
+          value: 2000
         },
         particles: {
           type: 'number',
@@ -440,11 +440,11 @@ export default {
         },
         flowfieldDecays: {
           type: 'boolean',
-          value: false
+          value: true
         },
         speedLimit: {
           type: 'number',
-          value: 0
+          value: 2
         }
       }
     }
