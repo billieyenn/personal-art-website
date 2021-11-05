@@ -16,7 +16,7 @@ import { Grid, noiseEverywhere } from '../../utils.js'
 let sketch = (config) => {
   return function (p) {
     let paused = false
-    p.angleMode(p.DEGREES)
+    p.angleMode(p.RADIANS)
 
     const lorentz = (vel, limit) => {
         return 1 /  p.sqrt(p.max(0.00001, 1 - p.pow(vel / limit, 2)))
@@ -24,7 +24,7 @@ let sketch = (config) => {
     class Particle {
       constructor(pos, mass) {
         this.pos = pos || p.createVector(p.random(p.width), p.random(p.height))
-        this.vel = p.createVector(p.random(-0.7, 0.7), p.random(-0.7, 0.7))
+        this.vel = p.createVector(p.random(-mass, mass), p.random(-mass, mass))
         // this.vel.limit(forcePropagationSpeed)
         this.acc = p.createVector(0, 0)
         this.mass = mass
@@ -66,9 +66,13 @@ let sketch = (config) => {
           outOfBounds = true
         }
         if (outOfBounds) {
-          this.vel.setMag(this.mass)
-          this.vel.rotate(p.random(360))
+          // this.vel.setMag(this.mass)
           this.pos = this.randomPos()
+          const headingToCenter = p.atan2(p.height / 2 - this.pos.y, p.width / 2 - this.pos.x);
+          this.vel.setHeading(headingToCenter)
+          // this.vel.rotate(p.random(360))
+          if (this.mass)
+          console.log(this.pos, headingToCenter)
         }
       }
 
@@ -179,13 +183,15 @@ let sketch = (config) => {
     p.setup = function () {
 
       // destructure config for starters
+      // https://javascript.info/destructuring-assignment
+
       // the first ( is a quirk of using let earlier
       ({
         scale: { // access the property 'scale'
-          value: scale = 20 // take its property 'value', rename it to 'scale', and if not provided, default to 20 
+          value: scale = 40 // take its property 'value', rename it to 'scale', and if not provided, default to 20 
         } = {}, // if no 'scale' property provided, default to {}
         limit: {
-          value: limit = 50
+          value: limit = 20
         } = {},
         canvasX: {
           value: width = 700
@@ -197,7 +203,7 @@ let sketch = (config) => {
           value: forcePropagationSpeed = 10
         } = {},
         masslessParticles: {
-          value: masslessParticlesCount = 4000
+          value: masslessParticlesCount = 1000
         } = {},
         particles: {
           value: particlesCount = 4
@@ -222,12 +228,13 @@ let sketch = (config) => {
       waves = []
       particles = []
       masslessParticles = []
+
       // particles that cause gravity waves
-      const particleTypes = ["PUSH", "ROTATE", "PULL","PUSH", "PUSH", "PUSH", "PUSH", "PUSH"]
+      // const particleTypes = ["PUSH", "ROTATE", "PULL","PUSH", "PUSH", "PUSH", "PUSH", "PUSH"]
       for (let i = 0; i < particlesCount; i++) {
-        const newPart = new Particle(null, p.random(0.5, 2))
+        const newPart = new Particle(null, p.random(0.5, 5))
         // newPart.type = particleTypes[i]
-        newPart.type = p.random() < 1/3 ? "PUSH" : p.random() < 1/2 ? "ROTATE" : "PULL"
+        newPart.type = p.random() < 1/3 ? "PUSH" : p.random() < 2/3 ? "ROTATE" : "PULL"
         particles.push(newPart)
       }
 
@@ -314,9 +321,9 @@ let sketch = (config) => {
 
               // can get interesting effects with forces in other directions
               if (w.parent.type === "ROTATE") {
-                force.rotate(90)
+                force.rotate(p.PI/2)
               } else if (w.parent.type === "PUSH") {
-                force.rotate(180)
+                force.rotate(p.PI)
               }
               let ff = flowField.getVal(x, y)
               const l = lorentz(force.mag(), forcePropagationSpeed)
@@ -405,11 +412,11 @@ export default {
         },
         masslessParticles: {
           type: 'number',
-          value: 8000
+          value: 4000
         },
         particles: {
           type: 'number',
-          value: 3
+          value: 4
         },
         showWaves: {
           type: 'boolean',
