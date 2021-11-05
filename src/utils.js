@@ -163,11 +163,20 @@ const noiseEverywhere = (p, std) => {
   p.updatePixels();
 }
 
-export {FlowField, 
+// provided an object or array, return a random item
+const randomItem = (enumerable) => {
+	const keys = Object.keys(enumerable || colors)
+	const colLen = keys.length
+	const col = enumerable[keys[Math.floor(Math.random()*colLen)]]
+	return col
+}
+
+export { FlowField, 
 		Grid, 
 		isInPoly, 
 		closestPoint, 
 		dist, 
 		RGBtoCMYK, 
 		CMYKtoRGB,
-		noiseEverywhere }
+		noiseEverywhere,
+		randomItem }

@@ -11,7 +11,7 @@
 /* eslint-enable */
 /* eslint-disable */
 import {colors as colors} from '../../colors.js'
-import { Grid, noiseEverywhere } from '../../utils.js'
+import { Grid, noiseEverywhere, randomItem } from '../../utils.js'
 
 let sketch = (config) => {
   return function (p) {
@@ -69,10 +69,8 @@ let sketch = (config) => {
           // this.vel.setMag(this.mass)
           this.pos = this.randomPos()
           const headingToCenter = p.atan2(p.height / 2 - this.pos.y, p.width / 2 - this.pos.x);
-          this.vel.setHeading(headingToCenter)
-          // this.vel.rotate(p.random(360))
-          if (this.mass)
-          console.log(this.pos, headingToCenter)
+          // this.vel.setHeading(headingToCenter)
+          this.vel.rotate(p.random(p.TWO_PI))
         }
       }
 
@@ -230,11 +228,10 @@ let sketch = (config) => {
       masslessParticles = []
 
       // particles that cause gravity waves
-      // const particleTypes = ["PUSH", "ROTATE", "PULL","PUSH", "PUSH", "PUSH", "PUSH", "PUSH"]
+      const particleTypes = ["PUSH", "ROTATE", "ROTATE_RIGHT", "PULL"]
       for (let i = 0; i < particlesCount; i++) {
         const newPart = new Particle(null, p.random(0.5, 5))
-        // newPart.type = particleTypes[i]
-        newPart.type = p.random() < 1/3 ? "PUSH" : p.random() < 2/3 ? "ROTATE" : "PULL"
+        newPart.type = randomItem(particleTypes)
         particles.push(newPart)
       }
 
@@ -322,6 +319,8 @@ let sketch = (config) => {
               // can get interesting effects with forces in other directions
               if (w.parent.type === "ROTATE") {
                 force.rotate(p.PI/2)
+              } else if (w.parent.type === "ROTATE_RIGHT") {
+                force.rotate(-p.PI/2)
               } else if (w.parent.type === "PUSH") {
                 force.rotate(p.PI)
               }
@@ -346,13 +345,15 @@ let sketch = (config) => {
 
       // show flowfield outline
       if (showFlowfield) {
-        p.strokeWeight(1)
         p.stroke(0)
         p.noFill()
         p.rectMode(p.CENTER)
         flowField.forEach((x, y, val) => {
-          p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
+          p.strokeWeight(0.5)
+          // p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
           p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
+          p.strokeWeight(2)
+          p.point((x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
         })
       }
 
