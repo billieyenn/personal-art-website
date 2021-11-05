@@ -10,7 +10,7 @@
 <script>
 /* eslint-enable */
 /* eslint-disable */
-import {colors as colors} from '../../colors.js'
+import { colors as colors } from '../../colors.js'
 import { Grid, noiseEverywhere, randomItem } from '../../utils.js'
 
 let sketch = (config) => {
@@ -19,7 +19,7 @@ let sketch = (config) => {
     p.angleMode(p.RADIANS)
 
     const lorentz = (vel, limit) => {
-        return 1 /  p.sqrt(p.max(0.00001, 1 - p.pow(vel / limit, 2)))
+      return 1 /  p.sqrt(p.max(0.00001, 1 - p.pow(vel / limit, 2)))
     }
     class Particle {
       constructor(pos, mass) {
@@ -29,7 +29,6 @@ let sketch = (config) => {
         this.acc = p.createVector(0, 0)
         this.mass = mass
         this.type = "ROTATE"
-        // this.inverted = p.random() > 0.5 ? 1 : -1
       }
 
       randomPos() {
@@ -168,6 +167,7 @@ let sketch = (config) => {
     let particlesCount, masslessParticlesCount
     let showWaves, showFlowfield
     let particlesHaveFriction, flowfieldDecays
+    let particleVelLimit
     
     // computed at a later stage
     let marginOfError
@@ -218,7 +218,12 @@ let sketch = (config) => {
         flowfieldDecays: {
           value: flowfieldDecays = false
         } = {},
+        speedLimit: {
+          value: particleVelLimit = 0
+        } = {},
       } = config)
+
+      particleVelLimit = Number(particleVelLimit) // for some reason number input comes out as string
 
       marginOfError = forcePropagationSpeed / 2
 
@@ -258,6 +263,8 @@ let sketch = (config) => {
 
 
     p.draw = function () {
+
+      // instead of background, use a rect of size canvas
       const color = p.color(colors.pearlBush)
       color.setAlpha(35)
       p.noStroke()
@@ -371,7 +378,7 @@ let sketch = (config) => {
         const prevPos = p.createVector(particle.pos.x, particle.pos.y)
         if(localForce) {
           particle.applyForce(localForce)
-          particle.update(/*5*/)
+          particle.update(particleVelLimit)
         }
         p.strokeWeight(1)
         if (particle.pos.dist(prevPos) < forcePropagationSpeed + 1) // hack to hide when particles wrap around
@@ -435,6 +442,10 @@ export default {
           type: 'boolean',
           value: false
         },
+        speedLimit: {
+          type: 'number',
+          value: 0
+        }
       }
     }
   }
