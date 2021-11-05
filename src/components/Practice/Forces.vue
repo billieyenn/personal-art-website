@@ -44,6 +44,9 @@ let sketch = (config) => {
         if(limit)
           this.vel = this.vel.limit(limit) // additional limit
 
+        if(!dynamic && this.mass)
+          this.vel.setMag(0)
+
         this.pos.add(this.vel)
         this.acc.setMag(0)
 
@@ -168,7 +171,9 @@ let sketch = (config) => {
     let showWaves, showFlowfield
     let particlesHaveFriction, flowfieldDecays
     let particleVelLimit
-    
+    let particleTypes
+    let dynamic
+
     // computed at a later stage
     let marginOfError
     let waves
@@ -221,11 +226,22 @@ let sketch = (config) => {
         speedLimit: {
           value: particleVelLimit = 0
         } = {},
+        particleTypes: {
+          value: particleTypes = ["PUSH", "ROTATE", "ROTATE_RIGHT", "PULL"]
+        } = {},
+        dynamic: {
+          value: dynamic = false
+        } = {},
+
       } = config)
 
       particleVelLimit = Number(particleVelLimit) // for some reason number input comes out as string
+      if (typeof particleTypes == 'string')
+        particleTypes = particleTypes.split(',')
+      // console.log(particleTypes, typeof particleTypes)
 
       marginOfError = forcePropagationSpeed / 2
+
 
       p.createCanvas(width, height);
       waves = []
@@ -233,7 +249,6 @@ let sketch = (config) => {
       masslessParticles = []
 
       // particles that cause gravity waves
-      const particleTypes = ["PUSH", "ROTATE", "ROTATE_RIGHT", "PULL"]
       for (let i = 0; i < particlesCount; i++) {
         const newPart = new Particle(null, p.random(0.5, 5))
         newPart.type = randomItem(particleTypes)
@@ -403,7 +418,7 @@ export default {
         },
         canvasY: {
           type: 'number',
-          value: 700 * 16 / 9
+          value: 700
         },
         scale: {
           type: 'number',
@@ -444,6 +459,14 @@ export default {
         speedLimit: {
           type: 'number',
           value: 2
+        },
+        particleTypes: {
+          type: 'string',
+          value: ["PUSH", "ROTATE", "ROTATE_RIGHT", "PULL"]
+        },
+        dynamic: {
+          type: 'boolean',
+          value: false
         }
       }
     }
