@@ -245,9 +245,8 @@ let sketch = (config) => {
         masslessParticles.push(new Particle(null, 0))
       }
 
-      rows = p.floor(p.width / scale)
-      cols = p.floor(p.height / scale)
-      
+      rows = p.floor(p.height / scale)
+      cols = p.floor(p.width / scale)      
 
       
       // the flow field keeps track of local gravity
@@ -404,15 +403,15 @@ export default {
         },
         canvasY: {
           type: 'number',
-          value: 700
+          value: 700 * 16 / 9
         },
         scale: {
           type: 'number',
-          value: 10
+          value: 15
         },
         limit: {
           type: 'number',
-          value: 200
+          value: 100
         },
         forcePropagationSpeed: {
           type: 'number',
