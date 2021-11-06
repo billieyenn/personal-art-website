@@ -78,7 +78,8 @@ let sketch = (config) => {
           this.pos = this.randomPos()
           // const headingToCenter = p.atan2(p.height / 2 - this.pos.y, p.width / 2 - this.pos.x);
           // this.vel.setHeading(headingToCenter)
-          this.vel.rotate(p.random(p.TWO_PI))
+          // this.vel.rotate(p.random(p.TWO_PI))
+          this.vel = flowField.getVal(p.floor(this.pos.x/scale), p.floor(this.pos.y/scale)).copy()
         }
       }
 
