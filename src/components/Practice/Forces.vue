@@ -41,16 +41,22 @@ let sketch = (config) => {
         this.acc.sub(friction * this.vel.x, friction * this.vel.y) // add friction to acceleration
         this.vel.add(this.acc)
         this.vel = this.vel.limit(forcePropagationSpeed) // the speed of light can't be exceeded
-        if(limit)
+        if (limit)
           this.vel = this.vel.limit(limit) // additional limit
 
-        if(!dynamic && this.mass)
+        if (!dynamic && this.mass)
           this.vel.setMag(0)
+
 
         this.pos.add(this.vel)
         this.acc.setMag(0)
 
         let outOfBounds = false
+
+        // weird experiment, if particle has effectively stopped moving, reset it
+        // if (!this.mass && this.vel.mag() < 0.05)
+        //   outOfBounds = true 
+        
         if (this.pos.x > p.width) {
           this.pos.x = 0
           outOfBounds = true
@@ -70,7 +76,7 @@ let sketch = (config) => {
         if (outOfBounds) {
           // this.vel.setMag(this.mass)
           this.pos = this.randomPos()
-          const headingToCenter = p.atan2(p.height / 2 - this.pos.y, p.width / 2 - this.pos.x);
+          // const headingToCenter = p.atan2(p.height / 2 - this.pos.y, p.width / 2 - this.pos.x);
           // this.vel.setHeading(headingToCenter)
           this.vel.rotate(p.random(p.TWO_PI))
         }
@@ -219,7 +225,7 @@ let sketch = (config) => {
           value: showFlowfield = false
         } = {},
         particlesHaveFriction: {
-          value: particlesHaveFriction = false
+          value: particlesHaveFriction = 0.06
         } = {},
         flowfieldDecays: {
           value: flowfieldDecays = false
@@ -241,6 +247,8 @@ let sketch = (config) => {
 
       particleVelLimit = Number(particleVelLimit) // for some reason number input comes out as string
       forcePropagationSpeed = Number(forcePropagationSpeed) // for some reason number input comes out as string
+      particlesHaveFriction = Number(particlesHaveFriction) // for some reason number input comes out as string
+      // console.log(particlesHaveFriction)
       if (typeof particleTypes == 'string')
         particleTypes = particleTypes.split(',')
       // console.log(particleTypes, typeof particleTypes)
@@ -433,7 +441,7 @@ let sketch = (config) => {
           p.line(particle.pos.x, particle.pos.y, prevPos.x, prevPos.y)
 
       })
-      // noiseEverywhere(p, 7)
+      // noiseEverywhere(p, 3)
     
     }
   }
@@ -472,7 +480,7 @@ export default {
         },
         particles: {
           type: 'number',
-          value: 4
+          value: 5
         },
         showWaves: {
           type: 'boolean',
