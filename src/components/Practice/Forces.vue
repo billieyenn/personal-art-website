@@ -305,7 +305,9 @@ let sketch = (config) => {
         w.checkLiveness() // within bounds etc
         if (!w.alive)
           waves.splice(i, 1)
-        particles.forEach(particle => { // particles affect other particles
+
+        // particles affect other particles
+        particles.forEach(particle => { 
           if (particle !== w.parent) { // convenience cheat, todo come up with math to make this redundant
             const dist = particle.pos.dist(w.pos)
             // if distance between particle and wave origin == wave radius, apply force
@@ -318,23 +320,36 @@ let sketch = (config) => {
             }
           }
         })
+        // bounding box of wave
+        const x_min = w.pos.x - w.diameter / 2
+        const x_max = w.pos.x + w.diameter / 2
+        const y_min = w.pos.y - w.diameter / 2
+        const y_max = w.pos.y + w.diameter / 2
 
         // updating each flowField cell is too intense, lets instead update a small random subset
         {
           // flowField.forEach((x, y, val) => { etc
           let i = 0
           while (i < limit) {
-            const x = p.floor(p.random(cols))
-            const y = p.floor(p.random(rows))
+
+
+            // index of flow field randomly on wave circumference
+            const angle = p.random() * p.TWO_PI
+            const x = p.min(cols - 1, p.max(0, p.floor((w.pos.x + p.cos(angle) * w.diameter / 2)/scale)))
+            const y = p.min(rows - 1, p.max(0, p.floor((w.pos.y + p.sin(angle) * w.diameter / 2)/scale)))
+
+            // position of flow field
+            const x_ff = (x+0.5)*scale
+            const y_ff = (y+0.5)*scale
 
             // flowField.getVal(x, y).mult(0.999) // force fades away over time
 
 
-            const dist = p.createVector((x+0.5)*scale, (y+0.5)*scale).dist(w.pos)
+            const dist = p.createVector(x_ff, y_ff).dist(w.pos)
 
-            // if wave hits the flow field cell
-            if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
-              const force = p.createVector(w.pos.x - (x+0.5)*scale, w.pos.y - (y+0.5)*scale)
+            // if wave hits the flow field cell // check not necessary anymore bcus of random sampling along circle
+            // if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
+              const force = p.createVector(w.pos.x - x_ff, w.pos.y - y_ff)
               force.setMag(w.force())
 
               // can get interesting effects with forces in other directions
@@ -351,7 +366,7 @@ let sketch = (config) => {
               // force.limit(1)
               ff.add(force)
               ff.limit(1)
-            }
+            // }
 
             i++
           }
@@ -422,11 +437,11 @@ export default {
         },
         scale: {
           type: 'number',
-          value: 15
+          value: 10
         },
         limit: {
           type: 'number',
-          value: 100
+          value: 20
         },
         forcePropagationSpeed: {
           type: 'number',
