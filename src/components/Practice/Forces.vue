@@ -173,6 +173,7 @@ let sketch = (config) => {
     let particleVelLimit
     let particleTypes
     let dynamic
+    let showMassyParticles
 
     // computed at a later stage
     let marginOfError
@@ -232,10 +233,14 @@ let sketch = (config) => {
         dynamic: {
           value: dynamic = false
         } = {},
+        showMassyParticles: {
+          value: showMassyParticles = false
+        } = {},
 
       } = config)
 
       particleVelLimit = Number(particleVelLimit) // for some reason number input comes out as string
+      forcePropagationSpeed = Number(forcePropagationSpeed) // for some reason number input comes out as string
       if (typeof particleTypes == 'string')
         particleTypes = particleTypes.split(',')
       // console.log(particleTypes, typeof particleTypes)
@@ -297,6 +302,11 @@ let sketch = (config) => {
       // each particle creates a force wave
       particles.forEach((particle, i) => {
         waves.push(new Circle(p.createVector(particle.pos.x, particle.pos.y), forcePropagationSpeed / 2, particle.mass, particle))
+        if (showMassyParticles) {
+          p.noStroke()
+          p.fill(p.color(colors.mojo))
+          p.ellipse(particle.pos.x, particle.pos.y, 10, 10)
+        }
       })
 
       // each wave affects the flow/force field when at the right distance
@@ -335,10 +345,17 @@ let sketch = (config) => {
 
             // index of flow field randomly on wave circumference
             const angle = p.random() * p.TWO_PI
-            const x = p.min(cols - 1, p.max(0, p.floor((w.pos.x + p.cos(angle) * w.diameter / 2)/scale)))
-            const y = p.min(rows - 1, p.max(0, p.floor((w.pos.y + p.sin(angle) * w.diameter / 2)/scale)))
+            const x = p.floor((w.pos.x + p.cos(angle) * w.diameter / 2)/scale)
+            const y = p.floor((w.pos.y + p.sin(angle) * w.diameter / 2)/scale)
 
-            // position of flow field
+            // check if point is in flow field
+            if (x >= cols 
+              || x < 0 
+              || y >= rows
+              || y < 0)
+              break
+
+            // position of flow field on canvas
             const x_ff = (x+0.5)*scale
             const y_ff = (y+0.5)*scale
 
@@ -377,6 +394,8 @@ let sketch = (config) => {
           p.noFill()
           w.display()
         }
+
+
       })
 
       // show flowfield outline
@@ -480,6 +499,10 @@ export default {
           value: ["PUSH", "ROTATE", "ROTATE_RIGHT", "PULL"]
         },
         dynamic: {
+          type: 'boolean',
+          value: false
+        },
+        showMassyParticles: {
           type: 'boolean',
           value: false
         }
