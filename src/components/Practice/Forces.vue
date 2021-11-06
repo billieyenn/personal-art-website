@@ -249,10 +249,9 @@ let sketch = (config) => {
       particleVelLimit = Number(particleVelLimit) // for some reason number input comes out as string
       forcePropagationSpeed = Number(forcePropagationSpeed) // for some reason number input comes out as string
       particlesHaveFriction = Number(particlesHaveFriction) // for some reason number input comes out as string
-      // console.log(particlesHaveFriction)
+
       if (typeof particleTypes == 'string')
         particleTypes = particleTypes.split(',')
-      // console.log(particleTypes, typeof particleTypes)
 
       marginOfError = forcePropagationSpeed / 2
 
@@ -310,11 +309,11 @@ let sketch = (config) => {
 
       // each particle creates a force wave
       particles.forEach((particle, i) => {
-        waves.push(new Circle(p.createVector(particle.pos.x, particle.pos.y), forcePropagationSpeed / 2, particle.mass, particle))
+        waves.push(new Circle(p.createVector(particle.pos.x, particle.pos.y), 0, particle.mass, particle))
         if (showMassyParticles) {
           p.noStroke()
           p.fill(p.color(colors.mojo))
-          p.ellipse(particle.pos.x, particle.pos.y, 10, 10)
+          p.ellipse(particle.pos.x, particle.pos.y, p.sqrt(particle.mass)*10)
         }
       })
 
@@ -325,7 +324,7 @@ let sketch = (config) => {
         if (!w.alive)
           waves.splice(i, 1)
 
-        // particles affect other particles
+        // waves of particles affect other particles
         particles.forEach(particle => { 
           if (particle !== w.parent) { // convenience cheat, todo come up with math to make this redundant
             const dist = particle.pos.dist(w.pos)
@@ -339,6 +338,23 @@ let sketch = (config) => {
             }
           }
         })
+
+        // particles that impact each other annihilate
+        particles.forEach((p1, i) => {
+          particles.forEach((p2, ii) => {
+            if (p1 != p2 && p1.pos.dist(p2.pos) < p.sqrt(p2.mass) + p.sqrt(p1.mass)) {
+              particles.splice(i, 1)
+              p2.mass += p1.mass
+            }
+          })
+        })
+
+        // when one massful particle remains, close the system
+        if (particles.length == 1) {
+          particles.splice(0, 1)
+        }
+
+
         // bounding box of wave
         const x_min = w.pos.x - w.diameter / 2
         const x_max = w.pos.x + w.diameter / 2
@@ -351,13 +367,12 @@ let sketch = (config) => {
           let i = 0
           while (i < limit) {
 
-
             // index of flow field randomly on wave circumference
             const angle = p.random() * p.TWO_PI
             const x = p.floor((w.pos.x + p.cos(angle) * w.diameter / 2)/scale)
             const y = p.floor((w.pos.y + p.sin(angle) * w.diameter / 2)/scale)
 
-            // check if point is in flow field
+            // check if point is in canvas
             if (x >= cols 
               || x < 0 
               || y >= rows
@@ -367,9 +382,6 @@ let sketch = (config) => {
             // position of flow field on canvas
             const x_ff = (x+0.5)*scale
             const y_ff = (y+0.5)*scale
-
-            // flowField.getVal(x, y).mult(0.999) // force fades away over time
-
 
             const dist = p.createVector(x_ff, y_ff).dist(w.pos)
 
@@ -422,7 +434,7 @@ let sketch = (config) => {
       }
 
       particles.forEach((particle, i) => {
-        particle.update()
+        particle.update(forcePropagationSpeed)
       })
 
       const bigStone = p.color(colors.bigStone)
@@ -437,7 +449,7 @@ let sketch = (config) => {
           particle.applyForce(localForce)
           particle.update(particleVelLimit)
         }
-        p.strokeWeight(1)
+        p.strokeWeight(0.5)
         if (particle.pos.dist(prevPos) < forcePropagationSpeed + 1) // hack to hide when particles wrap around
           p.line(particle.pos.x, particle.pos.y, prevPos.x, prevPos.y)
 
