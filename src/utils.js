@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 import { sqrt } from 'mathjs'
-import { max } from 'mathjs'
+import { max, min } from 'mathjs'
 
 class Grid {
 	constructor(rows, cols) {
@@ -15,8 +15,9 @@ class Grid {
 	forEach(f, c) {
 		this.grid.forEach((row, y) => {
         row.forEach((val, x) => {
-        	if(c ? c(x, y, val) : true)
-	        	f(x, y, val)
+        	if (typeof val !== 'undefined')
+	        	if (c ? c(x, y, val) : true)
+		        	f(x, y, val)
         })
       })
 	}
@@ -61,10 +62,15 @@ class FlowField {
 	}
 }
 
-// Area to mark edges
+// Area to make custom canvases
+// but really it is just some polygon
 class Canvas {
 	constructor(vertices) {
 		this.vertices = vertices
+		this.minX = min(this.vertices.map(v => v.x))
+    this.maxX = max(this.vertices.map(v => v.x))
+    this.minY = min(this.vertices.map(v => v.y))
+    this.maxY = max(this.vertices.map(v => v.y))
 	}
 
 	outOfBounds(point) {

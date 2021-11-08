@@ -32,12 +32,10 @@ let sketch = (config) => {
       }
 
       randomPos() {
-        // while(this.outOfBounds())
-        // this.pos
-        const minX = p.min(this.canvas.vertices.map(v => v.x))
-        const maxX = p.max(this.canvas.vertices.map(v => v.x))
-        const minY = p.min(this.canvas.vertices.map(v => v.y))
-        const maxY = p.max(this.canvas.vertices.map(v => v.y))
+        const minX = this.canvas.minX
+        const maxX = this.canvas.maxX
+        const minY = this.canvas.minY
+        const maxY = this.canvas.maxY
         return p.createVector(p.random(minX, maxX), p.random(minY, maxY))
       }
 
@@ -57,43 +55,17 @@ let sketch = (config) => {
         this.pos.add(this.vel)
         this.acc.setMag(0)
 
-        // const outOfBounds = this.outOfBounds()
-        // let outOfBounds = false
+        while(this.outOfBounds()/* && i < 100*/) {
+          this.pos = this.randomPos()
+          let ff = flowField.getVal(p.floor(this.pos.x/scale), p.floor(this.pos.y/scale))
+          if (ff)
+            this.vel = ff.copy()
 
-        // // weird experiment, if particle has effectively stopped moving, reset it
-        // // if (!this.mass && this.vel.mag() < 0.05)
-        // //   outOfBounds = true 
-        
-        // if (this.pos.x > p.width) {
-        //   this.pos.x = 0
-        //   outOfBounds = true
-        // }
-        // if (this.pos.x < 0) {
-        //   this.pos.x = p.width
-        //   outOfBounds = true
-        // }
-        // if (this.pos.y > p.height) {
-        //   this.pos.y = 0
-        //   outOfBounds = true
-        // }
-        // if (this.pos.y < 0) {
-        //   this.pos.y = p.height
-        //   outOfBounds = true
-        // }
-        // if (this.outOfBounds()) {
-          // this.vel.setMag(this.mass)
-          // let i = 0
-          while(this.outOfBounds()/* && i < 100*/) {
-            this.pos = this.randomPos()
-            this.vel = flowField.getVal(p.floor(this.pos.x/scale), p.floor(this.pos.y/scale)).copy()
-
-            // i++
-          }
+        }
           // const headingToCenter = p.atan2(p.height / 2 - this.pos.y, p.width / 2 - this.pos.x);
           // this.vel.setHeading(headingToCenter)
           // this.vel.rotate(p.random(p.TWO_PI))
           // this.vel = flowField.getVal(p.floor(this.pos.x/scale), p.floor(this.pos.y/scale)).copy()
-        // }
       }
 
       applyForce(force) {
@@ -158,34 +130,6 @@ let sketch = (config) => {
         })
         return outOfBounds
       }
-
-      // // if even one of the frame corners is farther away than the
-      // outOfBounds () {
-      //   let corner = p.createVector(0, 0)
-      //   let dist = corner.dist(this.pos)
-      //   if (this.diameter / 2 < dist) {
-      //     return false
-      //   }
-
-      //   corner = p.createVector(p.width, 0)
-      //   dist = corner.dist(this.pos)
-      //   if (this.diameter / 2 < dist) {
-      //     return false
-      //   }
-
-      //   corner = p.createVector(p.width, p.height)
-      //   dist = corner.dist(this.pos)
-      //   if (this.diameter / 2 < dist) {
-      //     return false
-      //   }
-
-      //   corner = p.createVector(0, p.height)
-      //   dist = corner.dist(this.pos)
-      //   if (this.diameter / 2 < dist) {
-      //     return false
-      //   }
-      //   return true
-      // }
 
       die () {
         this.alive = false
@@ -316,14 +260,17 @@ let sketch = (config) => {
       }
 
       rows = p.floor(p.height / scale)
-      cols = p.floor(p.width / scale)      
+      cols = p.floor(p.width / scale)
 
       
       // the flow field keeps track of local gravity
       flowField = new Grid(rows, cols)
-        flowField.forEach((x, y, val) => {
-          flowField.setVal(x, y, p.createVector(0, 0))
-        })
+      flowField.canvas = canvas
+      flowField.forEach((x, y, val) => {
+        let point = p.createVector((x+1.5)*scale, (y+1.5)*scale)
+        flowField.setVal(x, y, (!flowField.canvas.outOfBounds(point) ? p.createVector(0, 0) : undefined))
+      })
+      // console.log(flowField)
       p.background(p.color(colors.pearlBush))
     }
 
@@ -445,12 +392,15 @@ let sketch = (config) => {
               } else if (w.parent.type === "PUSH") {
                 force.rotate(p.PI)
               }
-              let ff = flowField.getVal(x, y)
               const l = lorentz(force.mag(), forcePropagationSpeed)
               force.div(l)
               // force.limit(1)
-              ff.add(force)
-              ff.limit(1)
+
+              let ff = flowField.getVal(x, y)
+              if (ff) {
+                ff.add(force)
+                ff.limit(1)
+              }
             // }
 
             i++
@@ -471,9 +421,9 @@ let sketch = (config) => {
         p.stroke(0)
         p.noFill()
         p.rectMode(p.CENTER)
+        flowField.forEach((x, y, val) => {
         const x_ff = (x + 0.5) * scale
         const y_ff = (y + 0.5) * scale
-        flowField.forEach((x, y, val) => {
           p.strokeWeight(0.5)
           // p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
           p.line(x_ff, y_ff, x_ff + val.x*scale, y_ff + val.y*scale)
@@ -574,7 +524,7 @@ export default {
         },
         showMassyParticles: {
           type: 'boolean',
-          value: true
+          value: false
         },
         annihilation: {
           type: 'boolean',
