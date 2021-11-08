@@ -293,7 +293,7 @@ let sketch = (config) => {
 
       // instead of background, use a rect of size canvas
       const color = p.color(colors.pearlBush)
-      color.setAlpha(35)
+      color.setAlpha(5)
       p.noStroke()
       p.fill(color)
       p.rectMode(p.CORNER)
@@ -509,7 +509,7 @@ export default {
         },
         flowfieldDecays: {
           type: 'boolean',
-          value: true
+          value: false
         },
         speedLimit: {
           type: 'number',
@@ -521,7 +521,7 @@ export default {
         },
         dynamic: {
           type: 'boolean',
-          value: false
+          value: true
         },
         showMassyParticles: {
           type: 'boolean',
