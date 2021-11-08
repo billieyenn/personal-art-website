@@ -166,7 +166,7 @@ let sketch = (config) => {
     let cols
     let flowField
 
-    let canvas
+    let canvas, canvas2, canvas3, canvas4
     p.setup = function () {
 
       // destructure config for starters
@@ -240,27 +240,52 @@ let sketch = (config) => {
       particles = []
       masslessParticles = []
 
-      canvas = new Canvas([p.createVector(50, 50),
-        p.createVector(50, 650),
-        p.createVector(650, 650),
+      canvas = new Canvas([p.createVector(100, 50),
+        p.createVector(50, 300),
+        p.createVector(300, 300),
+        p.createVector(350, 50),
+        ])
+
+      canvas2 = new Canvas([p.createVector(400, 50),
+        p.createVector(350, 300),
+        p.createVector(600, 300),
         p.createVector(650, 50),
         ])
 
-      // particles that cause gravity waves
-      for (let i = 0; i < particlesCount; i++) {
-        const newPart = new Particle(null, p.random(0.5, 5), canvas)
-        newPart.type = randomItem(particleTypes)
-        particles.push(newPart)
-      // console.log(particlesCount
-      }
+      canvas3 = new Canvas([p.createVector(100, 350),
+        p.createVector(50, 600),
+        p.createVector(300, 600),
+        p.createVector(350, 350),
+        ])
 
-      // particles that don't create gravity waves
-      for (let i = 0; i < masslessParticlesCount; i++) {
-        masslessParticles.push(new Particle(null, 0, canvas))
-      }
+      canvas4 = new Canvas([p.createVector(400, 350),
+        p.createVector(350, 600),
+        p.createVector(600, 600),
+        p.createVector(650, 350),
+        ])
 
-      rows = p.floor(p.height / scale)
+      let canvasses = [canvas, canvas2, canvas3, canvas4]
+
+      canvasses.forEach(canvas => {
+        // particles that cause gravity waves
+        for (let i = 0; i < particlesCount/4; i++) {
+          const newPart = new Particle(null, p.random(0.5, 5), canvas)
+          newPart.type = randomItem(particleTypes)
+          particles.push(newPart)
+        }
+
+
+        // particles that don't create gravity waves
+        for (let i = 0; i < masslessParticlesCount/4; i++) {
+          masslessParticles.push(new Particle(null, 0, canvas))
+        }
+
+      })
+
+      // rows = p.floor((canvas.maxY - canvas.minY) / scale)
+      // cols = p.floor((canvas.maxX - canvas.minX) / scale)
       cols = p.floor(p.width / scale)
+      rows = p.floor(p.height / scale)
 
       
       // the flow field keeps track of local gravity
@@ -268,7 +293,8 @@ let sketch = (config) => {
       flowField.canvas = canvas
       flowField.forEach((x, y, val) => {
         let point = p.createVector((x+1.5)*scale, (y+1.5)*scale)
-        flowField.setVal(x, y, (!flowField.canvas.outOfBounds(point) ? p.createVector(0, 0) : undefined))
+        flowField.setVal(x, y, p.createVector(0, 0))
+        // flowField.setVal(x, y, (!flowField.canvas.outOfBounds(point) ? p.createVector(0, 0) : undefined))
       })
       // console.log(flowField)
       p.background(p.color(colors.pearlBush))
