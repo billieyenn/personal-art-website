@@ -517,7 +517,7 @@ export default {
         },
         particleTypes: {
           type: 'string',
-          value: ["PUSH", "ROTATE", "ROTATE_RIGHT", "PULL"]
+          value: [/*"PUSH", */"ROTATE", "ROTATE_RIGHT"/*, "PULL"*/]
         },
         dynamic: {
           type: 'boolean',
