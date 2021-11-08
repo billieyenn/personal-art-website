@@ -26,7 +26,11 @@ class Grid {
 	}
 
 	getVal(x, y) {
-		return this.grid[y][x]
+		const temp = this.grid[y]
+		if (temp)
+			return temp[x]
+		return undefined
+		// return [x]
 	}
 }
 
@@ -54,6 +58,17 @@ class FlowField {
 
 	forEach(f, c) {
 		this.flowField.forEach(f, c)
+	}
+}
+
+// Area to mark edges
+class Canvas {
+	constructor(vertices) {
+		this.vertices = vertices
+	}
+
+	outOfBounds(point) {
+		return !isInPoly(this.vertices, point.x, point.y)
 	}
 }
 
@@ -179,4 +194,5 @@ export { FlowField,
 		RGBtoCMYK, 
 		CMYKtoRGB,
 		noiseEverywhere,
-		randomItem }
+		randomItem,
+		Canvas }

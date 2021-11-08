@@ -11,19 +11,19 @@
 /* eslint-enable */
 /* eslint-disable */
 import { colors as colors } from '../../colors.js'
-import { Grid, noiseEverywhere, randomItem } from '../../utils.js'
+import { Grid, noiseEverywhere, randomItem, Canvas } from '../../utils.js'
 
 let sketch = (config) => {
   return function (p) {
-    let paused = false
     p.angleMode(p.RADIANS)
 
     const lorentz = (vel, limit) => {
       return 1 /  p.sqrt(p.max(0.00001, 1 - p.pow(vel / limit, 2)))
     }
     class Particle {
-      constructor(pos, mass) {
-        this.pos = pos || p.createVector(p.random(p.width), p.random(p.height))
+      constructor(pos, mass, canvas) {
+        this.canvas = canvas
+        this.pos = pos || this.randomPos()//p.createVector(p.random(p.width), p.random(p.height))
         this.vel = p.createVector(p.random(-mass, mass), p.random(-mass, mass))
         // this.vel.limit(forcePropagationSpeed)
         this.acc = p.createVector(0, 0)
@@ -32,7 +32,13 @@ let sketch = (config) => {
       }
 
       randomPos() {
-        return p.createVector(p.random(0, p.width), p.random(0, p.height))
+        // while(this.outOfBounds())
+        // this.pos
+        const minX = p.min(this.canvas.vertices.map(v => v.x))
+        const maxX = p.max(this.canvas.vertices.map(v => v.x))
+        const minY = p.min(this.canvas.vertices.map(v => v.y))
+        const maxY = p.max(this.canvas.vertices.map(v => v.y))
+        return p.createVector(p.random(minX, maxX), p.random(minY, maxY))
       }
 
 
@@ -51,36 +57,43 @@ let sketch = (config) => {
         this.pos.add(this.vel)
         this.acc.setMag(0)
 
-        let outOfBounds = false
+        // const outOfBounds = this.outOfBounds()
+        // let outOfBounds = false
 
-        // weird experiment, if particle has effectively stopped moving, reset it
-        // if (!this.mass && this.vel.mag() < 0.05)
-        //   outOfBounds = true 
+        // // weird experiment, if particle has effectively stopped moving, reset it
+        // // if (!this.mass && this.vel.mag() < 0.05)
+        // //   outOfBounds = true 
         
-        if (this.pos.x > p.width) {
-          this.pos.x = 0
-          outOfBounds = true
-        }
-        if (this.pos.x < 0) {
-          this.pos.x = p.width
-          outOfBounds = true
-        }
-        if (this.pos.y > p.height) {
-          this.pos.y = 0
-          outOfBounds = true
-        }
-        if (this.pos.y < 0) {
-          this.pos.y = p.height
-          outOfBounds = true
-        }
-        if (outOfBounds) {
+        // if (this.pos.x > p.width) {
+        //   this.pos.x = 0
+        //   outOfBounds = true
+        // }
+        // if (this.pos.x < 0) {
+        //   this.pos.x = p.width
+        //   outOfBounds = true
+        // }
+        // if (this.pos.y > p.height) {
+        //   this.pos.y = 0
+        //   outOfBounds = true
+        // }
+        // if (this.pos.y < 0) {
+        //   this.pos.y = p.height
+        //   outOfBounds = true
+        // }
+        // if (this.outOfBounds()) {
           // this.vel.setMag(this.mass)
-          this.pos = this.randomPos()
+          // let i = 0
+          while(this.outOfBounds()/* && i < 100*/) {
+            this.pos = this.randomPos()
+            this.vel = flowField.getVal(p.floor(this.pos.x/scale), p.floor(this.pos.y/scale)).copy()
+
+            // i++
+          }
           // const headingToCenter = p.atan2(p.height / 2 - this.pos.y, p.width / 2 - this.pos.x);
           // this.vel.setHeading(headingToCenter)
           // this.vel.rotate(p.random(p.TWO_PI))
-          this.vel = flowField.getVal(p.floor(this.pos.x/scale), p.floor(this.pos.y/scale)).copy()
-        }
+          // this.vel = flowField.getVal(p.floor(this.pos.x/scale), p.floor(this.pos.y/scale)).copy()
+        // }
       }
 
       applyForce(force) {
@@ -98,18 +111,23 @@ let sketch = (config) => {
         // p.point(0, 0)
         p.pop()
       }
+
+      outOfBounds() {
+        return this.canvas.outOfBounds(this.pos)
+      }
     }
   
 
     // when adjusting propagationspeed, remember to also adjust margin of errer for force application.
 
     class Circle {
-      constructor (pos, diameter, intensity, parent) {
+      constructor (pos, diameter, intensity, parent, canvas) {
         this.diameter = diameter
         this.pos = pos
         this.intensity = intensity || 1
         this.alive = true
         this.parent = parent
+        this.canvas = canvas
       }
 
       display () {
@@ -131,31 +149,43 @@ let sketch = (config) => {
 
       // if even one of the frame corners is farther away than the
       outOfBounds () {
-        let corner = p.createVector(0, 0)
-        let dist = corner.dist(this.pos)
-        if (this.diameter / 2 < dist) {
-          return false
-        }
-
-        corner = p.createVector(p.width, 0)
-        dist = corner.dist(this.pos)
-        if (this.diameter / 2 < dist) {
-          return false
-        }
-
-        corner = p.createVector(p.width, p.height)
-        dist = corner.dist(this.pos)
-        if (this.diameter / 2 < dist) {
-          return false
-        }
-
-        corner = p.createVector(0, p.height)
-        dist = corner.dist(this.pos)
-        if (this.diameter / 2 < dist) {
-          return false
-        }
-        return true
+        let outOfBounds = true
+        this.canvas.vertices.forEach((v) => {
+          let dist = p.createVector(v.x, v.y).dist(this.pos)
+          if (this.diameter / 2 < dist) {
+            outOfBounds = false
+          }  
+        })
+        return outOfBounds
       }
+
+      // // if even one of the frame corners is farther away than the
+      // outOfBounds () {
+      //   let corner = p.createVector(0, 0)
+      //   let dist = corner.dist(this.pos)
+      //   if (this.diameter / 2 < dist) {
+      //     return false
+      //   }
+
+      //   corner = p.createVector(p.width, 0)
+      //   dist = corner.dist(this.pos)
+      //   if (this.diameter / 2 < dist) {
+      //     return false
+      //   }
+
+      //   corner = p.createVector(p.width, p.height)
+      //   dist = corner.dist(this.pos)
+      //   if (this.diameter / 2 < dist) {
+      //     return false
+      //   }
+
+      //   corner = p.createVector(0, p.height)
+      //   dist = corner.dist(this.pos)
+      //   if (this.diameter / 2 < dist) {
+      //     return false
+      //   }
+      //   return true
+      // }
 
       die () {
         this.alive = false
@@ -173,7 +203,7 @@ let sketch = (config) => {
     // provided in config
     let forcePropagationSpeed
     let scale, limit
-    let width, height
+    let canvasWidth, canvasHeight
     let particlesCount, masslessParticlesCount
     let showWaves, showFlowfield
     let particlesHaveFriction, flowfieldDecays
@@ -181,6 +211,7 @@ let sketch = (config) => {
     let particleTypes
     let dynamic
     let showMassyParticles
+    let annihilation
 
     // computed at a later stage
     let marginOfError
@@ -191,6 +222,7 @@ let sketch = (config) => {
     let cols
     let flowField
 
+    let canvas
     p.setup = function () {
 
       // destructure config for starters
@@ -205,10 +237,10 @@ let sketch = (config) => {
           value: limit = 20
         } = {},
         canvasX: {
-          value: width = 700
+          value: canvasWidth = 700
         } = {},
         canvasY: {
-          value: height = 700
+          value: canvasHeight = 700
         } = {},
         forcePropagationSpeed: {
           value: forcePropagationSpeed = 10
@@ -243,6 +275,9 @@ let sketch = (config) => {
         showMassyParticles: {
           value: showMassyParticles = false
         } = {},
+        annihilation: {
+          value: annihilation = false
+        } = {}
 
       } = config)
 
@@ -256,21 +291,28 @@ let sketch = (config) => {
       marginOfError = forcePropagationSpeed / 2
 
 
-      p.createCanvas(width, height);
+      p.createCanvas(canvasWidth, canvasHeight);
       waves = []
       particles = []
       masslessParticles = []
 
+      canvas = new Canvas([p.createVector(50, 50),
+        p.createVector(50, 650),
+        p.createVector(650, 650),
+        p.createVector(650, 50),
+        ])
+
       // particles that cause gravity waves
       for (let i = 0; i < particlesCount; i++) {
-        const newPart = new Particle(null, p.random(0.5, 5))
+        const newPart = new Particle(null, p.random(0.5, 5), canvas)
         newPart.type = randomItem(particleTypes)
         particles.push(newPart)
+      // console.log(particlesCount
       }
 
       // particles that don't create gravity waves
       for (let i = 0; i < masslessParticlesCount; i++) {
-        masslessParticles.push(new Particle(null, 0))
+        masslessParticles.push(new Particle(null, 0, canvas))
       }
 
       rows = p.floor(p.height / scale)
@@ -309,7 +351,7 @@ let sketch = (config) => {
 
       // each particle creates a force wave
       particles.forEach((particle, i) => {
-        waves.push(new Circle(p.createVector(particle.pos.x, particle.pos.y), 0, particle.mass, particle))
+        waves.push(new Circle(p.createVector(particle.pos.x, particle.pos.y), 0, particle.mass, particle, canvas))
         if (showMassyParticles) {
           p.noStroke()
           p.fill(p.color(colors.mojo))
@@ -325,7 +367,7 @@ let sketch = (config) => {
           waves.splice(i, 1)
 
         // waves of particles affect other particles
-        particles.forEach(particle => { 
+        particles.forEach(particle => {
           if (particle !== w.parent) { // convenience cheat, todo come up with math to make this redundant
             const dist = particle.pos.dist(w.pos)
             // if distance between particle and wave origin == wave radius, apply force
@@ -340,17 +382,22 @@ let sketch = (config) => {
         })
 
         // particles that impact each other annihilate
-        particles.forEach((p1, i) => {
-          particles.forEach((p2, ii) => {
-            if (p1 != p2 && p1.pos.dist(p2.pos) < p.sqrt(p2.mass) + p.sqrt(p1.mass)) {
-              particles.splice(i, 1)
-              p2.mass += p1.mass
-            }
+        if (annihilation) {
+          particles.forEach((p1, i) => {
+            particles.forEach((p2, ii) => {
+              let schwarzschildRadius = 2 / p.pow(forcePropagationSpeed, 2) * p.pow((p1.mass > p2.mass ? p1.mass : p2.mass), 2)
+              if (p1 != p2 && p1.pos.dist(p2.pos) < schwarzschildRadius/*p.sqrt(p2.mass) + p.sqrt(p1.mass)*/) {
+                particles.splice(i, 1)
+                p2.mass += p1.mass
+                console.log(schwarzschildRadius)
+              }
+            })
           })
-        })
+        }
 
         // when one massful particle remains, close the system
-        if (particles.length == 1) {
+        if (particles.length == 2) {
+          particles.splice(0, 1)
           particles.splice(0, 1)
         }
 
@@ -424,12 +471,14 @@ let sketch = (config) => {
         p.stroke(0)
         p.noFill()
         p.rectMode(p.CENTER)
+        const x_ff = (x + 0.5) * scale
+        const y_ff = (y + 0.5) * scale
         flowField.forEach((x, y, val) => {
           p.strokeWeight(0.5)
           // p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
-          p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
+          p.line(x_ff, y_ff, x_ff + val.x*scale, y_ff + val.y*scale)
           p.strokeWeight(2)
-          p.point((x+0.5)*scale + val.x*scale, (y+0.5)*scale + val.y*scale)
+          p.point(x_ff + val.x*scale, y_ff + val.y*scale)
         })
       }
 
@@ -525,7 +574,11 @@ export default {
         },
         showMassyParticles: {
           type: 'boolean',
-          value: false
+          value: true
+        },
+        annihilation: {
+          type: 'boolean',
+          value: true
         }
       }
     }
