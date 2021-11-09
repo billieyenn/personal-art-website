@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <div class="row">
       <div v-if="!isMobile()">
-        <div class="col-sm-3 col-md-3 sidebar gray">
+        <div class="col-sm-3 col-md-3 sidebar springwood">
           <router-view name="header-top"></router-view>
           <div class="footer">
             <router-view name="header-bottom"></router-view>
@@ -45,9 +45,8 @@ export default {
 <style>
   body {
     font-family: 'Montserrat', sans-serif;
-  }
-
-  body {
+    /*color: black;*/
+    color: #121a33;
   }
 
   .sidebar {
@@ -69,6 +68,10 @@ export default {
 
   .gray {
     background-color: #F5F5F5;
+  }
+
+  .springwood {
+    background-color: #faf8f5;
   }
 
   .main {
