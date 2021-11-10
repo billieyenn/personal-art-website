@@ -240,79 +240,43 @@ let sketch = (config) => {
       particles = []
       masslessParticles = []
 
-      canvas = new Canvas([p.createVector(50, 50),
-        p.createVector(50, 650),
-        p.createVector(650, 650),
+      canvas = new Canvas([p.createVector(100, 50),
+        p.createVector(50, 300),
+        p.createVector(300, 300),
+        p.createVector(350, 50),
+        ])
+
+      canvas2 = new Canvas([p.createVector(400, 50),
+        p.createVector(350, 300),
+        p.createVector(600, 300),
         p.createVector(650, 50),
         ])
 
-      let canvasses = [canvas]
+      canvas3 = new Canvas([p.createVector(100, 350),
+        p.createVector(50, 600),
+        p.createVector(300, 600),
+        p.createVector(350, 350),
+        ])
+
+      canvas4 = new Canvas([p.createVector(400, 350),
+        p.createVector(350, 600),
+        p.createVector(600, 600),
+        p.createVector(650, 350),
+        ])
+
+      let canvasses = [canvas, canvas2, canvas3, canvas4]
 
       canvasses.forEach(canvas => {
         // particles that cause gravity waves
-        // for (let i = 0; i < particlesCount; i++) {
-        //   const newPart = new Particle(null, p.random(0.5, 5), canvas)
-        //   newPart.type = randomItem(particleTypes)
-        //   particles.push(newPart)
-        // }
-
-        // let newPart = new Particle(p.createVector(250, 230), 0.5, canvas)
-        // newPart.type = "ROTATE"
-        // particles.push(newPart)
-
-        // newPart = new Particle(p.createVector(350, 230), 0.5, canvas)
-        // newPart.type = "ROTATE"
-        // particles.push(newPart)
-
-        // newPart = new Particle(p.createVector(300, 320), 0.1, canvas)
-        // newPart.type = "ROTATE"
-        // particles.push(newPart)
-
-        // newPart = new Particle(p.createVector(300, 350), 0.01, canvas)
-        // newPart.type = "ROTATE"
-        // particles.push(newPart)
-
-        // newPart = new Particle(p.createVector(300, 380), 0.1, canvas)
-        // newPart.type = "ROTATE"
-        // particles.push(newPart)
-
-        // newPart = new Particle(p.createVector(230, 450), 0.1, canvas)
-        // newPart.type = "ROTATE"
-        // particles.push(newPart)
-
-        // newPart = new Particle(p.createVector(370, 450), 0.1, canvas)
-        // newPart.type = "ROTATE"
-        // particles.push(newPart)
-
-        // newPart = new Particle(p.createVector(300, 500), 5, canvas)
-        // newPart.type = "ROTATE"
-        // particles.push(newPart)
-
-        // // left leg
-        // newPart = new Particle(p.createVector(200, 600), 0.1, canvas)
-        // newPart.type = "ROTATE"
-        // particles.push(newPart)
-
-        // // right leg
-        // newPart = new Particle(p.createVector(400, 600), 0.1, canvas)
-        // newPart.type = "ROTATE"
-        // particles.push(newPart)
-
-        let newPart = new Particle(p.createVector(250, 250), 0.5, canvas)
-        newPart.type = "ROTATE"
-        particles.push(newPart)
-
-        newPart = new Particle(p.createVector(350, 350), 0.01, canvas)
-        newPart.type = "PUSH"
-        particles.push(newPart)
-
-        newPart = new Particle(p.createVector(450, 450), 0.5, canvas)
-        newPart.type = "ROTATE"
-        particles.push(newPart)
+        for (let i = 0; i < particlesCount/4; i++) {
+          const newPart = new Particle(null, p.random(0.5, 5), canvas)
+          newPart.type = randomItem(particleTypes)
+          particles.push(newPart)
+        }
 
 
         // particles that don't create gravity waves
-        for (let i = 0; i < masslessParticlesCount; i++) {
+        for (let i = 0; i < masslessParticlesCount/4; i++) {
           masslessParticles.push(new Particle(null, 0, canvas))
         }
 
@@ -402,14 +366,13 @@ let sketch = (config) => {
               }
             })
           })
-          
-          // when one massful particle remains, close the system
-          if (particles.length == 2) {
-            particles.splice(0, 1)
-            particles.splice(0, 1)
-          }
         }
 
+        // when one massful particle remains, close the system
+        if (particles.length == 2) {
+          particles.splice(0, 1)
+          particles.splice(0, 1)
+        }
 
 
         // bounding box of wave
@@ -583,7 +546,7 @@ export default {
         },
         dynamic: {
           type: 'boolean',
-          value: false
+          value: true
         },
         showMassyParticles: {
           type: 'boolean',
@@ -591,7 +554,7 @@ export default {
         },
         annihilation: {
           type: 'boolean',
-          value: false
+          value: true
         }
       }
     }

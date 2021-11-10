@@ -55,6 +55,7 @@
   <ul>
       <router-link tag='li' to='/sketches/unnamed' style='cursor: pointer;'>Unnamed</router-link>
       <router-link tag='li' to='/sketches/shape/1' style='cursor: pointer;'>Shape 1</router-link>
+      <router-link tag='li' to='/sketches/practice/forceswindows' style='cursor: pointer;'>Windows</router-link>
   </ul>
 
   <hr>

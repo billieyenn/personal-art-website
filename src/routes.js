@@ -34,6 +34,7 @@ import Grids from './components/Practice/Grids.vue'
 import Unnamed from './components/Unnamed/Unnamed.vue'
 import Shape1 from './components/Unnamed/Shape1.vue'
 import Forces from './components/Practice/Forces.vue'
+import ForcesWindows from './components/Unnamed/Forces_windows_logo.vue'
 import GaussianNoise from './components/Practice/GaussianNoise.vue'
 import SketchTemplate from './components/Practice/SketchTemplate.vue'
 
@@ -108,6 +109,7 @@ export const routes = [
       { path: 'practice/collision', component: Collision },
       { path: 'practice/grids', component: Grids },
       { path: 'practice/forces', component: Forces },
+      { path: 'practice/forceswindows', component: ForcesWindows },
       { path: 'practice/gaussiannoise', component: GaussianNoise },
       { path: 'practice/sketchtemplate', component: SketchTemplate }
     ]
