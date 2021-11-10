@@ -250,11 +250,11 @@ let sketch = (config) => {
 
       canvasses.forEach(canvas => {
         // particles that cause gravity waves
-        // for (let i = 0; i < particlesCount; i++) {
-        //   const newPart = new Particle(null, p.random(0.5, 5), canvas)
-        //   newPart.type = randomItem(particleTypes)
-        //   particles.push(newPart)
-        // }
+        for (let i = 0; i < particlesCount; i++) {
+          const newPart = new Particle(null, p.random(0.5, 5), canvas)
+          newPart.type = randomItem(particleTypes)
+          particles.push(newPart)
+        }
 
         // let newPart = new Particle(p.createVector(250, 230), 0.5, canvas)
         // newPart.type = "ROTATE"
@@ -298,17 +298,17 @@ let sketch = (config) => {
         // newPart.type = "ROTATE"
         // particles.push(newPart)
 
-        let newPart = new Particle(p.createVector(250, 250), 0.5, canvas)
-        newPart.type = "ROTATE"
-        particles.push(newPart)
+        // let newPart = new Particle(p.createVector(250, 250), 0.5, canvas)
+        // newPart.type = "ROTATE"
+        // particles.push(newPart)
 
-        newPart = new Particle(p.createVector(350, 350), 0.01, canvas)
-        newPart.type = "PUSH"
-        particles.push(newPart)
+        // newPart = new Particle(p.createVector(350, 350), 0.01, canvas)
+        // newPart.type = "PUSH"
+        // particles.push(newPart)
 
-        newPart = new Particle(p.createVector(450, 450), 0.5, canvas)
-        newPart.type = "ROTATE"
-        particles.push(newPart)
+        // newPart = new Particle(p.createVector(450, 450), 0.5, canvas)
+        // newPart.type = "ROTATE"
+        // particles.push(newPart)
 
 
         // particles that don't create gravity waves
@@ -341,14 +341,15 @@ let sketch = (config) => {
 
 
     p.draw = function () {
+      p.colorMode(p.RGB);
 
-      // instead of background, use a rect of size canvas
-      const color = p.color(colors.pearlBush)
-      color.setAlpha(5)
-      p.noStroke()
-      p.fill(color)
-      p.rectMode(p.CORNER)
-      p.rect(0, 0, p.width, p.height)
+      // // instead of background, use a rect of size canvas
+      // const color = p.color(colors.pearlBush)
+      // color.setAlpha(5)
+      // p.noStroke()
+      // p.fill(color)
+      // p.rectMode(p.CORNER)
+      // p.rect(0, 0, p.width, p.height)
 
       // reset the flowfield
       if (flowfieldDecays) {
@@ -402,7 +403,7 @@ let sketch = (config) => {
               }
             })
           })
-          
+
           // when one massful particle remains, close the system
           if (particles.length == 2) {
             particles.splice(0, 1)
@@ -501,7 +502,9 @@ let sketch = (config) => {
 
       const bigStone = p.color(colors.bigStone)
       bigStone.setAlpha(200)
+
       p.stroke(bigStone)
+      p.strokeWeight(5)
       masslessParticles.forEach((particle) => {
         const x_i = p.max(0, p.floor(particle.pos.x / scale) - 1)
         const y_i = p.max(0, p.floor(particle.pos.y / scale) - 1)
@@ -511,7 +514,9 @@ let sketch = (config) => {
           particle.applyForce(localForce)
           particle.update(particleVelLimit)
         }
-        p.strokeWeight(0.5)
+        p.colorMode(p.HSB, 100);
+        p.stroke((particle.vel.heading() + p.PI) / p.TWO_PI * 100, particle.vel.mag() / particleVelLimit * 100, /**/ 100, localForce.mag()*50)
+
         if (particle.pos.dist(prevPos) < forcePropagationSpeed + 1) // hack to hide when particles wrap around
           p.line(particle.pos.x, particle.pos.y, prevPos.x, prevPos.y)
 
@@ -571,7 +576,7 @@ export default {
         },
         flowfieldDecays: {
           type: 'boolean',
-          value: false
+          value: true
         },
         speedLimit: {
           type: 'number',
@@ -583,7 +588,7 @@ export default {
         },
         dynamic: {
           type: 'boolean',
-          value: false
+          value: true
         },
         showMassyParticles: {
           type: 'boolean',
@@ -591,7 +596,7 @@ export default {
         },
         annihilation: {
           type: 'boolean',
-          value: false
+          value: true
         }
       }
     }
