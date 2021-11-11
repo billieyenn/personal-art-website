@@ -56,7 +56,18 @@ let sketch = (config) => {
         this.acc.setMag(0)
 
         while(this.outOfBounds()/* && i < 100*/) {
-          this.pos = this.randomPos()
+
+          // most of the time reset the point close to some other point
+          const randomI = p.floor(p.random(masslessParticles.length))
+          this.pos = masslessParticles[randomI].pos.copy()
+          const jitterSize = 10
+          this.pos.x += p.random(-jitterSize, jitterSize)
+          this.pos.y += p.random(-jitterSize, jitterSize)
+
+          // but sometimes apparate the point in random place
+          if (p.random(1) < 0)
+            this.pos = this.randomPos()
+
           let ff = flowField.getVal(p.floor(this.pos.x/scale), p.floor(this.pos.y/scale))
           if (ff)
             this.vel = ff.copy()
@@ -167,6 +178,8 @@ let sketch = (config) => {
     let flowField
 
     let canvas, canvas2, canvas3, canvas4
+
+    let startingColorOffset// = p.random(100)
     p.setup = function () {
 
       // destructure config for starters
@@ -233,6 +246,7 @@ let sketch = (config) => {
         particleTypes = particleTypes.split(',')
 
       marginOfError = forcePropagationSpeed / 2
+      startingColorOffset = p.random(100)
 
 
       p.createCanvas(canvasWidth, canvasHeight);
@@ -343,13 +357,13 @@ let sketch = (config) => {
     p.draw = function () {
       p.colorMode(p.RGB);
 
-      // // instead of background, use a rect of size canvas
-      // const color = p.color(colors.pearlBush)
-      // color.setAlpha(5)
-      // p.noStroke()
-      // p.fill(color)
-      // p.rectMode(p.CORNER)
-      // p.rect(0, 0, p.width, p.height)
+      // instead of background, use a rect of size canvas
+      const color = p.color(colors.pearlBush)
+      color.setAlpha(5)
+      p.noStroke()
+      p.fill(color)
+      p.rectMode(p.CORNER)
+      p.rect(0, 0, p.width, p.height)
 
       // reset the flowfield
       if (flowfieldDecays) {
@@ -405,7 +419,7 @@ let sketch = (config) => {
           })
 
           // when one massful particle remains, close the system
-          if (particles.length == 2) {
+          if (particles.length <= 2) {
             particles.splice(0, 1)
             particles.splice(0, 1)
           }
@@ -504,18 +518,18 @@ let sketch = (config) => {
       bigStone.setAlpha(200)
 
       p.stroke(bigStone)
-      p.strokeWeight(5)
       masslessParticles.forEach((particle) => {
         const x_i = p.max(0, p.floor(particle.pos.x / scale) - 1)
         const y_i = p.max(0, p.floor(particle.pos.y / scale) - 1)
         const localForce = flowField.getVal(x_i, y_i)
+        p.strokeWeight(localForce.mag()*3)
         const prevPos = p.createVector(particle.pos.x, particle.pos.y)
         if(localForce) {
           particle.applyForce(localForce)
           particle.update(particleVelLimit)
         }
         p.colorMode(p.HSB, 100);
-        p.stroke((particle.vel.heading() + p.PI) / p.TWO_PI * 100, particle.vel.mag() / particleVelLimit * 100, /**/ 100, localForce.mag()*50)
+        p.stroke(((particle.vel.heading() + p.PI) / p.TWO_PI * 5 + p.frameCount/50 + startingColorOffset)%100, particle.vel.mag() / particleVelLimit * 100, /**/ 100, localForce.mag()*50)
 
         if (particle.pos.dist(prevPos) < forcePropagationSpeed + 1) // hack to hide when particles wrap around
           p.line(particle.pos.x, particle.pos.y, prevPos.x, prevPos.y)
@@ -584,7 +598,7 @@ export default {
         },
         particleTypes: {
           type: 'string',
-          value: [/*"PUSH", */"ROTATE", "ROTATE_RIGHT"/*, "PULL"*/]
+          value: ["PUSH", "ROTATE", "ROTATE_RIGHT", "PULL"]
         },
         dynamic: {
           type: 'boolean',
