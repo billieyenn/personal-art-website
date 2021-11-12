@@ -249,10 +249,10 @@ let sketch = (config) => {
       startingColorOffset = p.random(100)
 
 
-      p.createCanvas(canvasWidth, canvasHeight, p.WEBGL);
+      p.createCanvas(canvasWidth, canvasHeight/*, p.WEBGL*/);
 
       // p.createCanvas(1000, 1000);
-      p.ortho(-p.width/2, p.width/2, -p.height/2, p.height/2)
+      // p.ortho(-p.width/2, p.width/2, -p.height/2, p.height/2)
       waves = []
       particles = []
       masslessParticles = []
@@ -359,11 +359,11 @@ let sketch = (config) => {
 
     p.draw = function () {
       p.colorMode(p.RGB);
-      p.angleMode(p.DEGREES)
-      p.rotateX(45)
-      p.rotateZ(45)
-      p.translate(-300,-300,100)
-      p.angleMode(p.RADIANS)
+      // p.angleMode(p.DEGREES)
+      // p.rotateX(45)
+      // p.rotateZ(45)
+      // p.translate(-300,-300,100)
+      // p.angleMode(p.RADIANS)
 
       // instead of background, use a rect of size canvas
       const color = p.color(colors.pearlBush)
