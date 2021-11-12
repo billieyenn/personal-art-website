@@ -71,6 +71,9 @@ class Canvas {
     this.maxX = max(this.vertices.map(v => v.x))
     this.minY = min(this.vertices.map(v => v.y))
     this.maxY = max(this.vertices.map(v => v.y))
+    this.width = this.maxX - this.minX
+    this.height = this.maxY - this.minY
+
 	}
 
 	outOfBounds(point) {

@@ -37,6 +37,7 @@ import Forces from './components/Practice/Forces.vue'
 import ForcesWindows from './components/Unnamed/Forces_windows_logo.vue'
 import GaussianNoise from './components/Practice/GaussianNoise.vue'
 import SketchTemplate from './components/Practice/SketchTemplate.vue'
+import SpaceTime from './components/Practice/SpaceTime.vue'
 
 export const routes = [
   {
@@ -111,7 +112,8 @@ export const routes = [
       { path: 'practice/forces', component: Forces },
       { path: 'practice/forceswindows', component: ForcesWindows },
       { path: 'practice/gaussiannoise', component: GaussianNoise },
-      { path: 'practice/sketchtemplate', component: SketchTemplate }
+      { path: 'practice/sketchtemplate', component: SketchTemplate },
+      { path: 'practice/spacetime', component: SpaceTime }
     ]
   },
   {
