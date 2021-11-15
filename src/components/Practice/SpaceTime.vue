@@ -167,6 +167,7 @@ const lorentz = (vel, limit) => {
 
     let massiveParticle// =  new Particle(null, p.random(0.5, 5), canvas)
     let waves
+    let particles
     p.setup = function () {
 
       canvas = new Canvas([p.createVector(50, 50),
@@ -178,7 +179,11 @@ const lorentz = (vel, limit) => {
       massiveParticle =  new Particle(null, 2, canvas)
 
       waves = []
+      particles = [massiveParticle]
 
+      for (let i = 0; i < 3; i++) {
+        particles.push(new Particle(null, 2, canvas))
+      }
       limit = 10
       scale = 20
       rows = canvas.height / scale
@@ -199,13 +204,21 @@ const lorentz = (vel, limit) => {
 
     }
     p.draw = function () {
+      // p.lights()
+      // let dirX = (p.mouseX / p.width - 0.5) * 2;
+      // let dirY = (p.mouseY / p.height - 0.5) * 2;
+      // p.directionalLight(250, 250, 250, -dirX, -dirY, -1);
 
       grid.forEach((x, y, val) => {
         // grid.getVal(x, y).mult(0) // force fades away over time
-        grid.getVal(x, y).mult(0.95) // force fades away over time
+        // grid.getVal(x, y).mult(0.95) // force fades away over time
+        grid.getVal(x, y).mult(0.6) // force fades away over time
       })
 
-      waves.push(new Circle(p.createVector(massiveParticle.pos.x, massiveParticle.pos.y), 0, massiveParticle.mass, massiveParticle, canvas))
+      particles.forEach(particle => {
+        waves.push(new Circle(p.createVector(particle.pos.x, particle.pos.y), 0, particle.mass, particle, canvas))
+      })
+
 
 
       // each wave affects the flow/force field when at the right distance
@@ -214,6 +227,22 @@ const lorentz = (vel, limit) => {
         w.checkLiveness() // within bounds etc
         if (!w.alive)
           waves.splice(i, 1)
+
+
+        let marginOfError = forcePropagationSpeed / 2
+        particles.forEach(particle => {
+          if (particle !== w.parent) { // convenience cheat, todo come up with math to make this redundant
+            const dist = particle.pos.dist(w.pos)
+            // if distance between particle and wave origin == wave radius, apply force
+            if (dist + marginOfError > w.diameter / 2 && dist - marginOfError < w.diameter / 2 ) {
+              // make vector of magnitude w.force() in the direction of the wave
+              const force = p.createVector(w.pos.x - particle.pos.x, w.pos.y - particle.pos.y)
+              force.setMag(w.force())
+              // force.rotate(90) // alternate physics
+              particle.applyForce(force)
+            }
+          }
+        })
 
         // bounding box of wave
         const x_min = w.pos.x - w.diameter / 2
@@ -278,7 +307,7 @@ const lorentz = (vel, limit) => {
       p.rectMode(p.CORNER)
       p.rect(0, 0, p.width, p.height)
       p.pop()
-    p.angleMode(p.DEGREES)
+      p.angleMode(p.DEGREES)
 
       p.stroke(0)
       p.noFill()
@@ -288,9 +317,12 @@ const lorentz = (vel, limit) => {
 
       p.translate(-200,-200,0)
       grid.forEach((x, y, val) => {
+        let height = val.mag()*1
+
         const x_ff = (x + 0.5) * scale + canvas.vertices[0].x
         const y_ff = (y + 0.5) * scale + canvas.vertices[0].y
         p.strokeWeight(0.5)
+        p.fill(height*50)
         p.rect(x_ff, y_ff, scale, scale)
 
         let height_xy = grid.getVal(x, y).mag()*1
@@ -327,12 +359,12 @@ const lorentz = (vel, limit) => {
 
             p.push()
             // let height = grid.getVal(i, ii).mag()*1
-            let height = grid.getVal(x, y).mag()*1
             // p.translate(i_ff, ii_ff, -height)
             p.translate(x_ff, y_ff, -height)
             p.fill(255)
-            p.stroke(255)
-            p.strokeWeight(2)
+            p.noStroke()
+            // p.stroke(255)
+            // p.strokeWeight(2)
 
             // if(height > 0)
             //   p.fill(100)
@@ -352,7 +384,14 @@ const lorentz = (vel, limit) => {
 
 
 
-      massiveParticle.update(forcePropagationSpeed)
+      particles.forEach(particle => {
+        particle.update(forcePropagationSpeed)
+        p.push()
+        p.fill(0)
+        p.translate(particle.pos.x + 1.5*scale, particle.pos.y + 1.5*scale, 300)
+        p.sphere(particle.mass*1)
+        p.pop()
+      })
     }
   }
 }
