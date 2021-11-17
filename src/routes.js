@@ -33,6 +33,7 @@ import Collision from './components/Practice/Collision.vue'
 import Grids from './components/Practice/Grids.vue'
 import Unnamed from './components/Unnamed/Unnamed.vue'
 import Shape1 from './components/Unnamed/Shape1.vue'
+import Paths from './components/Unnamed/Paths.vue'
 import Forces from './components/Practice/Forces.vue'
 import ForcesWindows from './components/Unnamed/Forces_windows_logo.vue'
 import GaussianNoise from './components/Practice/GaussianNoise.vue'
@@ -99,6 +100,7 @@ export const routes = [
       { path: 'test/1', component: Test },
       { path: 'fourier', component: FourierPlayground },
       { path: 'unnamed', component: Unnamed },
+      { path: 'paths', component: Paths },
       { path: 'shape/1', component: Shape1 },
       { path: 'practice/placeholder', component: Practice },
       { path: 'practice/fibonacci', component: Fibonacci },
