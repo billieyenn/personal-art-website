@@ -10,6 +10,7 @@
 /* eslint-disable */
 import P5 from 'p5'
 import { colors, randomColor } from '../../colors.js'
+import { isInPoly } from '../../utils.js'
 
 
 let sketch = (config) => {
@@ -34,21 +35,29 @@ let sketch = (config) => {
   // function dependent on global arrays neighbourGraph and points being declared
   const calculateNeighbourGraph = () => {
     neighbourGraph = []
-    points.forEach(point => {
-      points.forEach(p2 => {
-        if (point != p2)
-          if (point.dist(p2) < armslength * 2)
-            neighbourGraph.push([point, p2])
+    if (pointpoints)
+      pointpoints.forEach(points => {
+
+        if (points)
+        points.forEach(point => {
+          points.forEach(p2 => {
+            if (point != p2)
+              if (point.dist(p2) < armslength * 2)
+                neighbourGraph.push([point, p2])
+          })
+        })
       })
-    })
   }
 
   let points
+  let pointpoints
   let neighbourGraph
+  let traces
+
 
   let armslength = 12.5
   let pathwidth = 6.25
-  let canvasWidth, canvasHeight
+  let canvasWidth, canvasHeight, numberOfPoints
 
   p.setup = () => {
     ({
@@ -57,17 +66,85 @@ let sketch = (config) => {
       } = {},
       canvasY: {
         value: canvasHeight = 700
+      } = {},
+      numberOfPoints: {
+        value: numberOfPoints = 700
       } = {}
     } = config)
 
 
 
     p.createCanvas(canvasWidth, canvasHeight);
-    const maxAttempts = 64000
-    const numberOfPoints = 400
-    let attempts = 0
+    // const numberOfPoints = 400
+    traces = []
     points = []
-    points.push(p.createVector(p.width/2, p.height/2))
+    pointpoints = []
+
+    // const maxAttempts = 64000
+    // let attempts = 0
+    // points = []
+    // points.push(p.createVector(p.width/2, p.height/2))
+
+    // for (let i = 0; points.length < numberOfPoints && attempts < maxAttempts; i++) {
+      
+    //   // more recent points more likely to be selected (as old points are already fully blocked)
+    //   let randomVector = points[p.floor(linearRandomBetween(0, points.length))]
+
+    //   let xMin = randomVector.x - armslength - pathwidth
+    //   let xMax = randomVector.x + armslength + pathwidth
+    //   let yMin = randomVector.y - armslength - pathwidth
+    //   let yMax = randomVector.y + armslength + pathwidth
+    //   let randomX = p.max(0, p.min(p.width, p.random(xMin, xMax)))
+    //   let randomY = p.max(0, p.min(p.height, p.random(yMin, yMax)))
+
+    //   // check if next iteration is inside a trace, if there is a trace
+
+    //   // if(traces[0])
+    //   //   if (isInPoly(traces[0], randomX, randomY)) {}
+
+    //       let newVector = p.createVector(randomX, randomY)
+    //       let overlaps = 0
+    //       points.forEach(point => {
+    //         if (newVector.dist(point) < armslength * 2) {
+    //           overlaps ++
+    //         }
+    //         if (overlaps >= 2)
+    //           return
+    //       })
+          
+    //       if (overlaps < 2)
+    //         points.push(newVector)
+    //       else
+    //         i-- // try again
+
+    //   attempts ++
+    // }
+    // console.log(attempts, points.length)        
+    // generatePoints()
+    calculateNeighbourGraph()
+  }
+
+  // what if no trace provided
+  const generatePoints = (trace = []) => {
+    const maxAttempts = 64000
+    let attempts = 0
+    let points = []
+
+    // console.log(trace)
+    if (trace.length > 0) {
+
+    // traces.forEach(trace => {
+      // calculate average position to put seed point in middle
+      const xAve = trace.map(t => t.x).reduce((previousValue, currentValue) => previousValue + currentValue) / trace.length
+      const yAve = trace.map(t => t.y).reduce((previousValue, currentValue) => previousValue + currentValue) / trace.length
+
+      points.push(p.createVector(xAve, yAve))
+    } else {
+      points.push(p.createVector(p.width / 2, p.height / 2))
+    }
+    // })
+    // console.log("initial poitns after trace")
+    // console.log(points)
 
     for (let i = 0; points.length < numberOfPoints && attempts < maxAttempts; i++) {
       
@@ -80,30 +157,41 @@ let sketch = (config) => {
       let yMax = randomVector.y + armslength + pathwidth
       let randomX = p.max(0, p.min(p.width, p.random(xMin, xMax)))
       let randomY = p.max(0, p.min(p.height, p.random(yMin, yMax)))
-      let newVector = p.createVector(randomX, randomY)
-      let overlaps = 0
-      points.forEach(point => {
-        if (newVector.dist(point) < armslength * 2) {
-          overlaps ++
-        }
-        if (overlaps >= 2)
-          return
-      })
-      
-      if (overlaps < 2)
-        points.push(newVector)
-      else
-        i-- // try again
+
+      // check if next iteration is inside a trace, if there is a trace
+
+      // if(traces[0])
+        if (isInPoly(trace, randomX, randomY)) {
+
+          let newVector = p.createVector(randomX, randomY)
+          let overlaps = 0
+          points.forEach(point => {
+            if (newVector.dist(point) < armslength * 2) {
+              overlaps ++
+            }
+            if (overlaps >= 2)
+              return
+          })
+          
+          if (overlaps < 2)
+            points.push(newVector)
+          else
+            i-- // try again
+}
       attempts ++
     }
-    console.log(attempts, points.length)        
-
-    calculateNeighbourGraph()
+    console.log(attempts, points.length)  
+    return points
   }
 
 
-
   p.draw = () => {
+    if (traced)
+    {
+      pointpoints.push(generatePoints(traces[traces.length - 1]))
+      calculateNeighbourGraph()
+      traced = false
+    }
     p.background(240);
     
     p.strokeWeight(armslength * 2 - pathwidth)
@@ -116,20 +204,57 @@ let sketch = (config) => {
       p.noStroke()
     
     let mouse = p.createVector(p.mouseX, p.mouseY)
-    points.forEach(point => {
-      p.fill(0, 20)
-      if (point.dist(mouse) < armslength) {
-        p.fill(120)
-        if (p.mouseIsPressed) {
-          points.splice(points.indexOf(point), 1)
-          calculateNeighbourGraph()
+    pointpoints.forEach(points => {
 
+      points.forEach(point => {
+        if (point.dist(mouse) < armslength) {
+          if (p.mouseIsPressed) {
+            points.splice(points.indexOf(point), 1)
+            calculateNeighbourGraph()
+
+          }
         }
-      }
-      p.ellipse(p.x, p.y, armslength * 2, armslength * 2)
+        // p.fill(0, 20)
+        p.fill(0)
+        p.ellipse(p.x, p.y, armslength * 2, armslength * 2)
+      })
     })
+
+ 
+    // let newWeight = 2
+    // p.strokeWeight(newWeight)
+    // p.stroke(0)
+
+    // traces.forEach(trace => {
+    //   if (trace.length > 3)
+    //   for (let ii = 0; ii < 0 + trace.length + 3; ii++) {
+    //     const i = ii + 0 % trace.length
+    //     const distance = trace[(i) % trace.length].dist(trace[(i + 3) % trace.length])
+       
+    //     const p1x = trace[(i) % trace.length].x
+    //     const p1y = trace[(i) % trace.length].y
+    //     const p2x = trace[(i+1) % trace.length].x
+    //     const p2y = trace[(i+1) % trace.length].y
+    //     p.beginShape()
+    //     for(let a = 0; a < 4; a++) {
+    //       p.curveVertex(trace[(i + a) % trace.length].x, trace[(i + a) % trace.length].y)
+    //     }
+    //     p.endShape()
+    //   }
+    // })
   }
 
+
+  p.mousePressed = () => {
+    traces.push([])
+  }
+  p.mouseDragged = () => {
+    traces[traces.length-1].push(p.createVector(p.mouseX, p.mouseY))
+  }
+  let traced = false
+  p.mouseReleased = () => {
+    traced = true
+  }
   }
 }
 
@@ -145,6 +270,10 @@ export default {
         canvasY: {
           type: 'number',
           value: 800
+        },
+        numberOfPoints: {
+          type: 'number',
+          value: 2000
         },
       }
     }
