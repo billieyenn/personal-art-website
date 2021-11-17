@@ -57,7 +57,7 @@ let sketch = (config) => {
 
   let armslength = 12.5
   let pathwidth = 6.25
-  let canvasWidth, canvasHeight, numberOfPoints
+  let canvasWidth, canvasHeight, numberOfPoints, maxAttempts
 
   p.setup = () => {
     ({
@@ -69,6 +69,9 @@ let sketch = (config) => {
       } = {},
       numberOfPoints: {
         value: numberOfPoints = 700
+      } = {},
+      maxAttempts: {
+        value: maxAttempts = 700
       } = {}
     } = config)
 
@@ -79,54 +82,16 @@ let sketch = (config) => {
     traces = []
     points = []
     pointpoints = []
+    neighbourGraph = []
 
-    // const maxAttempts = 64000
-    // let attempts = 0
-    // points = []
-    // points.push(p.createVector(p.width/2, p.height/2))
 
-    // for (let i = 0; points.length < numberOfPoints && attempts < maxAttempts; i++) {
-      
-    //   // more recent points more likely to be selected (as old points are already fully blocked)
-    //   let randomVector = points[p.floor(linearRandomBetween(0, points.length))]
-
-    //   let xMin = randomVector.x - armslength - pathwidth
-    //   let xMax = randomVector.x + armslength + pathwidth
-    //   let yMin = randomVector.y - armslength - pathwidth
-    //   let yMax = randomVector.y + armslength + pathwidth
-    //   let randomX = p.max(0, p.min(p.width, p.random(xMin, xMax)))
-    //   let randomY = p.max(0, p.min(p.height, p.random(yMin, yMax)))
-
-    //   // check if next iteration is inside a trace, if there is a trace
-
-    //   // if(traces[0])
-    //   //   if (isInPoly(traces[0], randomX, randomY)) {}
-
-    //       let newVector = p.createVector(randomX, randomY)
-    //       let overlaps = 0
-    //       points.forEach(point => {
-    //         if (newVector.dist(point) < armslength * 2) {
-    //           overlaps ++
-    //         }
-    //         if (overlaps >= 2)
-    //           return
-    //       })
-          
-    //       if (overlaps < 2)
-    //         points.push(newVector)
-    //       else
-    //         i-- // try again
-
-    //   attempts ++
-    // }
-    // console.log(attempts, points.length)        
-    // generatePoints()
-    calculateNeighbourGraph()
+    // calculateNeighbourGraph()
   }
 
   // what if no trace provided
   const generatePoints = (trace = []) => {
-    const maxAttempts = 64000
+    console.log(trace)
+    // const maxAttempts = 64000
     let attempts = 0
     let points = []
 
@@ -140,11 +105,9 @@ let sketch = (config) => {
 
       points.push(p.createVector(xAve, yAve))
     } else {
+      console.log("no trace provided")
       points.push(p.createVector(p.width / 2, p.height / 2))
     }
-    // })
-    // console.log("initial poitns after trace")
-    // console.log(points)
 
     for (let i = 0; points.length < numberOfPoints && attempts < maxAttempts; i++) {
       
@@ -274,6 +237,10 @@ export default {
         numberOfPoints: {
           type: 'number',
           value: 2000
+        },
+        maxAttempts: {
+          type: 'number',
+          value: 16000
         },
       }
     }
