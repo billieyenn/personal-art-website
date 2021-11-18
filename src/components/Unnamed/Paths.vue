@@ -35,8 +35,8 @@ let sketch = (config) => {
   // function dependent on global arrays neighbourGraph and points being declared
   const calculateNeighbourGraph = () => {
     neighbourGraph = []
-    if (pointpoints)
-      pointpoints.forEach(points => {
+    // if (pointpoints)
+      // pointpoints.forEach(points => {
 
         if (points)
         points.forEach(point => {
@@ -46,7 +46,7 @@ let sketch = (config) => {
                 neighbourGraph.push([point, p2])
           })
         })
-      })
+      // })
   }
 
   let points
@@ -93,7 +93,7 @@ let sketch = (config) => {
     console.log(trace)
     // const maxAttempts = 64000
     let attempts = 0
-    let points = []
+    // let points = []
 
     // console.log(trace)
     if (trace.length > 0) {
@@ -126,15 +126,21 @@ let sketch = (config) => {
       // if(traces[0])
         if (isInPoly(trace, randomX, randomY)) {
 
-          let newVector = p.createVector(randomX, randomY)
           let overlaps = 0
-          points.forEach(point => {
-            if (newVector.dist(point) < armslength * 2) {
-              overlaps ++
-            }
-            if (overlaps >= 2)
-              return
-          })
+          let newVector = p.createVector(randomX, randomY)
+
+            points.forEach(point => {
+              if (newVector.dist(point) < armslength * 2) {
+                overlaps ++
+              }
+              if (overlaps >= 2)
+                return
+
+            })
+          // pointpoints.forEach(points => {
+          //   if (overlaps >= 2)
+          //     return
+          // })
           
           if (overlaps < 2)
             points.push(newVector)
@@ -151,14 +157,16 @@ let sketch = (config) => {
   p.draw = () => {
     if (traced)
     {
-      pointpoints.push(generatePoints(traces[traces.length - 1]))
+      generatePoints(traces[traces.length - 1])
+      // pointpoints.push(generatePoints(traces[traces.length - 1]))
       calculateNeighbourGraph()
       traced = false
     }
     p.background(p.color(colors.springWood));
     
     p.strokeWeight(armslength * 2 - pathwidth)
-    p.stroke(p.color('#f2aeb1'))
+    // p.stroke(p.color('#f2aeb1'))
+    p.stroke(0)
     neighbourGraph.forEach((a) => {
       p.line(a[0].x, a[0].y, a[1].x, a[1].y)
     })
@@ -167,7 +175,7 @@ let sketch = (config) => {
       p.noStroke()
     
     let mouse = p.createVector(p.mouseX, p.mouseY)
-    pointpoints.forEach(points => {
+    // pointpoints.forEach(points => {
 
       points.forEach(point => {
         if (point.dist(mouse) < armslength) {
@@ -181,7 +189,7 @@ let sketch = (config) => {
         p.fill(0)
         p.ellipse(p.x, p.y, armslength * 2, armslength * 2)
       })
-    })
+    // })
 
  
     // let newWeight = 2
