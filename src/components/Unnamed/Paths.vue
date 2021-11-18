@@ -150,7 +150,7 @@ let sketch = (config) => {
       attempts ++
     }
     console.log(attempts, points.length)  
-    return points
+    // return points
   }
 
 
