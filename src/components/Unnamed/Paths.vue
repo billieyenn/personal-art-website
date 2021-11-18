@@ -155,10 +155,10 @@ let sketch = (config) => {
       calculateNeighbourGraph()
       traced = false
     }
-    p.background(240);
+    p.background(p.color(colors.springWood));
     
     p.strokeWeight(armslength * 2 - pathwidth)
-    p.stroke(50)
+    p.stroke(p.color('#f2aeb1'))
     neighbourGraph.forEach((a) => {
       p.line(a[0].x, a[0].y, a[1].x, a[1].y)
     })
