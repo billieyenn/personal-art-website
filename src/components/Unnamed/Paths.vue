@@ -35,28 +35,23 @@ let sketch = (config) => {
   // function dependent on global arrays neighbourGraph and points being declared
   const calculateNeighbourGraph = () => {
     neighbourGraph = []
-    // if (pointpoints)
-      // pointpoints.forEach(points => {
-
-        if (points)
-        points.forEach(point => {
-          points.forEach(p2 => {
-            if (point != p2)
-              if (point.dist(p2) < armslength * 2)
-                neighbourGraph.push([point, p2])
-          })
-        })
-      // })
+    if (points)
+    points.forEach(point => {
+      points.forEach(p2 => {
+        if (point != p2)
+          if (point.dist(p2) < armslength * 2)
+            neighbourGraph.push([point, p2])
+      })
+    })
   }
 
   let points
-  let pointpoints
   let neighbourGraph
   let traces
 
 
-  let armslength = 12.5
-  let pathwidth = 6.25
+  let armslength// = 12.5 * 2
+  let pathwidth = 6.25 * 2
   let canvasWidth, canvasHeight, numberOfPoints, maxAttempts
 
   p.setup = () => {
@@ -71,21 +66,25 @@ let sketch = (config) => {
         value: numberOfPoints = 700
       } = {},
       maxAttempts: {
-        value: maxAttempts = 700
+        value: maxAttempts = 16000
+      } = {},
+      armslength: {
+        value: armslength = 25
+      } = {},
+      pathwidth: {
+        value: pathwidth = 12.5
       } = {}
     } = config)
 
-
+    armslength = Number(armslength)
+    pathwidth = Number(pathwidth)
+    // console.log(armslength)
 
     p.createCanvas(canvasWidth, canvasHeight);
     // const numberOfPoints = 400
     traces = []
     points = []
-    pointpoints = []
     neighbourGraph = []
-
-
-    // calculateNeighbourGraph()
   }
 
   // what if no trace provided
@@ -106,9 +105,10 @@ let sketch = (config) => {
       points.push(p.createVector(xAve, yAve))
     } else {
       console.log("no trace provided")
-      points.push(p.createVector(p.width / 2, p.height / 2))
+      // points.push(p.createVector(p.width / 2, p.height / 2))
     }
 
+    if (points.length > 0)
     for (let i = 0; points.length < numberOfPoints && attempts < maxAttempts; i++) {
       
       // more recent points more likely to be selected (as old points are already fully blocked)
@@ -129,18 +129,14 @@ let sketch = (config) => {
           let overlaps = 0
           let newVector = p.createVector(randomX, randomY)
 
-            points.forEach(point => {
-              if (newVector.dist(point) < armslength * 2) {
-                overlaps ++
-              }
-              if (overlaps >= 2)
-                return
+          points.forEach(point => {
+            if (newVector.dist(point) < armslength * 2) {
+              overlaps ++
+            }
+            if (overlaps >= 2)
+              return
 
-            })
-          // pointpoints.forEach(points => {
-          //   if (overlaps >= 2)
-          //     return
-          // })
+          })
           
           if (overlaps < 2)
             points.push(newVector)
@@ -158,7 +154,6 @@ let sketch = (config) => {
     if (traced)
     {
       generatePoints(traces[traces.length - 1])
-      // pointpoints.push(generatePoints(traces[traces.length - 1]))
       calculateNeighbourGraph()
       traced = false
     }
@@ -175,21 +170,19 @@ let sketch = (config) => {
       p.noStroke()
     
     let mouse = p.createVector(p.mouseX, p.mouseY)
-    // pointpoints.forEach(points => {
 
-      points.forEach(point => {
-        if (point.dist(mouse) < armslength) {
-          if (p.mouseIsPressed) {
-            points.splice(points.indexOf(point), 1)
-            calculateNeighbourGraph()
+    points.forEach(point => {
+      if (point.dist(mouse) < armslength) {
+        if (p.mouseIsPressed) {
+          points.splice(points.indexOf(point), 1)
+          calculateNeighbourGraph()
 
-          }
         }
-        // p.fill(0, 20)
-        p.fill(0)
-        p.ellipse(p.x, p.y, armslength * 2, armslength * 2)
-      })
-    // })
+      }
+      // p.fill(0, 20)
+      p.fill(0)
+      p.ellipse(p.x, p.y, armslength * 2, armslength * 2)
+    })
 
  
     // let newWeight = 2
@@ -223,9 +216,9 @@ let sketch = (config) => {
     traces[traces.length-1].push(p.createVector(p.mouseX, p.mouseY))
   }
   let traced = false
-  p.mouseReleased = () => {
-    traced = true
-  }
+    p.mouseReleased = () => {
+      traced = true
+    }
   }
 }
 
@@ -249,6 +242,14 @@ export default {
         maxAttempts: {
           type: 'number',
           value: 16000
+        },
+        armslength: {
+          type: 'number',
+          value: 25
+        },
+        pathwidth: {
+          type: 'number',
+          value: 12.5
         },
       }
     }

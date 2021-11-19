@@ -48,8 +48,9 @@
       <router-link tag='li' to='/sketches/practice/grids' style='cursor: pointer;'>Grids</router-link>
       <router-link tag='li' to='/sketches/practice/forces' style='cursor: pointer;'>Forces</router-link>
       <router-link tag='li' to='/sketches/practice/gaussiannoise' style='cursor: pointer;'>Gaussian Noise</router-link>
-      <router-link tag='li' to='/sketches/practice/sketchtemplate' style='cursor: pointer;'>sketchtemplate</router-link>
+      <!-- <router-link tag='li' to='/sketches/practice/sketchtemplate' style='cursor: pointer;'>sketchtemplate</router-link> -->
       <router-link tag='li' to='/sketches/practice/spacetime' style='cursor: pointer;'>Spacetime</router-link>
+      <router-link tag='li' to='/sketches/practice/container' style='cursor: pointer;'>Container</router-link>
   </ul>
 
    <router-link tag='li' to='/about/unnamed' style='cursor: pointer;'>WIP</router-link>
