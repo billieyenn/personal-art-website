@@ -23,9 +23,12 @@ class Particle {
         this.pos = pos || this.randomPos()
         this.vel = p.createVector(0, 0)
         this.acc = p.createVector(0, 0)
-        this.radius = particleRadius
+        this.startingRadius = particleRadius
+        // this.startingRadius = p.random(particleRadius/2, particleRadius)
+        this.radius = this.startingRadius
         // this.radius = p.random(3, particleRadius)
         this.area = this.radius * this.radius * p.PI
+        this.solved = false
       }
 
       randomPos() {
@@ -36,11 +39,18 @@ class Particle {
         return p.createVector(p.random(minX, maxX), p.random(minY, maxY))
       }
 
+      getArea() {
+        return this.radius * this.radius * p.PI
+      }
+
+      getStartingArea() {
+        return this.startingRadius * this.startingRadius * p.PI
+      }
 
       update() {
         // find the closest point on the container canvas
         const closestPoint = this.canvas.vertices.reduce((previousValue, currentValue) => previousValue.dist(this.pos) < currentValue.dist(this.pos) ? previousValue : currentValue)
-
+        this.solved = true
         // if the particle is too close to the outside of the container
         if (this.outOfBounds() || closestPoint.dist(this.pos) < this.radius) {
 
@@ -52,18 +62,23 @@ class Particle {
             direction.rotate(p.PI)
 
           // apply constant force
-          direction.setMag(1)
+          direction.setMag(2)
 
           this.vel.add(direction)
-
-          // very slowly shrinking ensure eventually the particles fit?
-          this.radius -= 0.01
+          this.radius -= p.random()/100
+          this.solved = false
         }
         this.vel.add(this.acc)
         this.pos.add(this.vel)
         this.acc.setMag(0)
-        this.vel.setMag(0)
+        this.vel.setMag(this.vel.mag() * 0.2)
 
+        if (this.vel.mag() > 0.001)
+        // very slowly shrinking ensure eventually the particles fit?
+          this.radius -= p.random()/100 // try to get some circles to expire at different times
+
+        if (this.radius / this.startingRadius < 0.85)
+          points.splice(points.indexOf(this), 1)
       }
 
       applyForce(force) {
@@ -91,13 +106,6 @@ class Particle {
 
 
 
-
-
-
-
-
-
-
     let i// = 0
     let color
     let traces
@@ -105,9 +113,15 @@ class Particle {
 
     let points
 
-    let particleRadius = 25
+    let particleRadius = 12
+
+    let solved = false
+    let allParticlesInContainer = true
+    let allParticlesNoOverlap = true
+    let totalArea// = 0
     p.setup = function () {
       p.createCanvas(700, 700);
+      totalArea = 1
       i = 0
       color = p.color(config.bgColor.value)
       traces = []
@@ -118,6 +132,18 @@ class Particle {
     p.draw = function () {
       p.background(color)
       i++
+      p.stroke(0)
+      p.strokeWeight(1)
+      p.text("Points: " + points.length, 15, 15)
+      // let previousValue = 0
+      let currentArea = points.reduce((previousValue, currentValue) => previousValue + currentValue.getArea(), 0)
+      p.text("Filled Area: " + (currentArea/totalArea).toFixed(2)*100 + "%", 15, 30)
+
+      // the sum of starting areas
+      let originalArea = points.reduce((previousValue, currentValue) => previousValue + currentValue.getStartingArea(), 0)
+
+      // console.log(originalArea)
+      p.text("Size of Remaining points: " + (currentArea / originalArea).toFixed(2), 15, 45)
 
       let newWeight = 2
       p.strokeWeight(newWeight)
@@ -163,21 +189,45 @@ class Particle {
       })
 
       p.fill(0)
+
+      // assume all particles are in container
+      allParticlesInContainer = true
+      allParticlesNoOverlap = true
       points.forEach(particle => {
         // particles affect outward force on each other
+        if (!solved) // but only if system not yet in equilibrium
         points.forEach(particle2 => {
-          if (particle2 != particle && particle2.pos.dist(particle.pos) < particle.radius + particle2.radius) {
+          if (particle2 != particle) {
+            let force
+            let distance = particle2.pos.dist(particle.pos)
+            // if too close, push away
+            if (distance < particle.radius + particle2.radius) {
+              allParticlesNoOverlap = false
+              force = p.createVector(particle2.pos.x - particle.pos.x, particle2.pos.y - particle.pos.y)
+              force.setMag(2)
 
-            const force = p.createVector(particle2.pos.x - particle.pos.x, particle2.pos.y - particle.pos.y)
-            force.setMag(1)
-            particle2.applyForce(force)
-            p.angleMode(p.RADIANS)
-            particle.applyForce(force.rotate(p.PI))
+              particle2.applyForce(force)
+              p.angleMode(p.RADIANS)
+              particle.applyForce(force.rotate(p.PI))
+            }
+           
+
+
+          
           }
         })
         particle.update()
+        // if(solved)
         particle.display()
+        if (!particle.solved) // look at this after update 
+          allParticlesInContainer = false
       })
+      console.log(points.length > 0, allParticlesInContainer,  allParticlesNoOverlap)
+      if (points.length > 0 && allParticlesInContainer && allParticlesNoOverlap) {
+        solved = true
+        console.log("solved!")
+        p.noLoop()
+      }
 
       if (traced) {
         points = []
@@ -199,7 +249,7 @@ class Particle {
           // trace.push(trace[3].copy)
           { // new namespace for laziness reasons
             let count = 0
-            let steps = 6
+            let steps = 1
             while (count < trace.length - 3) {
               for (let i = 0; i <= steps; i++) {
                 let t = i / steps;
@@ -207,7 +257,7 @@ class Particle {
                 let y = p.curvePoint(...trace.slice(count, count+4).map(t => t.y), t);
                 improvedTrace.push(p.createVector(x, y))
               }
-              count += 4
+              count += 1
             }
           }
 
@@ -226,9 +276,7 @@ class Particle {
           const yAve = trace.map(t => t.y).reduce((previousValue, currentValue) => previousValue + currentValue) / trace.length
 
 
-          // calculate the area of the container (named trace)
-
-
+          // calculate the area of the container
           let area = 0;  // Accumulates area in the loop   
           let j = trace.length-1;  // The last vertex is the 'previous' one to the first
 
@@ -239,21 +287,22 @@ class Particle {
             }
             area /= 2
             area = p.abs(area)
-            // return area/2; 
-            // console.log(area)
+            totalArea += area
 
             const particleArea = p.PI * particleRadius * particleRadius
             const canFitAtMost = area / particleArea * 0.8
             // console.log(area, particleArea, area / particleArea)
 
+          // fill area with as many circles as can fit
           let particlesArea = 0
-          let count = 1000
+          let count = canFitAtMost * 10
           for (var i = 0; particlesArea < area; i++) {
-            const newParticle = new Particle(p.createVector(xAve + p.random() - 0.5, yAve + p.random() - 0.5), canvas)
+            // const newParticle = new Particle(p.createVector(xAve + p.random() - 0.5, yAve + p.random() - 0.5), canvas)
+            const newParticle = new Particle(p.createVector(p.random(canvas.minX, canvas.maxX), p.random(canvas.minY, canvas.maxY)), canvas)
 
             // check if next circle would still fit
-            if (particlesArea + newParticle.area * 1.2 < area) {
-              particlesArea += newParticle.area * 1.2
+            if (particlesArea + newParticle.getArea() * 1.4 < area && !newParticle.outOfBounds()) {
+              particlesArea += newParticle.getArea() * 1.4
               points.push(newParticle)
             } else {
               if (count <= 0) // try a few times, maybe a smaller circle would fit
