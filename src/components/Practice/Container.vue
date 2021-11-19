@@ -23,19 +23,16 @@ class Particle {
         this.pos = pos || this.randomPos()
         this.vel = p.createVector(0, 0)
         this.acc = p.createVector(0, 0)
-        this.startingRadius = particleRadius
-        // this.startingRadius = p.random(particleRadius/2, particleRadius)
+        // this.startingRadius = particleRadius
+        this.startingRadius = p.random(particleRadius)
         this.radius = this.startingRadius
         // this.radius = p.random(3, particleRadius)
         this.area = this.radius * this.radius * p.PI
         this.solved = false
       }
 
-      randomPos() {
-        const minX = this.canvas.minX
-        const maxX = this.canvas.maxX
-        const minY = this.canvas.minY
-        const maxY = this.canvas.maxY
+      randomPos() { 
+        const { minX, maxX, minY, maxY } = this.canvas
         return p.createVector(p.random(minX, maxX), p.random(minY, maxY))
       }
 
@@ -89,6 +86,7 @@ class Particle {
         p.push()
         p.translate(this.pos.x, this.pos.y)
         p.stroke(p.color(colors.bigStone))
+        // p.noStroke()
         // p.fill(255)
         p.noFill()
         p.ellipse(0, 0, this.radius * 2, this.radius * 2)
@@ -113,7 +111,7 @@ class Particle {
 
     let points
 
-    let particleRadius = 12
+    let particleRadius = 25
 
     let solved = false
     let allParticlesInContainer = true
@@ -151,19 +149,20 @@ class Particle {
       // p.noFill()
 
       improvedTraces.forEach(trace => {
-        if (trace.length > 3)
-        for (let ii = 0; ii < 0 + trace.length + 3; ii++) {
-          const i = ii + 0 % trace.length
-          const distance = trace[(i) % trace.length].dist(trace[(i + 3) % trace.length])
+        const { length } = trace
+        if (length > 3)
+        for (let ii = 0; ii < 0 + length + 3; ii++) {
+          const i = ii + 0 % length
+          const distance = trace[(i) % length].dist(trace[(i + 3) % length])
          
-          const p1x = trace[(i) % trace.length].x
-          const p1y = trace[(i) % trace.length].y
-          const p2x = trace[(i+1) % trace.length].x
-          const p2y = trace[(i+1) % trace.length].y
+          const p1x = trace[(i) % length].x
+          const p1y = trace[(i) % length].y
+          const p2x = trace[(i+1) % length].x
+          const p2y = trace[(i+1) % length].y
           p.beginShape()
           for(let a = 0; a < 4; a++) {
-            p.curveVertex(trace[(i + a) % trace.length].x, trace[(i + a) % trace.length].y)
-            // p.ellipse(trace[(i + a) % trace.length].x, trace[(i + a) % trace.length].y, 5)
+            p.curveVertex(trace[(i + a) % length].x, trace[(i + a) % length].y)
+            // p.ellipse(trace[(i + a) % length].x, trace[(i + a) % length].y, 5)
 
           }
           p.endShape()
@@ -171,18 +170,20 @@ class Particle {
       })
 
       traces.forEach(trace => {
-        if (trace.length > 3)
-        for (let ii = 0; ii < 0 + trace.length + 3; ii++) {
-          const i = ii + 0 % trace.length
-          const distance = trace[(i) % trace.length].dist(trace[(i + 3) % trace.length])
+        const { length } = trace
+
+        if (length > 3)
+        for (let ii = 0; ii < 0 + length + 3; ii++) {
+          const i = ii + 0 % length
+          const distance = trace[(i) % length].dist(trace[(i + 3) % length])
          
-          const p1x = trace[(i) % trace.length].x
-          const p1y = trace[(i) % trace.length].y
-          const p2x = trace[(i+1) % trace.length].x
-          const p2y = trace[(i+1) % trace.length].y
+          const p1x = trace[(i) % length].x
+          const p1y = trace[(i) % length].y
+          const p2x = trace[(i+1) % length].x
+          const p2y = trace[(i+1) % length].y
           p.beginShape()
           for(let a = 0; a < 4; a++) {
-            p.curveVertex(trace[(i + a) % trace.length].x, trace[(i + a) % trace.length].y)
+            p.curveVertex(trace[(i + a) % length].x, trace[(i + a) % length].y)
           }
           p.endShape()
         }
@@ -222,31 +223,29 @@ class Particle {
         if (!particle.solved) // look at this after update 
           allParticlesInContainer = false
       })
-      console.log(points.length > 0, allParticlesInContainer,  allParticlesNoOverlap)
+
+      // if all points are inside the bounds and not overlapping with each other, the system has reached equilibrium
       if (points.length > 0 && allParticlesInContainer && allParticlesNoOverlap) {
         solved = true
         console.log("solved!")
         p.noLoop()
       }
 
+      // if a new trace was just drawn
       if (traced) {
         points = []
          // clear out emtpy traces
-      traces.forEach(trace => {
+        traces.forEach(trace => {
 
-        // don't add empty traces
-        if (trace.length <= 0) {
-          traces.splice(traces.indexOf(trace), 1)
-        } else {
+          // don't add empty traces
+          if (trace.length <= 0) {
+            traces.splice(traces.indexOf(trace), 1)
+          } else {
 
           // smooth out the trace
           const improvedTrace = []
 
-          trace.push(trace[0].copy())
-          trace.push(trace[1].copy())
-          trace.push(trace[2].copy())
-          trace.push(trace[3].copy())
-          // trace.push(trace[3].copy)
+          trace = [...trace, trace[0].copy(), trace[1].copy(), trace[2].copy(), trace[3].copy()]
           { // new namespace for laziness reasons
             let count = 0
             let steps = 1
@@ -269,56 +268,50 @@ class Particle {
         })
 
         improvedTraces.forEach(trace => {
+          const { length } = trace
+
           // make the trace into a container
           const canvas = new Canvas(trace)
-        // calculate average position to put seed point in middle
-          const xAve = trace.map(t => t.x).reduce((previousValue, currentValue) => previousValue + currentValue) / trace.length
-          const yAve = trace.map(t => t.y).reduce((previousValue, currentValue) => previousValue + currentValue) / trace.length
+          // calculate average position to put seed point in middle
+          const xAve = trace.map(t => t.x).reduce((previousValue, currentValue) => previousValue + currentValue) / length
+          const yAve = trace.map(t => t.y).reduce((previousValue, currentValue) => previousValue + currentValue) / length
 
 
           // calculate the area of the container
           let area = 0;  // Accumulates area in the loop   
-          let j = trace.length-1;  // The last vertex is the 'previous' one to the first
+          let j = length - 1;  // The last vertex is the 'previous' one to the first
 
-            for (let i=0; i<trace.length-1; i++)
-            { 
-              area = area +  (trace[j].x+trace[i].x) * (trace[j].y-trace[i].y); 
-                j = i;  //j is previous vertex to i
-            }
-            area /= 2
-            area = p.abs(area)
-            totalArea += area
+          for (let i = 0; i < length - 1; i++) { 
+            area = area +  (trace[j].x + trace[i].x) * (trace[j].y - trace[i].y) 
+            j = i;  //j is previous vertex to i
+          }
+          area /= 2
+          area = p.abs(area)
+          totalArea += area
 
-            const particleArea = p.PI * particleRadius * particleRadius
-            const canFitAtMost = area / particleArea * 0.8
-            // console.log(area, particleArea, area / particleArea)
+          const particleArea = p.PI * particleRadius * particleRadius
+          const canFitAtMost = area / particleArea * 0.8
 
           // fill area with as many circles as can fit
           let particlesArea = 0
           let count = canFitAtMost * 10
           for (var i = 0; particlesArea < area; i++) {
             // const newParticle = new Particle(p.createVector(xAve + p.random() - 0.5, yAve + p.random() - 0.5), canvas)
-            const newParticle = new Particle(p.createVector(p.random(canvas.minX, canvas.maxX), p.random(canvas.minY, canvas.maxY)), canvas)
+            const { minX, maxX, minY, maxY } = canvas
+            const newParticle = new Particle(p.createVector(p.random(minX, maxX), p.random(minY, maxY)), canvas)
 
             // check if next circle would still fit
-            if (particlesArea + newParticle.getArea() * 1.4 < area && !newParticle.outOfBounds()) {
-              particlesArea += newParticle.getArea() * 1.4
+            if (particlesArea + newParticle.getArea() * 1.2 < area && !newParticle.outOfBounds()) {
+              particlesArea += newParticle.getArea() * 1.2
               points.push(newParticle)
             } else {
               if (count <= 0) // try a few times, maybe a smaller circle would fit
               break
             }
             count --
-            }
-          
+          }
         })
-
-
       }
-
-
-
-     
       traced = false
     }
 
