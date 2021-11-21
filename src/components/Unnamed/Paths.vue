@@ -88,6 +88,7 @@ let sketch = (config) => {
     arrangedPoints = []
     arrangedPointsPoints = []
     graphAsPolygon = []
+    contour = []
 
   }
 
@@ -177,6 +178,7 @@ let sketch = (config) => {
   }
 
   let graphAsPolygon
+  let contour
   let graphcount = 0
 
   let anothercount = 0
@@ -250,6 +252,7 @@ let sketch = (config) => {
 
   if (traced) {
     graphAsPolygon = []
+    contour = []
 
     p.loadPixels();
     let d = p.pixelDensity();
@@ -267,8 +270,11 @@ let sketch = (config) => {
         p.pixels[i] != p.pixels[i - 2 * factor * p.width] || 
         p.pixels[i] != p.pixels[i + 2 * factor * p.width]
         )
-        if (x != 0 && y != 0 && x < p.width && y < p.height)
-          graphAsPolygon.push(p.createVector(x, y))
+        if (x != 0 && y != 0 && x < p.width && y < p.height) {
+          const newPoint = p.createVector(x, y)
+          graphAsPolygon.push(newPoint)
+          contour.push(newPoint)
+        }
     }
     p.updatePixels();
   }
@@ -311,11 +317,16 @@ let sketch = (config) => {
   // }
 }
 
+  p.fill(0,0,255)
+  contour.forEach(point => {
+    p.rect(point.x, point.y, 1, 1)
+  })
   // draw a green dot for each point in the graph
   p.fill(0,255,0)
   graphAsPolygon.forEach(point => {
     p.ellipse(point.x, point.y, 3, 3)
   })
+
   p.stroke(0)
   p.strokeWeight(1)
   p.text(graphAsPolygon.length, 15, 15)
@@ -346,7 +357,7 @@ let sketch = (config) => {
       randomPoint.visited = true
       let loopLimit = 10000
 
-      while (graphAsPolygonCopy.length > 1 && loopLimit > 0) {
+      while (graphAsPolygonCopy.length > 1/* && loopLimit > 0*/) {
         let indexofrandompoint = graphAsPolygonCopy.indexOf(randomPoint)
         arrangedPoints.push(...graphAsPolygonCopy.splice(indexofrandompoint, 1))
         let closestPoint = getClosestPoint(graphAsPolygonCopy, randomPoint)
@@ -530,7 +541,7 @@ export default {
         },
         pathwidth: {
           type: 'number',
-          value: 15
+          value: 12.5
         },
       }
     }
