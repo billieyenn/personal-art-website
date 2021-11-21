@@ -148,10 +148,16 @@ let sketch = (config) => {
     console.log(attempts, points.length)  
     // return points
   }
-
+const getClosestPoint = (points, point) => {
+    return points.reduce(
+        (previousValue, currentValue) => 
+        currentValue != point && point.dist(previousValue) > point.dist(currentValue) ? currentValue : previousValue)
+  }
 
   let graphAsPolygon
   let graphcount = 0
+
+  let anothercount = 0
   p.draw = () => {
     graphAsPolygon = []
     if (traced)
@@ -211,6 +217,7 @@ let sketch = (config) => {
     //   }
     // })
 
+  
 
 
   // get the points of the contour
@@ -226,17 +233,38 @@ let sketch = (config) => {
     y = p.floor(i / 4 / p.width)
 
     // if current pixel different from previous left and previous up
-    if (p.pixels[i] != p.pixels[i - 4 * factor] || p.pixels[i] != p.pixels[i - factor * p.width] || p.pixels[i] != p.pixels[i + factor * p.width])
+    if (p.pixels[i] != p.pixels[i - 4 * factor] || 
+      // p.pixels[i] != p.pixels[i + 4 * factor] || 
+      p.pixels[i] != p.pixels[i - factor * p.width] || 
+      p.pixels[i] != p.pixels[i + factor * p.width]
+      )
         graphAsPolygon.push(p.createVector(x, y))
   }
   p.updatePixels();
 
   p.background(p.color(colors.springWood));
 
-  // p.fill(255,0,0)
-  // graphAsPolygon.forEach(point => {
-  //   p.ellipse(point.x, point.y, 5, 5)
-  // })
+
+  // merge those points that are really close to each other
+  for (var i = graphAsPolygon.length - 1; i >= 0; i--) {
+    const point = graphAsPolygon[i]
+    let closestPoint = getClosestPoint(graphAsPolygon, point)
+    let anotherlimit = 1000
+    while (anotherlimit > 0 && closestPoint.dist(point) < 5) {
+      let mergedPoint = p.createVector((point.x + closestPoint.x) / 2, (point.y + closestPoint.y) / 2)
+      graphAsPolygon.splice(graphAsPolygon.indexOf(closestPoint), 1)
+      graphAsPolygon.splice(graphAsPolygon.indexOf(point), 1)
+      graphAsPolygon.push(mergedPoint)
+      closestPoint = getClosestPoint(graphAsPolygon, mergedPoint)
+      anotherlimit--
+    }
+  }
+
+
+  p.fill(0,255,0)
+  graphAsPolygon.forEach(point => {
+    p.ellipse(point.x, point.y, 3, 3)
+  })
   p.stroke(0)
   p.strokeWeight(1)
   p.text(graphAsPolygon.length, 15, 15)
@@ -248,26 +276,6 @@ let sketch = (config) => {
     point.visited = false
   })
 
-  // //find closest point for each point
-  // // if (graphAsPolygon.length > 0)
-  // {
-  //   // graphcount = 0
-  //   // let point = graphAsPolygon[graphcount]
-  //   // if (point) {
-  //   graphAsPolygon.forEach(point => {
-  //     const closestPoint = graphAsPolygon.reduce(
-  //       (previousValue, currentValue) => 
-  //       (currentValue != point && point.dist(previousValue) > point.dist(currentValue) && typeof currentValue.prev == 'undefined') && point.prev != currentValue ? currentValue : previousValue)
-  //     point.next = closestPoint
-  //     closestPoint.prev = point
-  //   })
-  // }
-
-  const getClosestPoint = (points, point) => {
-    return points.reduce(
-        (previousValue, currentValue) => 
-        currentValue != point && point.dist(previousValue) > point.dist(currentValue) ? currentValue : previousValue)
-  }
 
   const get2ClosestPoints = (points, point) => {
     const selflessPoints = [...points.filter(self => point != self)]
@@ -288,32 +296,28 @@ let sketch = (config) => {
   }
 
   // visit a random point, find its closest and keep iterating
+  let arrangedPoints = []
   if (graphAsPolygon.length > 0)
   {
     let graphAsPolygonCopy = [...graphAsPolygon] 
 
     let randomIndex = p.floor(p.random(graphAsPolygonCopy.length))
-    console.log('random i: ' +randomIndex)
-    let randomPoint = graphAsPolygonCopy[randomIndex]
-    console.log(randomPoint)
+    let randomPoint = graphAsPolygonCopy[0]
     randomPoint.visited = true
     let loopLimit = 10000
+
     while (graphAsPolygonCopy.length > 1 && loopLimit > 0) {
       let indexofrandompoint = graphAsPolygonCopy.indexOf(randomPoint)
-      console.log('i: ' +indexofrandompoint)
-    console.log('graphAsPolygonCopy.len: ' + graphAsPolygonCopy.length)
-      graphAsPolygonCopy = graphAsPolygonCopy.splice(indexofrandompoint, 1)
-      console.log('graph length ' +graphAsPolygonCopy.length)
+      arrangedPoints.push(...graphAsPolygonCopy.splice(indexofrandompoint, 1))
       let closestPoint = getClosestPoint(graphAsPolygonCopy, randomPoint)
+
+      if (randomPoint.dist(closestPoint) > 30)
+        break
       randomPoint.next = closestPoint
       closestPoint.prev = randomPoint
       randomPoint = closestPoint
       loopLimit--
     }
-    console.log('looplimit ' + loopLimit)
-    // console.log('graphAsPolygonCopy')
-    // console.log(graphAsPolygonCopy)
-    console.log('visited '+graphAsPolygonCopy.filter(point => point.visited).length)
   }
 
 
@@ -321,7 +325,7 @@ let sketch = (config) => {
   // // find those links with outlier distances and sever the links
   // const hardCodedReasonableDistance = 10
   // graphAsPolygon.forEach(point => {
-  //   if (point.dist(point.next) > hardCodedReasonableDistance) {
+  //   if (point.next && point.dist(point.next) > hardCodedReasonableDistance) {
   //     let otherPoint = point.next.prev
   //     point.next.prev = undefined
   //     point.next = undefined
@@ -350,47 +354,75 @@ let sketch = (config) => {
 
 
 
-  // graphcount ++
-  // graphcount = graphcount % graphAsPolygon.length
-  // console.log(graphAsPolygon)
+
   p.stroke(0)
   p.strokeWeight(1)
-  graphAsPolygon.forEach(point => {
-    p.line(point.x, point.y, point.prev?.x, point.prev?.y)
-    p.fill(0,255,0)
-    if (typeof point.prev == 'undefined' || typeof point.next == 'undefined')
-    p.fill(255, 0,0)
-
-    // p.ellipse(point.x, point.y, 5, 5)
-    p.line(point.x, point.y, point.next?.x, point.next?.y)
-    // point.next = undefined
-    // point.prev = undefined
-  })
-
-
-  // find a random chain of nexts in the polygon, and show it
-  if (graphAsPolygon.length > 0) {
-
-    let graphaslist = []
-    let graphAsPolygonCopy = [...graphAsPolygon]
-    let randomPoint = graphAsPolygonCopy[p.floor(p.random(graphAsPolygonCopy.length))]
-    graphaslist.push(randomPoint)
-    let iteratinLimit = 10000
-    while(randomPoint.next && iteratinLimit > 0) {
-      randomPoint = randomPoint.next
-      if (graphaslist.indexOf(randomPoint) >= 0)
-        break
-      graphaslist.push(randomPoint)
-      iteratinLimit--
+  p.fill(255)
+  for (var i = arrangedPoints.length - 1; i >= 1; i--) {
+    p.line(arrangedPoints[i].x, arrangedPoints[i].y, arrangedPoints[i - 1].x, arrangedPoints[i - 1].y)
+    p.fill(255,0,0)
+    if (anothercount == i) {
+      p.ellipse(arrangedPoints[i].x, arrangedPoints[i].y, 4, 4)
     }
-
-    graphaslist.forEach(point => {
-      const { x, y } = point
-      p.fill(255,0,0)
-      p.ellipse(x, y, 5, 5)
-    })
-    console.log(graphaslist.length)
   }
+  if(arrangedPoints.length > 0)
+    anothercount = (anothercount + 1)%arrangedPoints.length
+  // console.log(anothercount, arrangedPoints.length)
+
+
+  // arrangedPoints.forEach(point => {
+  //   p.line(point.x, point.y, point.prev?.x, point.prev?.y)
+  //   p.fill(0,255,0)
+  //   if (typeof point.prev == 'undefined' || typeof point.next == 'undefined')
+  //   p.fill(255, 0,0)
+
+  //   // p.ellipse(point.x, point.y, 5, 5)
+  //   p.line(point.x, point.y, point.next?.x, point.next?.y)
+  //   // point.next = undefined
+  //   // point.prev = undefined
+  // })
+
+
+
+  // //  iterate array and show each point to its next as a line 
+  // p.stroke(0)
+  // p.strokeWeight(1)
+  // graphAsPolygon.forEach(point => {
+  //   // p.line(point.x, point.y, point.prev?.x, point.prev?.y)
+  //   p.fill(0,255,0)
+  //   if (typeof point.prev == 'undefined' || typeof point.next == 'undefined')
+  //   p.fill(255, 0,0)
+
+  //   // p.ellipse(point.x, point.y, 5, 5)
+  //   p.line(point.x, point.y, point.next?.x, point.next?.y)
+  //   // point.next = undefined
+  //   // point.prev = undefined
+  // })
+
+
+  // // find a random chain of nexts in the polygon, and show it
+  // if (graphAsPolygon.length > 0) {
+
+  //   let graphaslist = []
+  //   let graphAsPolygonCopy = [...graphAsPolygon]
+  //   let randomPoint = graphAsPolygonCopy[p.floor(p.random(graphAsPolygonCopy.length))]
+  //   graphaslist.push(randomPoint)
+  //   let iteratinLimit = 10000
+  //   while(randomPoint.next && iteratinLimit > 0) {
+  //     randomPoint = randomPoint.next
+  //     if (graphaslist.indexOf(randomPoint) >= 0)
+  //       break
+  //     graphaslist.push(randomPoint)
+  //     iteratinLimit--
+  //   }
+
+  //   graphaslist.forEach(point => {
+  //     const { x, y } = point
+  //     p.fill(255,0,0)
+  //     p.ellipse(x, y, 5, 5)
+  //   })
+  //   console.log(graphaslist.length)
+  // }
 
 
 
@@ -445,7 +477,7 @@ export default {
         },
         pathwidth: {
           type: 'number',
-          value: 12.5
+          value: 12
         },
       }
     }
