@@ -85,6 +85,10 @@ let sketch = (config) => {
     traces = []
     points = []
     neighbourGraph = []
+    arrangedPoints = []
+    arrangedPointsPoints = []
+    graphAsPolygon = []
+
   }
 
   // what if no trace provided
@@ -148,23 +152,44 @@ let sketch = (config) => {
     console.log(attempts, points.length)  
     // return points
   }
-const getClosestPoint = (points, point) => {
+  const getClosestPoint = (points, point) => {
     return points.reduce(
         (previousValue, currentValue) => 
         currentValue != point && point.dist(previousValue) > point.dist(currentValue) ? currentValue : previousValue)
+  }
+
+  const get2ClosestPoints = (points, point) => {
+    const selflessPoints = [...points.filter(self => point != self)]
+    const randP1 = selflessPoints[p.floor(p.random(points.length)) - 1]
+    const randP2 = selflessPoints[p.floor(p.random(points.length)) - 1]
+    let top2 = [randP1, randP2] // keep track of 2 closest points found so far, randomly initialized
+    points.forEach(p2 => {
+      if (p2 != point && typeof top2[0] != 'undefined' && typeof top2[1] != 'undefined') { // so long as the tested point isn't the point itself
+        // console.log(point, p2, top2[0], top2[1])
+        if (point.dist(p2) < point.dist(top2[0])) {
+          top2 = [p2, top2[0]]
+        } else if (point.dist(p2) < point.dist(top2[1])) {
+          top2 = [top2[0], p2]          
+        }
+      }
+    })
+    return top2
   }
 
   let graphAsPolygon
   let graphcount = 0
 
   let anothercount = 0
+
+    let arrangedPoints
+    let arrangedPointsPoints // contains a list of will-be canvasses
+
   p.draw = () => {
-    graphAsPolygon = []
+    
     if (traced)
     {
       generatePoints(traces[traces.length - 1])
       calculateNeighbourGraph()
-      traced = false
       // p.noLoop()
     }
     p.background(p.color(colors.springWood));
@@ -222,45 +247,71 @@ const getClosestPoint = (points, point) => {
 
   // get the points of the contour
   let factor = 4 // some multiple of 2
-  p.loadPixels();
-  let d = p.pixelDensity();
-  let image = 4 * (p.width * d) * (p.height * d);
-  let x, y
-  for (let i = 4 * factor + factor * p.width; i < image; i += 4 * factor) {
-    x = i / 4 % p.width
-    if (x == 0) // each time cols loops around, also skip rows
-      i += p.width * (factor - 1) * 4
-    y = p.floor(i / 4 / p.width)
 
-    // if current pixel different from previous left and previous up
-    if (p.pixels[i] != p.pixels[i - 4 * factor] || 
-      // p.pixels[i] != p.pixels[i + 4 * factor] || 
-      p.pixels[i] != p.pixels[i - factor * p.width] || 
-      p.pixels[i] != p.pixels[i + factor * p.width]
-      )
-        graphAsPolygon.push(p.createVector(x, y))
+  if (traced) {
+    graphAsPolygon = []
+
+    p.loadPixels();
+    let d = p.pixelDensity();
+    let image = 4 * (p.width * d) * (p.height * d) - 4 * factor * p.width;
+    let x, y
+    for (let i = 4 * factor + 4 * factor * p.width; i < image; i += 4 * factor) {
+      x = i / 4 % p.width
+      if (x == 0) // each time cols loops around, also skip rows
+        i += p.width * (factor - 1) * 4
+      y = p.floor(i / 4 / p.width)
+
+      // if current pixel different from previous left and previous up
+      if (p.pixels[i] != p.pixels[i - 2 * factor] || 
+        p.pixels[i] != p.pixels[i + 2 * factor] || 
+        p.pixels[i] != p.pixels[i - 2 * factor * p.width] || 
+        p.pixels[i] != p.pixels[i + 2 * factor * p.width]
+        )
+        if (x != 0 && y != 0 && x < p.width && y < p.height)
+          graphAsPolygon.push(p.createVector(x, y))
+    }
+    p.updatePixels();
   }
-  p.updatePixels();
-
   p.background(p.color(colors.springWood));
 
+  if (traced) {
 
   // merge those points that are really close to each other
-  for (var i = graphAsPolygon.length - 1; i >= 0; i--) {
-    const point = graphAsPolygon[i]
-    let closestPoint = getClosestPoint(graphAsPolygon, point)
-    let anotherlimit = 1000
-    while (anotherlimit > 0 && closestPoint.dist(point) < 5) {
-      let mergedPoint = p.createVector((point.x + closestPoint.x) / 2, (point.y + closestPoint.y) / 2)
-      graphAsPolygon.splice(graphAsPolygon.indexOf(closestPoint), 1)
-      graphAsPolygon.splice(graphAsPolygon.indexOf(point), 1)
-      graphAsPolygon.push(mergedPoint)
-      closestPoint = getClosestPoint(graphAsPolygon, mergedPoint)
-      anotherlimit--
-    }
-  }
+  // {
+  //   let anotherlimit = 1000
+    const mergeDistanceLimit = 5
+  //   let prevPoint = graphAsPolygon[0]
+  //   // while merging needs doing
+  //   while (anotherlimit > 0 && graphAsPolygon.reduce((previous, current) => {
+  //     let temp = prevPoint
+  //     prevPoint = current
+  //     if (temp == current)
+  //       return previous
+  //     const dist = temp.dist(current)
+  //     // console.log('prevos ' + previous + ' dist ' + dist)
+  //     return dist < previous ? dist : previous
+  //   }, 1000) < mergeDistanceLimit) {
+      // go thru the entire array once and do some merging
+    for (var i = graphAsPolygon.length - 1; i >= 0; i--) {
+      const point = graphAsPolygon[i]
+      // while (point.dist)
+      let closestPoint = getClosestPoint(graphAsPolygon, point)
+        // while (closestPoint.dist(point) < mergeDistanceLimit) {
+        if (closestPoint.dist(point) < mergeDistanceLimit) {
 
+          let mergedPoint = p.createVector((point.x + closestPoint.x) / 2, (point.y + closestPoint.y) / 2)
+          graphAsPolygon.splice(graphAsPolygon.indexOf(closestPoint), 1)
+          graphAsPolygon.splice(graphAsPolygon.indexOf(point), 1)
+          graphAsPolygon.push(mergedPoint)
+          closestPoint = getClosestPoint(graphAsPolygon, mergedPoint)
+        }
+      }
+  //     anotherlimit--
+  //   }
+  // }
+}
 
+  // draw a green dot for each point in the graph
   p.fill(0,255,0)
   graphAsPolygon.forEach(point => {
     p.ellipse(point.x, point.y, 3, 3)
@@ -277,50 +328,43 @@ const getClosestPoint = (points, point) => {
   })
 
 
-  const get2ClosestPoints = (points, point) => {
-    const selflessPoints = [...points.filter(self => point != self)]
-    const randP1 = selflessPoints[p.floor(p.random(points.length)) - 1]
-    const randP2 = selflessPoints[p.floor(p.random(points.length)) - 1]
-    let top2 = [randP1, randP2] // keep track of 2 closest points found so far, randomly initialized
-    points.forEach(p2 => {
-      if (p2 != point && typeof top2[0] != 'undefined' && typeof top2[1] != 'undefined') { // so long as the tested point isn't the point itself
-        // console.log(point, p2, top2[0], top2[1])
-        if (point.dist(p2) < point.dist(top2[0])) {
-          top2 = [p2, top2[0]]
-        } else if (point.dist(p2) < point.dist(top2[1])) {
-          top2 = [top2[0], p2]          
-        }
-      }
-    })
-    return top2
-  }
+  if (traced) {
+    arrangedPoints = []
+    arrangedPointsPoints = []
 
   // visit a random point, find its closest and keep iterating
-  let arrangedPoints = []
   if (graphAsPolygon.length > 0)
   {
-    let graphAsPolygonCopy = [...graphAsPolygon] 
+    let graphAsPolygonCopy = [...graphAsPolygon]
 
-    let randomIndex = p.floor(p.random(graphAsPolygonCopy.length))
-    let randomPoint = graphAsPolygonCopy[0]
-    randomPoint.visited = true
-    let loopLimit = 10000
+    while (graphAsPolygonCopy.length > 1) {
 
-    while (graphAsPolygonCopy.length > 1 && loopLimit > 0) {
-      let indexofrandompoint = graphAsPolygonCopy.indexOf(randomPoint)
-      arrangedPoints.push(...graphAsPolygonCopy.splice(indexofrandompoint, 1))
-      let closestPoint = getClosestPoint(graphAsPolygonCopy, randomPoint)
 
-      if (randomPoint.dist(closestPoint) > 30)
-        break
-      randomPoint.next = closestPoint
-      closestPoint.prev = randomPoint
-      randomPoint = closestPoint
-      loopLimit--
+
+      let randomIndex = p.floor(p.random(graphAsPolygonCopy.length))
+      let randomPoint = graphAsPolygonCopy[0]
+      randomPoint.visited = true
+      let loopLimit = 10000
+
+      while (graphAsPolygonCopy.length > 1 && loopLimit > 0) {
+        let indexofrandompoint = graphAsPolygonCopy.indexOf(randomPoint)
+        arrangedPoints.push(...graphAsPolygonCopy.splice(indexofrandompoint, 1))
+        let closestPoint = getClosestPoint(graphAsPolygonCopy, randomPoint)
+
+        // no more nearby points, shape has ended
+        if (randomPoint.dist(closestPoint) > 30) {// TODO: find a better way than hardcoding 'big jump'
+          arrangedPointsPoints.push(arrangedPoints)
+        arrangedPoints = []
+          break
+        }
+        randomPoint.next = closestPoint
+        closestPoint.prev = randomPoint
+        randomPoint = closestPoint
+        loopLimit--
+      }
     }
   }
-
-
+} 
 
   // // find those links with outlier distances and sever the links
   // const hardCodedReasonableDistance = 10
@@ -352,9 +396,11 @@ const getClosestPoint = (points, point) => {
   // })
 
 
+console.log('arrangedPointsPoints leng ' + arrangedPointsPoints.length)
+arrangedPointsPoints.forEach(arrangedPoints => {
 
-
-
+  console.log('arrangedPoints.length ' + arrangedPoints.length)
+  // visualise the arranged points
   p.stroke(0)
   p.strokeWeight(1)
   p.fill(255)
@@ -369,6 +415,10 @@ const getClosestPoint = (points, point) => {
     anothercount = (anothercount + 1)%arrangedPoints.length
   // console.log(anothercount, arrangedPoints.length)
 
+
+
+
+})
 
   // arrangedPoints.forEach(point => {
   //   p.line(point.x, point.y, point.prev?.x, point.prev?.y)
@@ -433,6 +483,7 @@ const getClosestPoint = (points, point) => {
   //   // graphaslist.push(point)
   //   while
   // })
+      traced = false
 
   }
 
@@ -477,7 +528,7 @@ export default {
         },
         pathwidth: {
           type: 'number',
-          value: 12
+          value: 15
         },
       }
     }
