@@ -352,7 +352,8 @@ let sketch = (config) => {
         let closestPoint = getClosestPoint(graphAsPolygonCopy, randomPoint)
 
         // no more nearby points, shape has ended
-        if (randomPoint.dist(closestPoint) > 30) {// TODO: find a better way than hardcoding 'big jump'
+        if (randomPoint.dist(closestPoint) > 20) {// TODO: find a better way than hardcoding 'big jump'
+          if (arrangedPoints.length > 1)
           arrangedPointsPoints.push(arrangedPoints)
         arrangedPoints = []
           break
@@ -396,10 +397,10 @@ let sketch = (config) => {
   // })
 
 
-console.log('arrangedPointsPoints leng ' + arrangedPointsPoints.length)
+// console.log('arrangedPointsPoints leng ' + arrangedPointsPoints.length)
 arrangedPointsPoints.forEach(arrangedPoints => {
 
-  console.log('arrangedPoints.length ' + arrangedPoints.length)
+  // console.log('arrangedPoints.length ' + arrangedPoints.length)
   // visualise the arranged points
   p.stroke(0)
   p.strokeWeight(1)
@@ -407,18 +408,19 @@ arrangedPointsPoints.forEach(arrangedPoints => {
   for (var i = arrangedPoints.length - 1; i >= 1; i--) {
     p.line(arrangedPoints[i].x, arrangedPoints[i].y, arrangedPoints[i - 1].x, arrangedPoints[i - 1].y)
     p.fill(255,0,0)
-    if (anothercount == i) {
+    if (anothercount%arrangedPoints.length == i) {
       p.ellipse(arrangedPoints[i].x, arrangedPoints[i].y, 4, 4)
     }
   }
-  if(arrangedPoints.length > 0)
-    anothercount = (anothercount + 1)%arrangedPoints.length
+  // if(arrangedPoints.length > 0)
+    // anothercount = (anothercount + 1)%arrangedPoints.length
   // console.log(anothercount, arrangedPoints.length)
 
 
 
 
 })
+  anothercount++
 
   // arrangedPoints.forEach(point => {
   //   p.line(point.x, point.y, point.prev?.x, point.prev?.y)
