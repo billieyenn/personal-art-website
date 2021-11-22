@@ -12,6 +12,8 @@
 import P5 from 'p5'
 import { colors, randomColor } from '../../colors.js'
 import { isInPoly, Canvas } from '../../utils.js'
+import LineMachine from '../../linemachine.js'
+
 
 
 let sketch = (config) => {
@@ -195,7 +197,7 @@ class Particle {
     points = []
     neighbourGraph = []
     arrangedPoints = []
-    arrangedPointsPoints = []
+    // arrangedPointsPoints = []
     graphAsPolygon = []
     contour = []
     canvasses = []
@@ -208,7 +210,7 @@ class Particle {
   // takes an outline (trace) as input, and generates random point paths within the trace
   // what if no trace provided
   const generateRandomWalk = (trace = []) => {
-    console.log(trace)
+    // console.log(trace)
     let attempts = 0
     // let points = []
 
@@ -259,7 +261,7 @@ class Particle {
 }
       attempts ++
     }
-    console.log(attempts, points.length)  
+    // console.log(attempts, points.length)  
     // return points
   }
   const getClosestPoint = (points, point) => {
@@ -286,6 +288,66 @@ class Particle {
     return top2
   }
 
+
+
+const integrateComplexFourierSeries = function(xs, ys, n) {
+  const steps = xs.length
+  const delta = 1 / steps
+  let c_n = math.complex(0,0);
+  for (let i = 0; i < steps; i++) {
+    const t = i / steps;
+    let x = xs[i]
+    let y = ys[i]
+    let a = math.complex(x, y)
+    const exp_numb = n * 2 * p.PI * t
+    const im = math.complex(0, 1)
+    const exponent = math.multiply(im, exp_numb)
+    a  = math.multiply(a, math.exp(exponent))
+    a  = math.multiply(a, delta)
+    c_n = math.add(c_n, a)
+  }
+  return c_n
+}
+
+const calculateComplexPrefixes = function(x_s, y_s, complexity, scale) {
+  let c = []
+  let c_n = math.complex(0,0)
+  c_n = math.add(c_n, integrateComplexFourierSeries(x_s, y_s, 0))
+  c_n = p.createVector(math.re(c_n), math.im(c_n));
+  c.push(c_n)
+  for(let i = 1; i < complexity; i++) {
+    c_n = math.complex(0,0)
+    c_n = math.add(c_n, integrateComplexFourierSeries(x_s, y_s, i))
+    c_n = p.createVector(math.re(c_n), math.im(c_n));
+    c.push(c_n)
+    c_n = math.complex(0,0)
+    c_n = math.add(c_n, integrateComplexFourierSeries(x_s, y_s, -i))
+    c_n = p.createVector(math.re(c_n), math.im(c_n));
+    c.push(c_n)
+  } 
+  return c.map(v => v.mult(scale))
+}
+
+
+
+  // const normalizeByPointDistance = (points, distance) => {
+  //   for (let a = points.length - 1; a >= 0; a--) {
+  //     const p1 = createVector(points[a][0], points[a][1])
+  //     for (let b = points.length - 1; b >= 0; b--) {
+  //       const p2 = createVector(points[b][0], points[b][1])
+  //       if (a != b)
+  //       if (p1.dist(p2) < distance) {
+  //         points.splice(b, 1)
+  //         break
+  //       }
+  //     }
+  //   }
+  //   return points
+  // }
+
+const zip = (a, b) => a.map((k, i) => [k, b[i]])
+
+
   let graphAsPolygon
   let contour
   let graphcount = 0
@@ -293,7 +355,7 @@ class Particle {
   let anothercount = 0
 
   let arrangedPoints
-  let arrangedPointsPoints // contains a list of will-be canvasses
+  // let arrangedPointsPoints // contains a list of will-be canvasses
 
   p.draw = () => {
     
@@ -385,14 +447,21 @@ class Particle {
     }
   }
 
-  p.fill(0,0,255)
-  contour.forEach(point => {
-    p.rect(point.x, point.y, 1, 1)
-  })
+  // p.fill(0,0,255)
+  // contour.forEach(point => {
+  //   p.rect(point.x, point.y, 1, 1)
+  // })
   // draw a green dot for each point in the graph
   p.fill(0,255,0)
   graphAsPolygon.forEach(point => {
     p.ellipse(point.x, point.y, 3, 3)
+  })
+
+  p.fill(0,0,255)
+  canvasses.forEach(points => {
+    points.forEach(point => {
+      p.ellipse(point.x, point.y, 3, 3)
+    })
   })
 
   p.stroke(0)
@@ -400,60 +469,95 @@ class Particle {
   // p.text(graphAsPolygon.length, 15, 15)
 
 
-  graphAsPolygon.forEach(point => {
-    point.next = undefined
-    point.prev = undefined
-    point.visited = false
-  })
+  // graphAsPolygon.forEach(point => {
+  //   point.next = undefined
+  //   point.prev = undefined
+  //   point.visited = false
+  // })
 
 
   if (traced) {
     arrangedPoints = []
-    arrangedPointsPoints = []
+    // arrangedPointsPoints = []
     canvasses = []
 
   // visit a random point, find its closest and keep iterating
-  if (graphAsPolygon.length > 0)
+  if (graphAsPolygon.length > 0) // if graph is generated
   {
-    let graphAsPolygonCopy = [...graphAsPolygon]
+    let graphAsPolygonCopy = [...graphAsPolygon] // don't modify the original
 
-    while (graphAsPolygonCopy.length > 1) {
+    while (graphAsPolygonCopy.length > 1) { // while points remain
 
-      let randomIndex = p.floor(p.random(graphAsPolygonCopy.length))
-      let randomPoint = graphAsPolygonCopy[0]
-      randomPoint.visited = true
-      let loopLimit = 10000
+      // let randomIndex = p.floor(p.random(graphAsPolygonCopy.length))
+      let randomPoint = graphAsPolygonCopy[0] // start at a random point, for example the first point
+      // randomPoint.visited = true
+      // let loopLimit = 10000
 
+      // while points remain
       while (graphAsPolygonCopy.length > 1/* && loopLimit > 0*/) {
+
+        // remove a point from the graph and add them to subgraphs
         let indexofrandompoint = graphAsPolygonCopy.indexOf(randomPoint)
         arrangedPoints.push(...graphAsPolygonCopy.splice(indexofrandompoint, 1))
+
+        // find the point closest to the recently removed point
         let closestPoint = getClosestPoint(graphAsPolygonCopy, randomPoint)
 
         // no more nearby points, shape has ended
         if (randomPoint.dist(closestPoint) > 20) {// TODO: find a better way than hardcoding 'big jump'
           if (arrangedPoints.length > 1)
-          arrangedPointsPoints.push(arrangedPoints)
+          // arrangedPointsPoints.push(arrangedPoints)
+
+          // // smooth out the shape 
+          // p.angleMode(p.RADIANS)
+
+          // const x_s = arrangedPoints.map(point => point.x)
+          // const y_s = arrangedPoints.map(point => point.y)
+
+          // let newMachine = LineMachine(config)(p)
+          // newMachine.generator.slowdownFactor = 10
+          // newMachine.waves = newMachine.generator.constructWaveFunctions(calculateComplexPrefixes(x_s, y_s, 100, 1), 100)
+          // newMachine.tracePoints()
+          // console.log(newMachine.traceInfo())
+          // const traceInfo = newMachine.traceInfo()
+          // if (traceInfo.minX > 0 && traceInfo.minY > 0)
+          // canvasses.push(newMachine.trace)
+
           canvasses.push(arrangedPoints)
+
           arrangedPoints = []
           break
         }
-        randomPoint.next = closestPoint
-        closestPoint.prev = randomPoint
+        // randomPoint.next = closestPoint
+        // closestPoint.prev = randomPoint
         randomPoint = closestPoint
-        loopLimit--
+        // loopLimit--
       }
     }
+
+    // when points have run out, the final shape has formed
+    canvasses.push(arrangedPoints)
   }
-
-} 
-
+}
 
 
-  // console.log('arrangedPointsPoints leng ' + arrangedPointsPoints.length)
-  arrangedPointsPoints.forEach(arrangedPoints => {
 
-    // console.log('arrangedPoints.length ' + arrangedPoints.length)
+
     // visualise the arranged points
+  // arrangedPointsPoints.forEach(arrangedPoints => {
+  //   p.stroke(0)
+  //   p.strokeWeight(1)
+  //   p.fill(255)
+  //   for (var i = arrangedPoints.length - 1; i >= 1; i--) {
+  //     p.line(arrangedPoints[i].x, arrangedPoints[i].y, arrangedPoints[i - 1].x, arrangedPoints[i - 1].y)
+  //     p.fill(255,0,0)
+  //     if (anothercount%arrangedPoints.length == i) {
+  //       p.ellipse(arrangedPoints[i].x, arrangedPoints[i].y, 4, 4)
+  //     }
+  //   }
+  // })
+
+    canvasses.forEach(arrangedPoints => {
     p.stroke(0)
     p.strokeWeight(1)
     p.fill(255)
@@ -464,12 +568,6 @@ class Particle {
         p.ellipse(arrangedPoints[i].x, arrangedPoints[i].y, 4, 4)
       }
     }
-    // if(arrangedPoints.length > 0)
-      // anothercount = (anothercount + 1)%arrangedPoints.length
-    // console.log(anothercount, arrangedPoints.length)
-
-
-
 
   })
   anothercount++
@@ -557,7 +655,6 @@ class Particle {
           let particlesArea = 0
           let count = canFitAtMost * 10
           for (var i = 0; particlesArea < area; i++) {
-            // const newParticle = new Particle(p.createVector(xAve + p.random() - 0.5, yAve + p.random() - 0.5), canvas)
             const { minX, maxX, minY, maxY } = canvas
             const newParticle = new Particle(p.createVector(p.random(minX, maxX), p.random(minY, maxY)), canvas)
 
