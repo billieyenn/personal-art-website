@@ -148,6 +148,7 @@ class Particle {
       p.stroke(0)
       // p.noFill()
 
+      // show the container
       improvedTraces.forEach(trace => {
         const { length } = trace
         if (length > 3)
@@ -169,6 +170,7 @@ class Particle {
         }
       })
 
+      // show trace as it is being drawn
       traces.forEach(trace => {
         const { length } = trace
 
@@ -211,10 +213,6 @@ class Particle {
               p.angleMode(p.RADIANS)
               particle.applyForce(force.rotate(p.PI))
             }
-           
-
-
-          
           }
         })
         particle.update()

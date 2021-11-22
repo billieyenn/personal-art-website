@@ -10,11 +10,107 @@
 /* eslint-disable */
 import P5 from 'p5'
 import { colors, randomColor } from '../../colors.js'
-import { isInPoly } from '../../utils.js'
+import { isInPoly, Canvas } from '../../utils.js'
 
 
 let sketch = (config) => {
   return function (p) {
+
+
+
+class Particle {
+      constructor(pos, canvas) {
+        this.canvas = canvas
+        this.pos = pos || this.randomPos()
+        this.vel = p.createVector(0, 0)
+        this.acc = p.createVector(0, 0)
+        // this.startingRadius = particleRadius
+        this.startingRadius = p.random(particleRadius)
+        this.radius = this.startingRadius
+        // this.radius = p.random(3, particleRadius)
+        this.area = this.radius * this.radius * p.PI
+        this.solved = false
+      }
+
+      randomPos() { 
+        const { minX, maxX, minY, maxY } = this.canvas
+        return p.createVector(p.random(minX, maxX), p.random(minY, maxY))
+      }
+
+      getArea() {
+        return this.radius * this.radius * p.PI
+      }
+
+      getStartingArea() {
+        return this.startingRadius * this.startingRadius * p.PI
+      }
+
+      update() {
+        // find the closest point on the container canvas
+        const closestPoint = this.canvas.vertices.reduce((previousValue, currentValue) => previousValue.dist(this.pos) < currentValue.dist(this.pos) ? previousValue : currentValue)
+        this.solved = true
+        // if the particle is too close to the outside of the container
+        if (this.outOfBounds() || closestPoint.dist(this.pos) < this.radius) {
+
+          // push particle towards wall
+          const direction = p.createVector(closestPoint.x - this.pos.x, closestPoint.y - this.pos.y)
+
+          // if inside, push away from the wall
+          if (!this.outOfBounds())
+            direction.rotate(p.PI)
+
+          // apply constant force
+          direction.setMag(2)
+
+          this.vel.add(direction)
+          this.radius -= p.random()/100
+          this.solved = false
+        }
+        this.vel.add(this.acc)
+        this.pos.add(this.vel)
+        this.acc.setMag(0)
+        this.vel.setMag(this.vel.mag() * 0.2)
+
+        if (this.vel.mag() > 0.001)
+        // very slowly shrinking ensure eventually the particles fit?
+          this.radius -= p.random()/100 // try to get some circles to expire at different times
+
+        if (this.radius / this.startingRadius < 0.85)
+          points.splice(points.indexOf(this), 1)
+      }
+
+      applyForce(force) {
+        this.acc.add(force)
+      }
+
+      display() {
+        p.push()
+        p.translate(this.pos.x, this.pos.y)
+        p.stroke(p.color(colors.bigStone))
+        // p.noStroke()
+        // p.fill(255)
+        p.noFill()
+        p.ellipse(0, 0, this.radius * 2, this.radius * 2)
+        // p.point(0, 0)
+        p.pop()
+      }
+
+      outOfBounds() {
+        return this.canvas.outOfBounds(this.pos)
+      }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
   // return random value between lower and higher bound, with values closer to higher bound having a  higher probability of being returned
   const linearRandom = (() => {
@@ -48,11 +144,22 @@ let sketch = (config) => {
   let points
   let neighbourGraph
   let traces
+  let canvasses
+  // let traces
+  let improvedTraces
+  let particles
 
+    let solved = false
+    let allParticlesInContainer = true
+    let allParticlesNoOverlap = true
 
   let armslength// = 12.5 * 2
   let pathwidth = 6.25 * 2
   let canvasWidth, canvasHeight, numberOfPoints, maxAttempts
+    let particleRadius = 10
+
+    let totalArea// = 0
+
 
   p.setup = () => {
     ({
@@ -80,6 +187,7 @@ let sketch = (config) => {
     pathwidth = Number(pathwidth)
     // console.log(armslength)
 
+      totalArea = 1
     p.createCanvas(canvasWidth, canvasHeight);
     // const numberOfPoints = 400
     traces = []
@@ -89,28 +197,28 @@ let sketch = (config) => {
     arrangedPointsPoints = []
     graphAsPolygon = []
     contour = []
+    canvasses = []
+    traces = []
+    improvedTraces = []
+    particles = []
 
   }
 
+  // takes an outline (trace) as input, and generates random point paths within the trace
   // what if no trace provided
-  const generatePoints = (trace = []) => {
+  const generateRandomWalk = (trace = []) => {
     console.log(trace)
-    // const maxAttempts = 64000
     let attempts = 0
     // let points = []
 
-    // console.log(trace)
+    // start walking from the middle of the trace
     if (trace.length > 0) {
-
-    // traces.forEach(trace => {
       // calculate average position to put seed point in middle
       const xAve = trace.map(t => t.x).reduce((previousValue, currentValue) => previousValue + currentValue) / trace.length
       const yAve = trace.map(t => t.y).reduce((previousValue, currentValue) => previousValue + currentValue) / trace.length
-
       points.push(p.createVector(xAve, yAve))
     } else {
       console.log("no trace provided")
-      // points.push(p.createVector(p.width / 2, p.height / 2))
     }
 
     if (points.length > 0)
@@ -183,14 +291,15 @@ let sketch = (config) => {
 
   let anothercount = 0
 
-    let arrangedPoints
-    let arrangedPointsPoints // contains a list of will-be canvasses
+  let arrangedPoints
+  let arrangedPointsPoints // contains a list of will-be canvasses
 
   p.draw = () => {
     
+
     if (traced)
     {
-      generatePoints(traces[traces.length - 1])
+      generateRandomWalk(traces[traces.length - 1])
       calculateNeighbourGraph()
       // p.noLoop()
     }
@@ -221,32 +330,7 @@ let sketch = (config) => {
       p.ellipse(p.x, p.y, armslength * 2, armslength * 2)
     })
 
- 
-    // let newWeight = 2
-    // p.strokeWeight(newWeight)
-    // p.stroke(0)
-
-    // traces.forEach(trace => {
-    //   if (trace.length > 3)
-    //   for (let ii = 0; ii < 0 + trace.length + 3; ii++) {
-    //     const i = ii + 0 % trace.length
-    //     const distance = trace[(i) % trace.length].dist(trace[(i + 3) % trace.length])
-       
-    //     const p1x = trace[(i) % trace.length].x
-    //     const p1y = trace[(i) % trace.length].y
-    //     const p2x = trace[(i+1) % trace.length].x
-    //     const p2y = trace[(i+1) % trace.length].y
-    //     p.beginShape()
-    //     for(let a = 0; a < 4; a++) {
-    //       p.curveVertex(trace[(i + a) % trace.length].x, trace[(i + a) % trace.length].y)
-    //     }
-    //     p.endShape()
-    //   }
-    // })
-
   
-
-
   // get the points of the contour
   let factor = 4 // some multiple of 2
 
@@ -283,39 +367,22 @@ let sketch = (config) => {
   if (traced) {
 
   // merge those points that are really close to each other
-  // {
-  //   let anotherlimit = 1000
     const mergeDistanceLimit = 5
-  //   let prevPoint = graphAsPolygon[0]
-  //   // while merging needs doing
-  //   while (anotherlimit > 0 && graphAsPolygon.reduce((previous, current) => {
-  //     let temp = prevPoint
-  //     prevPoint = current
-  //     if (temp == current)
-  //       return previous
-  //     const dist = temp.dist(current)
-  //     // console.log('prevos ' + previous + ' dist ' + dist)
-  //     return dist < previous ? dist : previous
-  //   }, 1000) < mergeDistanceLimit) {
+
       // go thru the entire array once and do some merging
     for (var i = graphAsPolygon.length - 1; i >= 0; i--) {
       const point = graphAsPolygon[i]
-      // while (point.dist)
       let closestPoint = getClosestPoint(graphAsPolygon, point)
-        // while (closestPoint.dist(point) < mergeDistanceLimit) {
-        if (closestPoint.dist(point) < mergeDistanceLimit) {
+      if (closestPoint.dist(point) < mergeDistanceLimit) {
 
-          let mergedPoint = p.createVector((point.x + closestPoint.x) / 2, (point.y + closestPoint.y) / 2)
-          graphAsPolygon.splice(graphAsPolygon.indexOf(closestPoint), 1)
-          graphAsPolygon.splice(graphAsPolygon.indexOf(point), 1)
-          graphAsPolygon.push(mergedPoint)
-          closestPoint = getClosestPoint(graphAsPolygon, mergedPoint)
-        }
+        let mergedPoint = p.createVector((point.x + closestPoint.x) / 2, (point.y + closestPoint.y) / 2)
+        graphAsPolygon.splice(graphAsPolygon.indexOf(closestPoint), 1)
+        graphAsPolygon.splice(graphAsPolygon.indexOf(point), 1)
+        graphAsPolygon.push(mergedPoint)
+        closestPoint = getClosestPoint(graphAsPolygon, mergedPoint)
       }
-  //     anotherlimit--
-  //   }
-  // }
-}
+    }
+  }
 
   p.fill(0,0,255)
   contour.forEach(point => {
@@ -329,7 +396,7 @@ let sketch = (config) => {
 
   p.stroke(0)
   p.strokeWeight(1)
-  p.text(graphAsPolygon.length, 15, 15)
+  // p.text(graphAsPolygon.length, 15, 15)
 
 
   graphAsPolygon.forEach(point => {
@@ -342,6 +409,7 @@ let sketch = (config) => {
   if (traced) {
     arrangedPoints = []
     arrangedPointsPoints = []
+    canvasses = []
 
   // visit a random point, find its closest and keep iterating
   if (graphAsPolygon.length > 0)
@@ -349,8 +417,6 @@ let sketch = (config) => {
     let graphAsPolygonCopy = [...graphAsPolygon]
 
     while (graphAsPolygonCopy.length > 1) {
-
-
 
       let randomIndex = p.floor(p.random(graphAsPolygonCopy.length))
       let randomPoint = graphAsPolygonCopy[0]
@@ -366,7 +432,8 @@ let sketch = (config) => {
         if (randomPoint.dist(closestPoint) > 20) {// TODO: find a better way than hardcoding 'big jump'
           if (arrangedPoints.length > 1)
           arrangedPointsPoints.push(arrangedPoints)
-        arrangedPoints = []
+          canvasses.push(arrangedPoints)
+          arrangedPoints = []
           break
         }
         randomPoint.next = closestPoint
@@ -376,127 +443,155 @@ let sketch = (config) => {
       }
     }
   }
+
 } 
 
-  // // find those links with outlier distances and sever the links
-  // const hardCodedReasonableDistance = 10
-  // graphAsPolygon.forEach(point => {
-  //   if (point.next && point.dist(point.next) > hardCodedReasonableDistance) {
-  //     let otherPoint = point.next.prev
-  //     point.next.prev = undefined
-  //     point.next = undefined
-
-  //     // find new pairs for both points 
-  //     const [ p1, p2 ] = get2ClosestPoints(graphAsPolygon, point)
-  //     point.next = p1
-  //     point.prev = p2
-
-  //     // find new pairs for both points 
-  //     const [ p3, p4 ] = get2ClosestPoints(graphAsPolygon, otherPoint)
-  //     otherPoint.next = p3
-  //     otherPoint.prev = p4
-  //   }
-  // })
-
-  // graphAsPolygon.filter(point => typeof point.next == 'undefined' || typeof point.prev == 'undefined').forEach(point => {
-  //   const closestPoint = graphAsPolygon.reduce(
-  //       (previousValue, currentValue) => 
-  //       currentValue != point && point.dist(previousValue) > point.dist(currentValue) ? currentValue : previousValue)
-  //   point.next = closestPoint
-  //   closestPoint.prev = point
-
-  // })
 
 
-// console.log('arrangedPointsPoints leng ' + arrangedPointsPoints.length)
-arrangedPointsPoints.forEach(arrangedPoints => {
+  // console.log('arrangedPointsPoints leng ' + arrangedPointsPoints.length)
+  arrangedPointsPoints.forEach(arrangedPoints => {
 
-  // console.log('arrangedPoints.length ' + arrangedPoints.length)
-  // visualise the arranged points
-  p.stroke(0)
-  p.strokeWeight(1)
-  p.fill(255)
-  for (var i = arrangedPoints.length - 1; i >= 1; i--) {
-    p.line(arrangedPoints[i].x, arrangedPoints[i].y, arrangedPoints[i - 1].x, arrangedPoints[i - 1].y)
-    p.fill(255,0,0)
-    if (anothercount%arrangedPoints.length == i) {
-      p.ellipse(arrangedPoints[i].x, arrangedPoints[i].y, 4, 4)
+    // console.log('arrangedPoints.length ' + arrangedPoints.length)
+    // visualise the arranged points
+    p.stroke(0)
+    p.strokeWeight(1)
+    p.fill(255)
+    for (var i = arrangedPoints.length - 1; i >= 1; i--) {
+      p.line(arrangedPoints[i].x, arrangedPoints[i].y, arrangedPoints[i - 1].x, arrangedPoints[i - 1].y)
+      p.fill(255,0,0)
+      if (anothercount%arrangedPoints.length == i) {
+        p.ellipse(arrangedPoints[i].x, arrangedPoints[i].y, 4, 4)
+      }
     }
-  }
-  // if(arrangedPoints.length > 0)
-    // anothercount = (anothercount + 1)%arrangedPoints.length
-  // console.log(anothercount, arrangedPoints.length)
+    // if(arrangedPoints.length > 0)
+      // anothercount = (anothercount + 1)%arrangedPoints.length
+    // console.log(anothercount, arrangedPoints.length)
 
 
 
 
-})
+  })
   anothercount++
 
-  // arrangedPoints.forEach(point => {
-  //   p.line(point.x, point.y, point.prev?.x, point.prev?.y)
-  //   p.fill(0,255,0)
-  //   if (typeof point.prev == 'undefined' || typeof point.next == 'undefined')
-  //   p.fill(255, 0,0)
-
-  //   // p.ellipse(point.x, point.y, 5, 5)
-  //   p.line(point.x, point.y, point.next?.x, point.next?.y)
-  //   // point.next = undefined
-  //   // point.prev = undefined
-  // })
 
 
 
-  // //  iterate array and show each point to its next as a line 
-  // p.stroke(0)
-  // p.strokeWeight(1)
-  // graphAsPolygon.forEach(point => {
-  //   // p.line(point.x, point.y, point.prev?.x, point.prev?.y)
-  //   p.fill(0,255,0)
-  //   if (typeof point.prev == 'undefined' || typeof point.next == 'undefined')
-  //   p.fill(255, 0,0)
-
-  //   // p.ellipse(point.x, point.y, 5, 5)
-  //   p.line(point.x, point.y, point.next?.x, point.next?.y)
-  //   // point.next = undefined
-  //   // point.prev = undefined
-  // })
-
-
-  // // find a random chain of nexts in the polygon, and show it
-  // if (graphAsPolygon.length > 0) {
-
-  //   let graphaslist = []
-  //   let graphAsPolygonCopy = [...graphAsPolygon]
-  //   let randomPoint = graphAsPolygonCopy[p.floor(p.random(graphAsPolygonCopy.length))]
-  //   graphaslist.push(randomPoint)
-  //   let iteratinLimit = 10000
-  //   while(randomPoint.next && iteratinLimit > 0) {
-  //     randomPoint = randomPoint.next
-  //     if (graphaslist.indexOf(randomPoint) >= 0)
-  //       break
-  //     graphaslist.push(randomPoint)
-  //     iteratinLimit--
-  //   }
-
-  //   graphaslist.forEach(point => {
-  //     const { x, y } = point
-  //     p.fill(255,0,0)
-  //     p.ellipse(x, y, 5, 5)
-  //   })
-  //   console.log(graphaslist.length)
-  // }
 
 
 
-  // for (var i = graphAsPolygonCopy.length - 1; i >= 0; i--) {
-  //   let point = graphAsPolygonCopy[i]
-  // }
-  // graphAsPolygonCopy.forEach(point => {
-  //   // graphaslist.push(point)
-  //   while
-  // })
-      traced = false
+{
+
+
+// assume all particles are in container
+      allParticlesInContainer = true
+      allParticlesNoOverlap = true
+      particles.forEach(particle => {
+        // particles affect outward force on each other
+        if (!solved) // but only if system not yet in equilibrium
+        particles.forEach(particle2 => {
+          if (particle2 != particle) {
+            let force
+            let distance = particle2.pos.dist(particle.pos)
+            // if too close, push away
+            if (distance < particle.radius + particle2.radius) {
+              allParticlesNoOverlap = false
+              force = p.createVector(particle2.pos.x - particle.pos.x, particle2.pos.y - particle.pos.y)
+              force.setMag(2)
+
+              particle2.applyForce(force)
+              p.angleMode(p.RADIANS)
+              particle.applyForce(force.rotate(p.PI))
+            }
+          }
+        })
+        particle.update()
+        // if(solved)
+        particle.display()
+        if (!particle.solved) // look at this after update 
+          allParticlesInContainer = false
+      })
+
+      // if all points are inside the bounds and not overlapping with each other, the system has reached equilibrium
+      if (particles.length > 0 && allParticlesInContainer && allParticlesNoOverlap) {
+        solved = true
+        console.log("solved!")
+        p.noLoop()
+      }
+
+
+
+
+            if (traced) {
+        particles = []
+
+
+        canvasses.forEach(trace => {
+          const { length } = trace
+
+          if (length > 0) {
+
+          // make the trace into a container
+          const canvas = new Canvas(trace)
+          // calculate average position to put seed point in middle
+          const xAve = trace.map(t => t.x).reduce((previousValue, currentValue) => previousValue + currentValue) / length
+          const yAve = trace.map(t => t.y).reduce((previousValue, currentValue) => previousValue + currentValue) / length
+
+
+          // calculate the area of the container
+          let area = 0;  // Accumulates area in the loop   
+          let j = length - 1;  // The last vertex is the 'previous' one to the first
+
+          for (let i = 0; i < length - 1; i++) { 
+            area = area +  (trace[j].x + trace[i].x) * (trace[j].y - trace[i].y) 
+            j = i;  //j is previous vertex to i
+          }
+          area /= 2
+          area = p.abs(area)
+          totalArea += area
+
+          const particleArea = p.PI * particleRadius * particleRadius
+          const canFitAtMost = area / particleArea * 0.8
+
+          // fill area with as many circles as can fit
+          let particlesArea = 0
+          let count = canFitAtMost * 10
+          for (var i = 0; particlesArea < area; i++) {
+            // const newParticle = new Particle(p.createVector(xAve + p.random() - 0.5, yAve + p.random() - 0.5), canvas)
+            const { minX, maxX, minY, maxY } = canvas
+            const newParticle = new Particle(p.createVector(p.random(minX, maxX), p.random(minY, maxY)), canvas)
+
+            // check if next circle would still fit
+            if (particlesArea + newParticle.getArea() * 1.2 < area && !newParticle.outOfBounds()) {
+              particlesArea += newParticle.getArea() * 1.2
+              particles.push(newParticle)
+            } else {
+              if (count <= 0) // try a few times, maybe a smaller circle would fit
+              break
+            }
+            count --
+          }
+          }
+
+        })
+      }
+}
+
+
+
+
+
+
+
+
+
+      p.stroke(0)
+      p.strokeWeight(1)
+      // p.text("Points: " + particles.length, 15, 30)
+      // p.text("Canvasses: " + particles.length, 15, 45)
+      // p.text("arrangedPointsPoints: " + arrangedPointsPoints.length, 15, 60)
+
+
+  traced = false
 
   }
 
