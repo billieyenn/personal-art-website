@@ -79,7 +79,7 @@ class Particle {
           this.radius -= p.random()/100 // try to get some circles to expire at different times
 
         if (this.radius / this.startingRadius < 0.85)
-          particles.splice(particles.indexOf(this), 1)
+          this.canvas.particles.splice(this.canvas.particles.indexOf(this), 1)
       }
 
       applyForce(force) {
@@ -155,6 +155,7 @@ class Particle {
     let solved = false
     let allParticlesInContainer = true
     let allParticlesNoOverlap = true
+    let canvasExists = false
 
   let armslength// = 12.5 * 2
   let pathwidth = 6.25 * 2
@@ -458,7 +459,8 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
   })
 
   p.fill(0,0,255)
-  canvasses.forEach(points => {
+  canvasses.forEach(canvas => {
+    const points = canvas.vertices
     points.forEach(point => {
       p.ellipse(point.x, point.y, 3, 3)
     })
@@ -505,7 +507,7 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
 
         // no more nearby points, shape has ended
         if (randomPoint.dist(closestPoint) > 20) {// TODO: find a better way than hardcoding 'big jump'
-          if (arrangedPoints.length > 1)
+          if (arrangedPoints.length > 1) {
           // arrangedPointsPoints.push(arrangedPoints)
 
           // // smooth out the shape 
@@ -523,8 +525,12 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
           // if (traceInfo.minX > 0 && traceInfo.minY > 0)
           // canvasses.push(newMachine.trace)
 
-          canvasses.push(arrangedPoints)
+          const canvas = new Canvas(arrangedPoints)
+          canvas.particles = []
 
+          canvasses.push(canvas)
+
+          }
           arrangedPoints = []
           break
         }
@@ -536,7 +542,11 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
     }
 
     // when points have run out, the final shape has formed
-    canvasses.push(arrangedPoints)
+    if (arrangedPoints.length > 1) {
+      const canvas = new Canvas(arrangedPoints)
+      canvas.particles = []
+      canvasses.push(canvas)
+    }
   }
 }
 
@@ -557,7 +567,8 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
   //   }
   // })
 
-    canvasses.forEach(arrangedPoints => {
+    canvasses.forEach(canvas => {
+      const arrangedPoints = canvas.vertices
     p.stroke(0)
     p.strokeWeight(1)
     p.fill(255)
@@ -584,34 +595,42 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
 // assume all particles are in container
       allParticlesInContainer = true
       allParticlesNoOverlap = true
-      particles.forEach(particle => {
-        // particles affect outward force on each other
-        if (!solved) // but only if system not yet in equilibrium
-        particles.forEach(particle2 => {
-          if (particle2 != particle) {
-            let force
-            let distance = particle2.pos.dist(particle.pos)
-            // if too close, push away
-            if (distance < particle.radius + particle2.radius) {
-              allParticlesNoOverlap = false
-              force = p.createVector(particle2.pos.x - particle.pos.x, particle2.pos.y - particle.pos.y)
-              force.setMag(2)
+      canvasExists = false
 
-              particle2.applyForce(force)
-              p.angleMode(p.RADIANS)
-              particle.applyForce(force.rotate(p.PI))
+      canvasses.forEach(canvas => {
+        canvasExists = canvas.particles.length > 0
+        const particles = canvas.particles
+        // console.log(particles)
+
+        particles.forEach(particle => {
+          // particles affect outward force on each other
+          if (!solved) // but only if system not yet in equilibrium
+          particles.forEach(particle2 => {
+            if (particle2 != particle) {
+              let force
+              let distance = particle2.pos.dist(particle.pos)
+              // if too close, push away
+              if (distance < particle.radius + particle2.radius) {
+                allParticlesNoOverlap = false
+                force = p.createVector(particle2.pos.x - particle.pos.x, particle2.pos.y - particle.pos.y)
+                force.setMag(2)
+
+                particle2.applyForce(force)
+                p.angleMode(p.RADIANS)
+                particle.applyForce(force.rotate(p.PI))
+              }
             }
-          }
+          })
+          particle.update()
+          // if(solved)
+          particle.display()
+          if (!particle.solved) // look at this after update 
+            allParticlesInContainer = false
         })
-        particle.update()
-        // if(solved)
-        particle.display()
-        if (!particle.solved) // look at this after update 
-          allParticlesInContainer = false
       })
 
       // if all points are inside the bounds and not overlapping with each other, the system has reached equilibrium
-      if (particles.length > 0 && allParticlesInContainer && allParticlesNoOverlap) {
+      if (canvasExists && allParticlesInContainer && allParticlesNoOverlap) {
         solved = true
         console.log("solved!")
         p.noLoop()
@@ -620,76 +639,69 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
 
 
 
-            if (traced) {
+      if (traced) {
         particles = []
 
-
-        canvasses.forEach(trace => {
+        canvasses.forEach(canvas => {
+          const trace = canvas.vertices
           const { length } = trace
 
           if (length > 0) {
 
-          // make the trace into a container
-          const canvas = new Canvas(trace)
-          // calculate average position to put seed point in middle
-          const xAve = trace.map(t => t.x).reduce((previousValue, currentValue) => previousValue + currentValue) / length
-          const yAve = trace.map(t => t.y).reduce((previousValue, currentValue) => previousValue + currentValue) / length
+            // make the trace into a container
+            // const canvas = new Canvas(trace)
+            // canvas.particles = []
+            // calculate average position to put seed point in middle
+            const xAve = trace.map(t => t.x).reduce((previousValue, currentValue) => previousValue + currentValue) / length
+            const yAve = trace.map(t => t.y).reduce((previousValue, currentValue) => previousValue + currentValue) / length
 
 
-          // calculate the area of the container
-          let area = 0;  // Accumulates area in the loop   
-          let j = length - 1;  // The last vertex is the 'previous' one to the first
+            // calculate the area of the container
+            let area = 0;  // Accumulates area in the loop   
+            let j = length - 1;  // The last vertex is the 'previous' one to the first
 
-          for (let i = 0; i < length - 1; i++) { 
-            area = area +  (trace[j].x + trace[i].x) * (trace[j].y - trace[i].y) 
-            j = i;  //j is previous vertex to i
-          }
-          area /= 2
-          area = p.abs(area)
-          totalArea += area
-
-          const particleArea = p.PI * particleRadius * particleRadius
-          const canFitAtMost = area / particleArea * 0.8
-
-          // fill area with as many circles as can fit
-          let particlesArea = 0
-          let count = canFitAtMost * 10
-          for (var i = 0; particlesArea < area; i++) {
-            const { minX, maxX, minY, maxY } = canvas
-            const newParticle = new Particle(p.createVector(p.random(minX, maxX), p.random(minY, maxY)), canvas)
-
-            // check if next circle would still fit
-            if (particlesArea + newParticle.getArea() * 1.2 < area && !newParticle.outOfBounds()) {
-              particlesArea += newParticle.getArea() * 1.2
-              particles.push(newParticle)
-            } else {
-              if (count <= 0) // try a few times, maybe a smaller circle would fit
-              break
+            for (let i = 0; i < length - 1; i++) { 
+              area = area +  (trace[j].x + trace[i].x) * (trace[j].y - trace[i].y) 
+              j = i;  //j is previous vertex to i
             }
-            count --
-          }
+            area /= 2
+            area = p.abs(area)
+            totalArea += area
+
+            const particleArea = p.PI * particleRadius * particleRadius
+            const canFitAtMost = area / particleArea * 0.8
+
+            // fill area with as many circles as can fit
+            let particlesArea = 0
+            let count = canFitAtMost * 10
+            for (var i = 0; particlesArea < area; i++) {
+              const { minX, maxX, minY, maxY } = canvas
+              const newParticle = new Particle(p.createVector(p.random(minX, maxX), p.random(minY, maxY)), canvas)
+
+              // check if next circle would still fit
+              if (particlesArea + newParticle.getArea() * 1.2 < area && !newParticle.outOfBounds()) {
+                particlesArea += newParticle.getArea() * 1.2
+                particles.push(newParticle)
+                canvas.particles.push(newParticle)
+              } else {
+                if (count <= 0) // try a few times, maybe a smaller circle would fit
+                break
+              }
+              count --
+            }
           }
 
         })
       }
-}
+    }
 
+    p.stroke(0)
+    p.strokeWeight(1)
+    // p.text("Points: " + particles.length, 15, 30)
+    // p.text("Canvasses: " + particles.length, 15, 45)
+    // p.text("arrangedPointsPoints: " + arrangedPointsPoints.length, 15, 60)
 
-
-
-
-
-
-
-
-      p.stroke(0)
-      p.strokeWeight(1)
-      // p.text("Points: " + particles.length, 15, 30)
-      // p.text("Canvasses: " + particles.length, 15, 45)
-      // p.text("arrangedPointsPoints: " + arrangedPointsPoints.length, 15, 60)
-
-
-  traced = false
+    traced = false
 
   }
 
