@@ -181,11 +181,11 @@ const lorentz = (vel, limit) => {
       waves = []
       particles = [massiveParticle]
 
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 1; i++) {
         particles.push(new Particle(null, 2, canvas))
       }
       limit = 10
-      scale = 20
+      scale = 30
       rows = canvas.height / scale
       cols = canvas.width / scale
 
@@ -212,7 +212,7 @@ const lorentz = (vel, limit) => {
       grid.forEach((x, y, val) => {
         // grid.getVal(x, y).mult(0) // force fades away over time
         // grid.getVal(x, y).mult(0.95) // force fades away over time
-        grid.getVal(x, y).mult(0.6) // force fades away over time
+        grid.getVal(x, y).mult(0.8) // force fades away over time
       })
 
       particles.forEach(particle => {
@@ -285,6 +285,8 @@ const lorentz = (vel, limit) => {
 
               let ff = grid.getVal(x, y)
               // if (ff) {
+                // ff.setMag()
+                // ff.add((ff.mag() + force.mag()) / 2)
                 ff.add(force)
                 // ff.limit(1)
               // }
@@ -316,6 +318,10 @@ const lorentz = (vel, limit) => {
       p.rotateZ(45)
 
       p.translate(-200,-200,0)
+      const curveRows = new Array(grid.rows).fill([])
+      const curveCols = new Array(grid.cols).fill([])
+            // console.log(curveRows)
+
       grid.forEach((x, y, val) => {
         let height = val.mag()*1
 
@@ -323,72 +329,108 @@ const lorentz = (vel, limit) => {
         const y_ff = (y + 0.5) * scale + canvas.vertices[0].y
         p.strokeWeight(0.5)
         p.fill(height*50)
-        p.rect(x_ff, y_ff, scale, scale)
+        // p.rect(x_ff, y_ff, scale, scale) // 'floor tile'
 
         let height_xy = grid.getVal(x, y).mag()*1
 
-        // if (height_xy > -0.1 && height_xy < 0.1)
-        //   return
+        p.push()
+        p.translate(x_ff, y_ff, -height)
+        p.fill(255)
+        p.noStroke()
+        p.translate(0,0, 300)
+        // p.rect(0, 0, scale, scale) // 'spacetime tile'
+        p.pop()
+        // curveRows[x].push(height_xy)
+        // curveCols[y].push(height_xy)
+      })
 
-
-        // const i = p.floor(p.random(-1, 2)) + x
-        // const ii = p.floor(p.random(-1, 2)) + y
-
-        // const neighbours = [
-        // [p.floor(p.random(-1, 2)) + x, p.floor(p.random(-1, 2)) + y], 
-        // [p.floor(p.random(-1, 2)) + x, p.floor(p.random(-1, 2)) + y], 
-        // [p.floor(p.random(-1, 2)) + x, p.floor(p.random(-1, 2)) + y], 
-        // [p.floor(p.random(-1, 2)) + x, p.floor(p.random(-1, 2)) + y]
-        // ]
-
-        // neighbours.forEach((point) => {
-        //   const i = point[0]
-        //   const ii = point[1]
-        //   // console.log(x, y, i, ii)
-        // // for (let i = x - 1; i <= x + 1; i++) {
-        // //   for (let ii = y - 1; ii <= y + 1; ii++) {
-        //     if (i >= cols 
-        //         || i < 0 
-        //         || ii >= rows
-        //         || ii < 0)
-        //         return
-        //         // continue
-
-        //     const i_ff = (i + 0.5) * scale + canvas.vertices[0].x
-        //     const ii_ff = (ii + 0.5) * scale + canvas.vertices[0].y
-
-            p.push()
-            // let height = grid.getVal(i, ii).mag()*1
-            // p.translate(i_ff, ii_ff, -height)
-            p.translate(x_ff, y_ff, -height)
-            p.fill(255)
-            p.noStroke()
-            // p.stroke(255)
-            // p.strokeWeight(2)
-
-            // if(height > 0)
-            //   p.fill(100)
-
-            p.translate(0,0, 300)
-            // p.box(scale, scale, height)
-            // p.translate(0,0,height)
-            p.rect(0, 0, scale, scale)
-            // p.point(0, 0)
-            // p.line(x_ff, y_ff, -height_xy, i_ff, ii_ff, -height)
-            p.pop()
-// })
-        //     }
+      // for (let i = 0; i < grid.cols; i++) {
+        // for (let ii = 0; ii < grid.cols; ii++) {
+        //   curveRows[0].push(grid.getVal(ii, 0).mag())
+        //   // console.log(ii)
         // }
+      // }
 
+      // display gravity waves of rows
+      p.stroke(0)
+      p.strokeWeight(1)
+      grid.grid.forEach((row, y) => {
+        p.beginShape()
+        row.forEach((val, x) => {
+          const height = val.mag()
+          const x_ff = (x + 0.5) * scale + canvas.vertices[0].x
+          const y_ff = (y + 0.5) * scale + canvas.vertices[0].y
+          p.curveVertex(x_ff, y_ff, - height + 300)
+          // curveCols[y].push(height)
+        })
+        p.endShape()
       })
 
 
+      const transpose = m => m[0].map((x,i) => m.map(x => x[i]))
 
+      // display gravity waves of cols
+      transpose(grid.grid).forEach((row, y) => {
+        p.beginShape()
+        row.forEach((val, x) => {
+          const height = val.mag()
+          const x_ff = (x + 0.5) * scale + canvas.vertices[0].x
+          const y_ff = (y + 0.5) * scale + canvas.vertices[0].y
+          p.curveVertex(y_ff, x_ff, - height + 300)
+          // curveCols[y].push(height)
+        })
+        p.endShape()
+      })
+      // console.log(curveCols)
+
+
+      // grid.grid.forEach((row, y) => {
+      //   p.beginShape()
+      //   row.forEach((val, x) => {
+      //     p.push()
+      //     const height = val
+      //     const x_ff = (x + 0.5) * scale + canvas.vertices[0].x
+      //     const y_ff = (y + 0.5) * scale + canvas.vertices[0].y
+      //     // p.translate(x_ff, y_ff, -height)
+
+      //     // p.translate(0,0, -300)
+
+      //     p.curveVertex(x_ff, y_ff, height + 300)
+      //     p.pop()
+      //   })
+      //   p.endShape()
+      // })
+
+      // for (let ii = 0; ii < grid.cols; ii++) {
+      //   curveCols[0].push(grid.getVal(ii, 0).mag()*1)
+      // }
+
+      // }
+      // for (let i = 0; i < grid.rows; i++) {
+      //   curveCols.push(grid.grid.map(row => row[i]))
+      // }
+      // console.log(curveCols)
+
+      // curveRows.forEach((r, x) => {
+      //   p.beginShape()
+      //   r.forEach((val, y) => {
+      //     const x_ff = (x + 0.5) * scale + canvas.vertices[0].x
+      //     const y_ff = (y + 0.5) * scale + canvas.vertices[0].y
+      //     p.curveVertex(x_ff, y_ff, val)
+      //   })
+
+      //   p.endShape()
+      // })
+
+
+      // apply physics on particles
+      // then do a little visualisation
       particles.forEach(particle => {
+        const { pos: {x, y} } = particle
         particle.update(forcePropagationSpeed)
         p.push()
         p.fill(0)
-        p.translate(particle.pos.x + 1.5*scale, particle.pos.y + 1.5*scale, 300)
+        p.translate(x + 1.5*scale, y + 1.5*scale, 300)
         p.sphere(particle.mass*1)
         p.pop()
       })
