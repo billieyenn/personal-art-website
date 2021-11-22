@@ -26,7 +26,7 @@ class Particle {
         this.vel = p.createVector(0, 0)
         this.acc = p.createVector(0, 0)
         // this.startingRadius = particleRadius
-        this.startingRadius = p.random(particleRadius/2, particleRadius)
+        this.startingRadius = p.random() > 0.5 ? particleRadius/2 : particleRadius
         this.radius = this.startingRadius
         // this.radius = p.random(3, particleRadius)
         this.area = this.radius * this.radius * p.PI
