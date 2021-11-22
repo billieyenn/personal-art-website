@@ -77,7 +77,7 @@ class Particle {
           this.radius -= p.random()/100 // try to get some circles to expire at different times
 
         if (this.radius / this.startingRadius < 0.85)
-          points.splice(points.indexOf(this), 1)
+          particles.splice(particles.indexOf(this), 1)
       }
 
       applyForce(force) {
