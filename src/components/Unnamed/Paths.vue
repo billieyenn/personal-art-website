@@ -28,7 +28,8 @@ class Particle {
         this.vel = p.createVector(0, 0)
         this.acc = p.createVector(0, 0)
         // this.startingRadius = particleRadius
-        this.startingRadius = p.random() > 0.5 ? particleRadius/2 : particleRadius
+        // this.startingRadius = p.random() > 0.99 ? particleRadius/2 : particleRadius
+        this.startingRadius = p.random(2, particleRadius)
         this.radius = this.startingRadius
         // this.radius = p.random(3, particleRadius)
         this.area = this.radius * this.radius * p.PI
@@ -150,7 +151,7 @@ class Particle {
   let canvasses
   // let traces
   let improvedTraces
-  let particles
+  // let particles
 
     let solved = false
     let allParticlesInContainer = true
@@ -160,9 +161,9 @@ class Particle {
   let armslength// = 12.5 * 2
   let pathwidth = 6.25 * 2
   let canvasWidth, canvasHeight, numberOfPoints, maxAttempts
-    let particleRadius = 10
+  let particleRadius = 10
 
-    let totalArea// = 0
+  let totalArea// = 0
 
 
   p.setup = () => {
@@ -191,7 +192,7 @@ class Particle {
     pathwidth = Number(pathwidth)
     // console.log(armslength)
 
-      totalArea = 1
+    totalArea = 1
     p.createCanvas(canvasWidth, canvasHeight);
     // const numberOfPoints = 400
     traces = []
@@ -204,7 +205,7 @@ class Particle {
     canvasses = []
     traces = []
     improvedTraces = []
-    particles = []
+    // particles = []
 
   }
 
@@ -259,75 +260,70 @@ class Particle {
             points.push(newVector)
           else
             i-- // try again
-}
+      }
       attempts ++
     }
-    // console.log(attempts, points.length)  
-    // return points
+
+    // cutting out nodes with many neighbours slices graph into
+    // several smaller graphs, resulting in performance gain
+    // but less plantable area
+    points.forEach(point => {
+      let neighbours = 0
+      points.forEach(point2 => {
+        if (point != point2)
+          if (point.dist(point2) < armslength * 2)
+            neighbours++
+      })
+      if (neighbours >= 3) {
+        if (p.random() > 0.9) 
+          points.splice(points.indexOf(point), 1)// : return 
+      }
+    })
   }
+
   const getClosestPoint = (points, point) => {
     return points.reduce(
         (previousValue, currentValue) => 
         currentValue != point && point.dist(previousValue) > point.dist(currentValue) ? currentValue : previousValue)
+    }
+
+  const integrateComplexFourierSeries = function(xs, ys, n) {
+    const steps = xs.length
+    const delta = 1 / steps
+    let c_n = math.complex(0,0);
+    for (let i = 0; i < steps; i++) {
+      const t = i / steps;
+      let x = xs[i]
+      let y = ys[i]
+      let a = math.complex(x, y)
+      const exp_numb = n * 2 * p.PI * t
+      const im = math.complex(0, 1)
+      const exponent = math.multiply(im, exp_numb)
+      a  = math.multiply(a, math.exp(exponent))
+      a  = math.multiply(a, delta)
+      c_n = math.add(c_n, a)
+    }
+    return c_n
   }
 
-  const get2ClosestPoints = (points, point) => {
-    const selflessPoints = [...points.filter(self => point != self)]
-    const randP1 = selflessPoints[p.floor(p.random(points.length)) - 1]
-    const randP2 = selflessPoints[p.floor(p.random(points.length)) - 1]
-    let top2 = [randP1, randP2] // keep track of 2 closest points found so far, randomly initialized
-    points.forEach(p2 => {
-      if (p2 != point && typeof top2[0] != 'undefined' && typeof top2[1] != 'undefined') { // so long as the tested point isn't the point itself
-        // console.log(point, p2, top2[0], top2[1])
-        if (point.dist(p2) < point.dist(top2[0])) {
-          top2 = [p2, top2[0]]
-        } else if (point.dist(p2) < point.dist(top2[1])) {
-          top2 = [top2[0], p2]          
-        }
-      }
-    })
-    return top2
-  }
-
-
-
-const integrateComplexFourierSeries = function(xs, ys, n) {
-  const steps = xs.length
-  const delta = 1 / steps
-  let c_n = math.complex(0,0);
-  for (let i = 0; i < steps; i++) {
-    const t = i / steps;
-    let x = xs[i]
-    let y = ys[i]
-    let a = math.complex(x, y)
-    const exp_numb = n * 2 * p.PI * t
-    const im = math.complex(0, 1)
-    const exponent = math.multiply(im, exp_numb)
-    a  = math.multiply(a, math.exp(exponent))
-    a  = math.multiply(a, delta)
-    c_n = math.add(c_n, a)
-  }
-  return c_n
-}
-
-const calculateComplexPrefixes = function(x_s, y_s, complexity, scale) {
-  let c = []
-  let c_n = math.complex(0,0)
-  c_n = math.add(c_n, integrateComplexFourierSeries(x_s, y_s, 0))
-  c_n = p.createVector(math.re(c_n), math.im(c_n));
-  c.push(c_n)
-  for(let i = 1; i < complexity; i++) {
-    c_n = math.complex(0,0)
-    c_n = math.add(c_n, integrateComplexFourierSeries(x_s, y_s, i))
+  const calculateComplexPrefixes = function(x_s, y_s, complexity, scale) {
+    let c = []
+    let c_n = math.complex(0,0)
+    c_n = math.add(c_n, integrateComplexFourierSeries(x_s, y_s, 0))
     c_n = p.createVector(math.re(c_n), math.im(c_n));
     c.push(c_n)
-    c_n = math.complex(0,0)
-    c_n = math.add(c_n, integrateComplexFourierSeries(x_s, y_s, -i))
-    c_n = p.createVector(math.re(c_n), math.im(c_n));
-    c.push(c_n)
-  } 
-  return c.map(v => v.mult(scale))
-}
+    for(let i = 1; i < complexity; i++) {
+      c_n = math.complex(0,0)
+      c_n = math.add(c_n, integrateComplexFourierSeries(x_s, y_s, i))
+      c_n = p.createVector(math.re(c_n), math.im(c_n));
+      c.push(c_n)
+      c_n = math.complex(0,0)
+      c_n = math.add(c_n, integrateComplexFourierSeries(x_s, y_s, -i))
+      c_n = p.createVector(math.re(c_n), math.im(c_n));
+      c.push(c_n)
+    } 
+    return c.map(v => v.mult(scale))
+  }
 
 
 
@@ -346,7 +342,7 @@ const calculateComplexPrefixes = function(x_s, y_s, complexity, scale) {
   //   return points
   // }
 
-const zip = (a, b) => a.map((k, i) => [k, b[i]])
+  const zip = (a, b) => a.map((k, i) => [k, b[i]])
 
 
   let graphAsPolygon
@@ -452,12 +448,14 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
   // contour.forEach(point => {
   //   p.rect(point.x, point.y, 1, 1)
   // })
-  // draw a green dot for each point in the graph
-  p.fill(0,255,0)
-  graphAsPolygon.forEach(point => {
-    p.ellipse(point.x, point.y, 3, 3)
-  })
 
+  // // draw a green dot for each point in the graph
+  // p.fill(0,255,0)
+  // graphAsPolygon.forEach(point => {
+  //   p.ellipse(point.x, point.y, 3, 3)
+  // })
+
+  // draw a blue dot for each point in the graph
   p.fill(0,0,255)
   canvasses.forEach(canvas => {
     const points = canvas.vertices
@@ -548,6 +546,7 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
       canvasses.push(canvas)
     }
   }
+  console.log(canvasses.length)
 }
 
 
@@ -567,21 +566,24 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
   //   }
   // })
 
-    canvasses.forEach(canvas => {
-      const arrangedPoints = canvas.vertices
-    p.stroke(0)
-    p.strokeWeight(1)
-    p.fill(255)
-    for (var i = arrangedPoints.length - 1; i >= 1; i--) {
-      p.line(arrangedPoints[i].x, arrangedPoints[i].y, arrangedPoints[i - 1].x, arrangedPoints[i - 1].y)
-      p.fill(255,0,0)
-      if (anothercount%arrangedPoints.length == i) {
-        p.ellipse(arrangedPoints[i].x, arrangedPoints[i].y, 4, 4)
-      }
-    }
 
-  })
-  anothercount++
+    // visualise the arranged points
+
+  // canvasses.forEach(canvas => {
+  //   const arrangedPoints = canvas.vertices
+  //   p.stroke(0)
+  //   p.strokeWeight(1)
+  //   p.fill(255)
+  //   for (var i = arrangedPoints.length - 1; i >= 1; i--) {
+  //     p.line(arrangedPoints[i].x, arrangedPoints[i].y, arrangedPoints[i - 1].x, arrangedPoints[i - 1].y)
+  //     p.fill(255,0,0)
+  //     if (anothercount%arrangedPoints.length == i) {
+  //       p.ellipse(arrangedPoints[i].x, arrangedPoints[i].y, 4, 4)
+  //     }
+  //   }
+
+  // })
+  // anothercount++
 
 
 
@@ -640,11 +642,13 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
 
 
       if (traced) {
-        particles = []
+        // particles = []
 
         canvasses.forEach(canvas => {
           const trace = canvas.vertices
           const { length } = trace
+          let area = 0;  // Accumulates area in the loop   
+          let particlesArea = 0
 
           if (length > 0) {
 
@@ -657,7 +661,6 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
 
 
             // calculate the area of the container
-            let area = 0;  // Accumulates area in the loop   
             let j = length - 1;  // The last vertex is the 'previous' one to the first
 
             for (let i = 0; i < length - 1; i++) { 
@@ -668,20 +671,18 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
             area = p.abs(area)
             totalArea += area
 
-            const particleArea = p.PI * particleRadius * particleRadius
-            const canFitAtMost = area / particleArea * 0.8
+            // const particleArea = p.PI * particleRadius * particleRadius
+            // const canFitAtMost = area / particleArea * 0.8
 
             // fill area with as many circles as can fit
-            let particlesArea = 0
-            let count = canFitAtMost * 10
+            let count = 100000
             for (var i = 0; particlesArea < area; i++) {
               const { minX, maxX, minY, maxY } = canvas
               const newParticle = new Particle(p.createVector(p.random(minX, maxX), p.random(minY, maxY)), canvas)
 
               // check if next circle would still fit
-              if (particlesArea + newParticle.getArea() * 1.2 < area && !newParticle.outOfBounds()) {
-                particlesArea += newParticle.getArea() * 1.2
-                particles.push(newParticle)
+              if (particlesArea + newParticle.getArea() * 1 < area/* && !newParticle.outOfBounds()*/) {
+                particlesArea += newParticle.getArea() * 1
                 canvas.particles.push(newParticle)
               } else {
                 if (count <= 0) // try a few times, maybe a smaller circle would fit
@@ -690,7 +691,7 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]])
               count --
             }
           }
-
+          console.log(area, particlesArea, canvas.particles.length)
         })
       }
     }
