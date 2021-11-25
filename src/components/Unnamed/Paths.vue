@@ -67,7 +67,7 @@ class Particle {
           direction.setMag(2)
 
           this.vel.add(direction)
-          this.radius -= p.random()/100
+          this.radius -= p.random()/50
           this.solved = false
         }
         this.vel.add(this.acc)
@@ -75,6 +75,7 @@ class Particle {
         this.acc.setMag(0)
         this.vel.setMag(this.vel.mag() * 0.2)
 
+        // if the particle moves, it should shrink
         if (this.vel.mag() > 0.001)
         // very slowly shrinking ensure eventually the particles fit?
           this.radius -= p.random()/100 // try to get some circles to expire at different times
@@ -91,11 +92,8 @@ class Particle {
         p.push()
         p.translate(this.pos.x, this.pos.y)
         p.stroke(p.color(colors.bigStone))
-        // p.noStroke()
-        // p.fill(255)
         p.noFill()
         p.ellipse(0, 0, this.radius * 2, this.radius * 2)
-        // p.point(0, 0)
         p.pop()
       }
 
@@ -149,14 +147,12 @@ class Particle {
   let neighbourGraph
   let traces
   let canvasses
-  // let traces
   let improvedTraces
-  // let particles
 
-    let solved = false
-    let allParticlesInContainer = true
-    let allParticlesNoOverlap = true
-    let canvasExists = false
+  let solved = false
+  let allParticlesInContainer = true
+  let allParticlesNoOverlap = true
+  let canvasExists = false
 
   let armslength// = 12.5 * 2
   let pathwidth = 6.25 * 2
@@ -194,18 +190,15 @@ class Particle {
 
     totalArea = 1
     p.createCanvas(canvasWidth, canvasHeight);
-    // const numberOfPoints = 400
     traces = []
     points = []
     neighbourGraph = []
     arrangedPoints = []
-    // arrangedPointsPoints = []
     graphAsPolygon = []
     contour = []
     canvasses = []
     traces = []
     improvedTraces = []
-    // particles = []
 
   }
 
