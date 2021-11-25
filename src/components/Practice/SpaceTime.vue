@@ -168,7 +168,16 @@ const lorentz = (vel, limit) => {
     let massiveParticle// =  new Particle(null, p.random(0.5, 5), canvas)
     let waves
     let particles
+    let numberOfParticles
     p.setup = function () {
+
+
+
+      ({
+      numberOfParticles: {
+        value: numberOfParticles = 700
+      } = {}
+    } = config)
 
       canvas = new Canvas([p.createVector(50, 50),
         p.createVector(50, 650),
@@ -176,12 +185,13 @@ const lorentz = (vel, limit) => {
         p.createVector(650, 50),
         ])
 
-      massiveParticle =  new Particle(null, 2, canvas)
+      // massiveParticle =  new Particle(null, 2, canvas)
 
       waves = []
-      particles = [massiveParticle]
+      // particles = [massiveParticle]
+      particles = []
 
-      for (let i = 0; i < 1; i++) {
+      for (let i = 0; i < numberOfParticles; i++) {
         particles.push(new Particle(null, 2, canvas))
       }
       limit = 10
@@ -443,18 +453,18 @@ export default {
     return {
       sketch: sketch,
       config: {
-        key1: {
+        numberOfParticles: {
           type: 'number',
-          value: 1
+          value: 2
         },
-        key2: {
-          type: 'string',
-          value: "helloe"
-        },
-        key3: {
-          type: 'boolean',
-          value: false
-        },
+        // key2: {
+        //   type: 'string',
+        //   value: "helloe"
+        // },
+        // key3: {
+        //   type: 'boolean',
+        //   value: false
+        // },
         bgColor: {
           type: 'color',
           value: randomColor(colors)
