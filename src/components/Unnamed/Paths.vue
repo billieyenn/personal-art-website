@@ -664,9 +664,6 @@ class Particle {
             area = p.abs(area)
             totalArea += area
 
-            // const particleArea = p.PI * particleRadius * particleRadius
-            // const canFitAtMost = area / particleArea * 0.8
-
             // fill area with as many circles as can fit
             let count = 100000
             for (var i = 0; particlesArea < area; i++) {
