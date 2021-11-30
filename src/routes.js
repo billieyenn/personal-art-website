@@ -40,6 +40,7 @@ import GaussianNoise from './components/Practice/GaussianNoise.vue'
 import SketchTemplate from './components/Practice/SketchTemplate.vue'
 import SpaceTime from './components/Practice/SpaceTime.vue'
 import Container from './components/Practice/Container.vue'
+import ShaderOne from './components/Practice/ShaderOne/ShaderOne.vue'
 
 export const routes = [
   {
@@ -117,7 +118,8 @@ export const routes = [
       { path: 'practice/gaussiannoise', component: GaussianNoise },
       { path: 'practice/sketchtemplate', component: SketchTemplate },
       { path: 'practice/spacetime', component: SpaceTime },
-      { path: 'practice/container', component: Container }
+      { path: 'practice/container', component: Container },
+      { path: 'practice/shaderone', component: ShaderOne }
     ]
   },
   {

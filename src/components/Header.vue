@@ -51,6 +51,7 @@
       <!-- <router-link tag='li' to='/sketches/practice/sketchtemplate' style='cursor: pointer;'>sketchtemplate</router-link> -->
       <router-link tag='li' to='/sketches/practice/spacetime' style='cursor: pointer;'>Spacetime</router-link>
       <router-link tag='li' to='/sketches/practice/container' style='cursor: pointer;'>Container</router-link>
+      <router-link tag='li' to='/sketches/practice/shaderone' style='cursor: pointer;'>Shader One</router-link>
   </ul>
 
    <router-link tag='li' to='/about/unnamed' style='cursor: pointer;'>WIP</router-link>
