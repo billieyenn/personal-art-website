@@ -18,7 +18,7 @@ let sketch = (config) => {
 
     p.preload = () => {
       // load the shader
-      // somehow the shader files like to be in the public directory
+      // somehow the shader files like to be in the public directory 
       theShader = p.loadShader('/ShaderOne/shader.vert', '/ShaderOne/shader.frag');
     }
 
