@@ -86,8 +86,7 @@ let sketch = (config) => {
 
     const isNearPointF = (point, s, minX, minY, distance) => {
       return (x, y) => {
-        const newPoint = p.createVector((x * s + minX), (y * s + minY))
-        return newPoint.dist(point) < distance//isInPoly(points, (x * s + minX), (y * s + minY))
+        return p.sqrt(p.pow((x * s + minX - point.x), 2) + p.pow((y * s + minY - point.y), 2)) < distance
       }
     }
 
