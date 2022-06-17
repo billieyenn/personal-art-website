@@ -29,6 +29,7 @@ import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
 import SketchesAbout from './components/SketchesAbout.vue'
 import FourColorPrinting from './components/Practice/FourColorPrinting.vue'
+import FourColorPrinting2 from './components/Practice/FourColorPrinting_2.vue'
 import Collision from './components/Practice/Collision.vue'
 import Grids from './components/Practice/Grids.vue'
 import Unnamed from './components/Unnamed/Unnamed.vue'
@@ -111,6 +112,7 @@ export const routes = [
       { path: 'practice/fly', component: Fly },
       { path: 'practice/perlinnoiseflowfield', component: PerlinNoiseFlowField },
       { path: 'practice/fourcolorprinting', component: FourColorPrinting },
+      { path: 'practice/fourcolorprinting_2', component: FourColorPrinting2 },
       { path: 'practice/collision', component: Collision },
       { path: 'practice/grids', component: Grids },
       { path: 'practice/forces', component: Forces },

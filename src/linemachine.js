@@ -281,6 +281,31 @@ p.endShape()
           maxX, maxY, minX, minY, offsetX, offsetY, traceSize, totalDistance
         }
       }
+
+      // get a square just big enough so that no rotation of a set of points around its bounding box center results in a point going beyond the bigger square
+      rotationSafeBoundingBox () {
+        let x_max, y_max, x_min, y_min, width, height
+        // get the bounds of the list of points
+        ({maxX: x_max, maxY: y_max, minX: x_min, minY: y_min} = this.traceInfo())
+
+        width = (x_max - x_min)
+        height = (y_max - y_min)
+
+        // to fully cover any possible point within bounding box at any rotation
+        // the actual bounding box to be used shall have width and height of length until corner
+
+        // get length from corner to corner
+        const newLength = p.createVector(x_min, y_min).dist(p.createVector(x_max, y_max))
+
+        // adjust both min and max of both x and y 
+        x_min -= (newLength - width) / 2
+        y_min -= (newLength - height) / 2
+        x_max += (newLength - width) / 2
+        y_max += (newLength - height) / 2
+        width = (x_max - x_min)
+        height = (y_max - y_min)
+        return {x_max, y_max, x_min, y_min, width, height}
+      }
     }
 
 

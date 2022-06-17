@@ -82,6 +82,27 @@ class Canvas {
 }
 
 
+// simple set of points connected with lines 
+const drawShapeOutline = (p, points, stroke, strokeweight) => {
+  p.stroke(stroke || 0)
+  p.strokeWeight(strokeweight || 5)
+  for (let i = 0; i < points.length - 1; i++) {
+    let point1 = points[i]
+    let point2 = points[i+1]
+    let v1 = p.createVector(point1.x, point1.y)
+    let v2 = p.createVector(point2.x, point2.y)
+    p.line(point1.x, point1.y, point2.x, point2.y)
+  }
+  // and connect the last point to the first
+  let point1 = points[0]
+  let point2 = points[points.length-1]
+  let v1 = p.createVector(point1.x, point1.y)
+  let v2 = p.createVector(point2.x, point2.y)
+  p.line(point1.x, point1.y, point2.x, point2.y)
+}
+
+
+
 // collision detection
 /*
 input: 
@@ -173,6 +194,7 @@ const RGBtoCMYK = (r, g, b) => {
 }
 
 // use the pixels array and gaussian noise to imitate noise real cameras have
+// taxe pixel values at coordinates and add noise to pixels
 const noiseEverywhere = (p, std) => {
   p.loadPixels();
   let noiseStandardDeviation = std
@@ -187,12 +209,79 @@ const noiseEverywhere = (p, std) => {
   p.updatePixels();
 }
 
+// use the pixels array and gaussian noise to imitate noise real cameras have
+// draw a background color with noise in it
+const noisyBackground = (p, color, std) => {
+  let c = color
+  p.loadPixels();
+  let noiseStandardDeviation = std
+  let d = p.pixelDensity();
+  let image = 4 * (p.width * d) * (p.height * d);
+  for (let i = 0; i < image; i += 4) {
+    p.pixels[i] = p.randomGaussian(c[0], noiseStandardDeviation);
+    p.pixels[i + 1] = p.randomGaussian(c[1], noiseStandardDeviation);
+    p.pixels[i + 2] = p.randomGaussian(c[2], noiseStandardDeviation);
+    p.pixels[i + 3] = 255;
+  }
+  p.updatePixels();
+}
+
+
 // provided an object or array, return a random item
 const randomItem = (enumerable) => {
 	const keys = Object.keys(enumerable || colors)
 	const colLen = keys.length
 	const col = enumerable[keys[Math.floor(Math.random()*colLen)]]
 	return col
+}
+
+
+// rotate the shape around the center of its extended bounding box
+const rotatePoints = (p, points, angle, minX, minY, w, h) => {
+  p.angleMode(p.DEGREES)
+  let s = p.sin(-angle) // calculate outside of loop for comp eff
+  let c = p.cos(-angle)
+  let res = points.map((point) => {
+    let new_p = p.createVector(point.x, point.y)
+    new_p.x -= (minX + w / 2)
+    new_p.y -= (minY + h / 2)
+
+    let x_new = new_p.x * c - new_p.y * s
+    let y_new = new_p.x * s + new_p.y * c
+
+    new_p.x = x_new + (minX + w / 2)
+    new_p.y = y_new + (minY + h / 2)
+
+    return new_p
+  })
+  return res
+}
+
+// compare a set of points with a point to see if that point is to the left of all of those points
+const isLeftOf = (p, points, x, y) => {
+  let closestPointObj = closestPoint(points, x, y)// points2[closestPointIndex] // assume it is point 0
+
+  // create local variable for clear naming
+  let currentPoint = p.createVector(x, y)
+
+
+  // create vector along the direction of the shape's outline
+  let v1 = p.createVector(closestPointObj.x, closestPointObj.y)
+  let v2 = p.createVector(points[(points.indexOf(closestPointObj)+1)%points.length].x, points[(points.indexOf(closestPointObj)+1)%points.length].y)
+  let closestToPlusOne = p.createVector(v2.x - v1.x, v2.y - v1.y)
+
+  // and closestpoint to currentpoint
+  // create vector from current pixel to closest point
+  let closestToCurrent = p.createVector(currentPoint.x - v1.x, currentPoint.y - v1.y)
+
+  // The sign of the angle between those two vectors indicates which side of the shape the pixel is (relative to the curve's orientation)
+  let angleBetween = closestToCurrent.angleBetween(closestToPlusOne)
+  let dist = closestPointObj.dist(currentPoint) 
+
+  
+  p.noStroke()
+  p.noFill()
+  return angleBetween > 0 // if pixel is to the left of the shape
 }
 
 export { FlowField, 
@@ -203,5 +292,9 @@ export { FlowField,
 		RGBtoCMYK, 
 		CMYKtoRGB,
 		noiseEverywhere,
+		noisyBackground,
 		randomItem,
-		Canvas }
+		drawShapeOutline,
+		rotatePoints,
+		Canvas,
+		isLeftOf }
