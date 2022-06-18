@@ -26,7 +26,7 @@ import { randomColor } from '../../colors.js'
 import { hexToRgb } from '../../colors.js'
 import { unnamedColorScheme } from '../../colors.js'
 import { noiseEverywhere } from '../../utils.js'
-import { noisyBackground, drawShapeOutline, rotatePoints } from '../../utils.js'
+import { noisyBackground, drawShapeOutline, rotatePoints, rotatePoint } from '../../utils.js'
 
 
 
@@ -140,6 +140,7 @@ let sketch = (config) => {
       let x_max, y_max, x_min, y_min, width, height
       // get an extended bounding box
       ({ x_max,  y_max,  x_min,  y_min, width, height} = newMachine.rotationSafeBoundingBox())
+      // console.log(x_max,  y_max,  "x_min:", x_min, "y_min;",  y_min, width, height)
 
       // scale also known as resolution. smaller number -> more computation needed
       const scale = resolution
@@ -169,43 +170,6 @@ let sketch = (config) => {
         p.color('#000000'),
         ] // hex representation of CYMK Colors
 
-
-      // pixel approximation hack
-      // make a list of locations across the whole screen
-      // and make a list of colors
-      const pixels = []
-      // designate a color to each region
-      const pixelColors = []
-      const pixelScale = 15
-      for (let i = 0; i < pixelScale; i++) { // make big pixels for computational ease
-        for (let ii = 0; ii < pixelScale; ii++) {
-          let size_x = width / pixelScale
-          let size_y = height / pixelScale
-          let x_coord = /*-0*//*-width/2*/ + i * size_x //dont put negative offset bc negative pixel positions give black as output
-          let y_coord = /*-0*//*-height/2*/ + ii * size_y
-           // get the color at some pixel
-          const n1 = p.get(x_coord, y_coord) // performance gain 
-          const n2 = p.get(x_coord, y_coord+1)
-          const n3 = p.get(x_coord+1, y_coord+1)
-          const n4 = p.get(x_coord+1, y_coord)
-          const red_avg = (p.red(n1) + p.red(n2) + p.red(n3) + p.red(n4))/4    
-          const green_avg = (p.green(n1) + p.green(n2) + p.green(n3) + p.green(n4))/4    
-          const blue_avg = (p.blue(n1) + p.blue(n2) + p.blue(n3) + p.blue(n4))/4    
-          const c = p.color(red_avg, green_avg, blue_avg)
-          const newPixel = [
-            p.createVector(x_coord-size_x/2-offsetX,  y_coord-size_y/2-offsetY), // create a bounding box for that pixel
-            p.createVector(x_coord+size_x/2-offsetX,  y_coord-size_y/2-offsetY), 
-            p.createVector(x_coord+size_x/2-offsetX,  y_coord+size_y/2-offsetY),
-            p.createVector(x_coord-size_x/2-offsetX,  y_coord+size_y/2-offsetY),
-            ] 
-            drawShapeOutline(p, newPixel, p.color(colors.mineShaft))
-
-          pixels.push(newPixel)
-          pixelColors.push(p.color(c))
-        }
-      }
-
-
       // analyse the whole current canvas to assign values for each CMYK grid
       // each rosette CMYK dot grid gets its separate iteration
       grids.forEach((grid, index) => {
@@ -218,20 +182,17 @@ let sketch = (config) => {
           let cya, mag, yel, bla 
           let CYMKValues
           
-          // check color of pixel at coordinate of dot
-          // get color at coordinate from pixelColors array with iindex (note double ii)
-          pixels.forEach((pixel, iindex) => { // a poor man's pixel color check at location 
-            if (isNearPointF(rotatePoints(p, pixel, angle, x_min, y_min, width, height)[0], scale, x_min, y_min, width/pixelScale/2)(x, y)) 
-            // if (isInPolyF(rotatePoints(p, pixel, angle, x_min, y_min, width, height), scale, x_min, y_min)(x, y)) 
-            {
-              [cya, mag, yel, bla] = RGBtoCMYK(
-                p.red(pixelColors[iindex]), 
-                p.green(pixelColors[iindex]), 
-                p.blue(pixelColors[iindex]))
-              CYMKValues = [cya, mag, yel, bla]
-              color2 = CYMKValues[index]
-            }
-          })
+
+          const idk = -p.width/5 // idk why this is quite right but it seems to
+          const idk_y = -p.height/5 // idk why this is quite right but it seems to
+          let unrotatedPoint = rotatePoint(p, offsetX, offsetY, angle, (x * scale + idk), (y * scale + idk_y))
+          const colorAtPixel = p.get(unrotatedPoint[0], unrotatedPoint[1])
+          let cymkResult =  RGBtoCMYK(
+            colorAtPixel[0],
+            colorAtPixel[1],
+            colorAtPixel[2])
+
+          color2 = cymkResult[index]
 
           grid.setVal(x, y, (color2)) // THIS IS VERY IMPORTANT
 
@@ -296,19 +257,20 @@ let sketch = (config) => {
     p.setup = function () {
       // prepare canvas
       // p.createCanvas(4608 / 8, 8192 / 8); // handy tall frame
-      p.createCanvas(500, 500);
+      const size = 500
+      p.createCanvas(size, size);
       p.background(p.color(colors.springWood))
       noisyBackground(p, hexToRgb(colors.springWood), 7)
-      img.resize(500, 0)
+      img.resize(size, 0)
       p.image(img,0,0)
-      noiseEverywhere(p, 10) // after showing image, introduce noise
+      noiseEverywhere(p, 3) // after showing image, introduce noise
 
 
       // read config
       const width = p.width
       const height = p.height
       const resize = p.min(width, height) / p.height * 1.3//(width > height ? p.height : p.width)
-      const scale = 8 //big number means faster render time
+      const scale = 2 //big number means faster render time
       const color = colors.bigStone/*colors.springWood*//*colors.goblin*//*randomColor(unnamedColorScheme)*/
       const symmetricity = p.random(1) < 0.2 //symmetricity is true once in five
 
@@ -318,7 +280,7 @@ let sketch = (config) => {
       displayBorder(0, 0, width, height, color)
 
       // again introduce noise to simulate effect of photograph
-      noiseEverywhere(p, 10)
+      noiseEverywhere(p, 3)
     }
   }
 }

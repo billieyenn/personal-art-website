@@ -257,6 +257,25 @@ const rotatePoints = (p, points, angle, minX, minY, w, h) => {
   return res
 }
 
+
+const rotatePoint = (p, pivot_x, pivot_y, angle, point_x, point_y) => {
+  p.angleMode(p.DEGREES)
+  let s = p.sin(angle)
+  let c = p.cos(angle)
+  let new_x = point_x
+  let new_y = point_y
+  new_x -= (pivot_x)
+  new_y -= (pivot_y)
+
+  let x_new = new_x * c - new_y * s
+  let y_new = new_x * s + new_y * c
+
+  new_x = x_new + ( pivot_x)
+  new_y = y_new + ( pivot_y)
+
+  return [new_x, new_y]
+}
+
 // compare a set of points with a point to see if that point is to the left of all of those points
 const isLeftOf = (p, points, x, y) => {
   let closestPointObj = closestPoint(points, x, y)// points2[closestPointIndex] // assume it is point 0
@@ -296,5 +315,6 @@ export { FlowField,
 		randomItem,
 		drawShapeOutline,
 		rotatePoints,
+		rotatePoint,
 		Canvas,
 		isLeftOf }
