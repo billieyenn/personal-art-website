@@ -226,6 +226,12 @@ const noisyBackground = (p, color, std) => {
   p.updatePixels();
 }
 
+// remember to call p.loadPixels before using this 
+const convertCoordsToPixelArrayIndex = (p, x, y) => {
+  let d = p.pixelDensity()
+  return (x + y*p.width) * 4 * d
+}
+
 
 // provided an object or array, return a random item
 const randomItem = (enumerable) => {
@@ -312,6 +318,7 @@ export { FlowField,
 		CMYKtoRGB,
 		noiseEverywhere,
 		noisyBackground,
+		convertCoordsToPixelArrayIndex,
 		randomItem,
 		drawShapeOutline,
 		rotatePoints,

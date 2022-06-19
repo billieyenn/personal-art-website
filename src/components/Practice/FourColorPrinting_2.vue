@@ -27,7 +27,7 @@ import { randomColor } from '../../colors.js'
 import { hexToRgb } from '../../colors.js'
 import { unnamedColorScheme } from '../../colors.js'
 import { noiseEverywhere } from '../../utils.js'
-import { noisyBackground, drawShapeOutline, rotatePoints, rotatePoint } from '../../utils.js'
+import { noisyBackground, drawShapeOutline, rotatePoints, rotatePoint, convertCoordsToPixelArrayIndex } from '../../utils.js'
 
 
 
@@ -129,6 +129,7 @@ let sketch = (config) => {
       const grids = [cyanGrid, magentaGrid, yellowGrid, blackGrid]
       const angles = [0, 15, 45, 75] // rosetta angles
  
+      p.loadPixels();
       // analyse the whole current canvas to assign values for each CMYK grid
       // each rosette CMYK dot grid gets its separate iteration
       grids.forEach((grid, index) => {
@@ -146,11 +147,15 @@ let sketch = (config) => {
           const idk_y = -p.height/5 // idk why this is quite right but it seems to
           // earlier transformations need to be undone first
           let unrotatedPoint = rotatePoint(p, offsetX, offsetY, angle, (x * scale + idk), (y * scale + idk_y))
-          const colorAtPixel = p.get(unrotatedPoint[0], unrotatedPoint[1])
+          const indexInPixelArray = convertCoordsToPixelArrayIndex(p, p.floor(unrotatedPoint[0]), p.floor(unrotatedPoint[1]))
+          const red_ = p.pixels[indexInPixelArray]
+          const green_ = p.pixels[indexInPixelArray+1]
+          const blue_ = p.pixels[indexInPixelArray+2]
+
           let cymkResult =  RGBtoCMYK(
-            colorAtPixel[0],
-            colorAtPixel[1],
-            colorAtPixel[2])
+            red_,
+            green_,
+            blue_)
 
           color2 = cymkResult[index]
 
@@ -166,11 +171,6 @@ let sketch = (config) => {
       // scale also known as resolution. smaller number -> more computation needed
       const scale = resolution
      
-      //     let grids, angles, newMachine
-      // [grids, angles, newMachine] = initCYMK(p.width/2, p.height/2, scale)
-
-
-
       // figure out the potential boundaries of the shape when rotated  
       let x_min, y_min, width, height
       // get an extended bounding box
@@ -192,7 +192,7 @@ let sketch = (config) => {
       // apply and draw the grid
       p.fill('white')
       p.noStroke()
-      let cursorDiameter = 75
+      let cursorDiameter = 100
       let cursorRadius = cursorDiameter / 2
       let mouseX = p.mouseX - offsetX
       let mouseY = p.mouseY - offsetY
@@ -232,7 +232,7 @@ let sketch = (config) => {
     }
 
     // setup
-    const size = 1000 // canvas size
+    const size = 500 // canvas size
     const scale = 2 // big number means faster render time
 
     let offsetX
@@ -241,6 +241,7 @@ let sketch = (config) => {
     let grids2, angles2, newMachine2
 
     p.setup = function () {
+      p.pixelDensity(1)
       // prepare canvas
       // p.createCanvas(4608 / 8, 8192 / 8); // handy tall frame
       p.createCanvas(size, size);
@@ -285,6 +286,13 @@ let sketch = (config) => {
       // read config
       const width = p.width
       const height = p.height
+
+      //       let grids, angles, newMachine
+      // [grids, angles, newMachine] = initCYMK(offsetX, offsetY, scale) // analyse image and convert to CYMK dot grids
+      // grids2 = grids
+      // angles2 = angles
+      // newMachine2 = newMachine
+
 
       // do the main thing
       displayThing(offsetX, offsetY, scale, grids2, angles2, newMachine2)
