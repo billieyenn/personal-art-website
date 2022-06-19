@@ -113,53 +113,42 @@ let sketch = (config) => {
       // get an extended bounding box
       ({ width, height } = newMachine.rotationSafeBoundingBox())
 
-      // scale also known as resolution. smaller number -> more computation needed
+      // rename variable
       const scale = resolution
-
 
       // prepare dot grid
       // draw the dots with a grid instance
       const cols = p.floor(width / scale)
       const rows = p.floor(height / scale)
-
       const yellowGrid  = new Grid(rows, cols)
       const cyanGrid    = new Grid(rows, cols)
       const magentaGrid = new Grid(rows, cols)
       const blackGrid   = new Grid(rows, cols)
       const grids = [cyanGrid, magentaGrid, yellowGrid, blackGrid]
       const angles = [0, 15, 45, 75] // rosetta angles
- 
-      p.loadPixels();
+      const idk = -p.width/5 // idk why this is quite right but it seems to
+      const idk_y = -p.height/5 // idk why this is quite right but it seems to
+      let red_, green_, blue_
+      let cymkResult
+      let unrotatedPoint
+      let indexInPixelArray
+      let angle
+
       // analyse the whole current canvas to assign values for each CMYK grid
       // each rosette CMYK dot grid gets its separate iteration
+      p.loadPixels(); // call before accessing p.pixels // outside loop for performance
       grids.forEach((grid, index) => {
-        let angle = angles[index] // helper variable to keep track of f parameters
+        angle = angles[index] // helper variable to keep track of f parameters
         grid.forEach((x, y, val) => { // iterate over each dot in the specific dot grid
 
-          // index tells us which color grid we are in
-
-          let color2
-          let cya, mag, yel, bla 
-          let CYMKValues
-          
-
-          const idk = -p.width/5 // idk why this is quite right but it seems to
-          const idk_y = -p.height/5 // idk why this is quite right but it seems to
           // earlier transformations need to be undone first
-          let unrotatedPoint = rotatePoint(p, offsetX, offsetY, angle, (x * scale + idk), (y * scale + idk_y))
-          const indexInPixelArray = convertCoordsToPixelArrayIndex(p, p.floor(unrotatedPoint[0]), p.floor(unrotatedPoint[1]))
-          const red_ = p.pixels[indexInPixelArray]
-          const green_ = p.pixels[indexInPixelArray+1]
-          const blue_ = p.pixels[indexInPixelArray+2]
-
-          let cymkResult =  RGBtoCMYK(
-            red_,
-            green_,
-            blue_)
-
-          color2 = cymkResult[index]
-
-          grid.setVal(x, y, (color2)) // THIS IS VERY IMPORTANT
+          unrotatedPoint = rotatePoint(p, offsetX, offsetY, angle, (x * scale + idk), (y * scale + idk_y))
+          indexInPixelArray = convertCoordsToPixelArrayIndex(p, p.floor(unrotatedPoint[0]), p.floor(unrotatedPoint[1]))
+          red_ = p.pixels[indexInPixelArray]
+          green_ = p.pixels[indexInPixelArray+1]
+          blue_ = p.pixels[indexInPixelArray+2]
+          // value set to cyan/yellow/magenta/black amount converted from the rgb at the pixel 
+          grid.setVal(x, y, RGBtoCMYK(red_, green_, blue_)[index]) // THIS IS VERY IMPORTANT
 
         })
       })
@@ -287,7 +276,7 @@ let sketch = (config) => {
       const width = p.width
       const height = p.height
 
-      //       let grids, angles, newMachine
+      // let grids, angles, newMachine
       // [grids, angles, newMachine] = initCYMK(offsetX, offsetY, scale) // analyse image and convert to CYMK dot grids
       // grids2 = grids
       // angles2 = angles
