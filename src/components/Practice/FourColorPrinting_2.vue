@@ -120,6 +120,7 @@ let sketch = (config) => {
       // draw the dots with a grid instance
       const cols = p.floor(width / scale)
       const rows = p.floor(height / scale)
+      // console.log(cols, rows)
       const yellowGrid  = new Grid(rows, cols)
       const cyanGrid    = new Grid(rows, cols)
       const magentaGrid = new Grid(rows, cols)
@@ -143,6 +144,8 @@ let sketch = (config) => {
 
           // earlier transformations need to be undone first
           unrotatedPoint = rotatePoint(p, offsetX, offsetY, angle, (x * scale + idk), (y * scale + idk_y))
+      // console.log(x, y, " into ", p.floor(unrotatedPoint[0]), p.floor(unrotatedPoint[1]))
+
           indexInPixelArray = convertCoordsToPixelArrayIndex(p, p.floor(unrotatedPoint[0]), p.floor(unrotatedPoint[1]))
           red_ = p.pixels[indexInPixelArray]
           green_ = p.pixels[indexInPixelArray+1]
@@ -152,6 +155,35 @@ let sketch = (config) => {
 
         })
       })
+
+
+      // // attempt to scan image using pixel array not successful
+      // p.loadPixels();
+      // let d = p.pixelDensity();
+      // let until = 4 * (p.width * d) * (p.height * d);
+      // let _red_, _green_, _blue_
+      // for (let i = 0; i < until; i += 4) {
+      //   _red_   = p.pixels[i]
+      //   _green_ = p.pixels[i+1]
+      //   _blue_  = p.pixels[i+2]
+
+      //   let x = p.floor(i / 4 / d) % p.width/4
+      //   let y = p.floor(i / 4 / d / p.height)/4
+
+      //   // angle = angles[index] // helper variable to keep track of f parameters
+
+
+      //   let cymk = RGBtoCMYK(_red_, _green_, _blue_)
+      //   for (let ii = 2; ii < 3; ii++) {
+      //     angle = angles[ii] // helper variable to keep track of f parameters
+      //     unrotatedPoint = rotatePoint(p, offsetX, offsetY, -angle, (x * scale + idk), (y * scale + idk_y))
+      //     // console.log(x, y, " into ", p.floor(unrotatedPoint[0]), p.floor(unrotatedPoint[1]))
+      //     let x_rot = p.floor(unrotatedPoint[0]) 
+      //     let y_rot = p.floor(unrotatedPoint[1]) 
+      //     if (x_rot >= 0 && x_rot < cols && y_rot >= 0 && y_rot < rows)
+      //       grids[ii].setVal(x_rot, y_rot, cymk[ii])
+      //   }
+      // }
 
       return [grids, angles, newMachine]
     }
@@ -222,7 +254,7 @@ let sketch = (config) => {
 
     // setup
     const size = 500 // canvas size
-    const scale = 2 // big number means faster render time
+    const scale = 4 // big number means faster render time
 
     let offsetX
     let offsetY
@@ -269,7 +301,6 @@ let sketch = (config) => {
     p.draw = function() {
       p.background(p.color(colors.springWood))
 
-      // img.resize(size, 0)
       // p.image(img,0,0)
 
       // read config
