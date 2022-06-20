@@ -3,10 +3,11 @@
 
 <template>
   <div>
-    <button @click="refresh">Redraw</button>
+    <!-- <button @click="refresh">Redraw</button> -->
     <p>Try moving your mouse across the canvas!</p>
     <div >
-      <div id="canvas"></div>
+    <sketch-template :sketch="sketch" :config="config"></sketch-template>
+
     </div>
 
   </div>
@@ -28,6 +29,7 @@ import { hexToRgb } from '../../colors.js'
 import { unnamedColorScheme } from '../../colors.js'
 import { noiseEverywhere } from '../../utils.js'
 import { noisyBackground, drawShapeOutline, rotatePoints, rotatePoint, convertCoordsToPixelArrayIndex } from '../../utils.js'
+// import P5 from 'p5'
 
 
 
@@ -57,7 +59,7 @@ let sketch = (config) => {
 
     const displayDot = (p, x, y, val, scale, r, radius, color) => {
       // let size = val * scale * 1
-      let size = p.sqrt(val * scale * 1) // sqrt for some reason has nice appearance?
+      let size = p.sqrt(val)*scale // sqrt for some reason has nice appearance?
       p.noStroke()
       color.setAlpha( 255)
  
@@ -221,11 +223,12 @@ let sketch = (config) => {
       grids.forEach((grid, index) => {
         let angle = angles[index] // helper variable to keep track of parameters
 
-        // // apply effect to whole screen
-        // grid.forEach(displayF(scale, angle, width/2, colorsHex[index]),
-        //   isInPolyF(rotatePoints(p, newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min)
-        //   )
-
+        if (!mouseMode)
+        // apply effect to whole screen
+        grid.forEach(displayF(scale, angle, width/2, colorsHex[index]),
+          isInPolyF(rotatePoints(p, newMachine.trace, angle, x_min, y_min, width, height), scale, x_min, y_min)
+          )
+        else
         // apply effect close to mouse
         grid.forEach(displayF(scale, angle, width/2, colorsHex[index]),
           isNearPointF(rotatePoints(p, [p.createVector(mouseX, mouseY)], angle, x_min, y_min, width, height)[0], scale, x_min, y_min, cursorRadius)
@@ -253,8 +256,9 @@ let sketch = (config) => {
     }
 
     // setup
-    const size = 500 // canvas size
-    const scale = 4 // big number means faster render time
+    let size // canvas size
+    let scale // big number means faster render time
+    let mouseMode // is whole screen shown or vicinity of mouse
 
     let offsetX
     let offsetY
@@ -262,6 +266,19 @@ let sketch = (config) => {
     let grids2, angles2, newMachine2
 
     p.setup = function () {
+      ({
+        canvasSize: {
+          value: size = 500
+        } = {},
+        dotScale: {
+          value: scale = 16
+        } = {},
+        mouseHighlighter: {
+          value: mouseMode = true
+        } = {}
+      } = config)
+
+
       p.pixelDensity(1)
       // prepare canvas
       // p.createCanvas(4608 / 8, 8192 / 8); // handy tall frame
@@ -299,24 +316,27 @@ let sketch = (config) => {
     }
 
     p.draw = function() {
-      p.background(p.color(colors.springWood))
+      if (mouseMode) {
 
-      // p.image(img,0,0)
+        p.background(p.color(colors.springWood))
 
-      // read config
-      const width = p.width
-      const height = p.height
+        // p.image(img,0,0)
 
-      // let grids, angles, newMachine
-      // [grids, angles, newMachine] = initCYMK(offsetX, offsetY, scale) // analyse image and convert to CYMK dot grids
-      // grids2 = grids
-      // angles2 = angles
-      // newMachine2 = newMachine
+        // read config
+        const width = p.width
+        const height = p.height
+
+        // let grids, angles, newMachine
+        // [grids, angles, newMachine] = initCYMK(offsetX, offsetY, scale) // analyse image and convert to CYMK dot grids
+        // grids2 = grids
+        // angles2 = angles
+        // newMachine2 = newMachine
 
 
-      // do the main thing
-      displayThing(offsetX, offsetY, scale, grids2, angles2, newMachine2)
-      displayBorder(0, 0, width, height, color)
+        // do the main thing
+        displayThing(offsetX, offsetY, scale, grids2, angles2, newMachine2)
+        displayBorder(0, 0, width, height, color)
+      }
 
 
     }
@@ -324,32 +344,26 @@ let sketch = (config) => {
 }
 /* eslint-disable */
 
-import P5 from 'p5'
 export default {
-  props: {
-    msg: String
-  },
   data () {
     return {
+      sketch: sketch,
       config: {
-        speed: 10 //used by tracePoints
+        canvasSize: {
+          type: 'number',
+          value: 500
+        },
+        dotScale: {
+          type: 'number',
+          value: 16
+        },
+        mouseHighlighter: {
+          type: 'boolean',
+          value: false
+        }
       }
     }
-  },
-  async mounted () {
-
-    this.p5canvas = new P5(sketch(this.config), 'canvas')
-
-  },
-  methods: {
-    refresh () {
-      this.p5canvas.setup(this.config)
-    },
   }
-
-
-
-
 }
 
 </script>
