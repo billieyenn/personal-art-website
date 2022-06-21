@@ -1,4 +1,5 @@
 import About from './components/About.vue'
+import NormalPage from './components/NormalPage.vue'
 import Gallery from './components/Gallery.vue'
 import Sketches from './components/Sketches.vue'
 import LineArtPureShapes from './components/Lineart/PureShapes.vue'
@@ -42,49 +43,58 @@ import SketchTemplate from './components/Practice/SketchTemplate.vue'
 import SpaceTime from './components/Practice/SpaceTime.vue'
 import Container from './components/Practice/Container.vue'
 import ShaderOne from './components/Practice/ShaderOne/ShaderOne.vue'
-
+/* eslint-enable */
+/* eslint-disable */
 export const routes = [
   {
     path: '/',
     name: 'about',
     components: {
-      default: About,
-      'header-top': Header,
-      'header-bottom': Footer
-    }
-  },
-  {
-    path: '/about',
-    name: 'LineArtAbout',
-    components: {
-      default: SketchesAbout,
-      'header-top': Header,
-      'header-bottom': Footer
+      default: NormalPage
     },
     children: [
-      { path: 'perdurable', component: LineArtAbout },
-      { path: 'test', component: TestAbout },
-      { path: 'fourierplayground', component: FourierPlaygroundAbout },
-      { path: 'practice', component: PracticeAbout },
-      { path: 'unnamed', component: Unnamed }
+      { path: '', 
+        components: {
+        default: About,
+        'header-top': Header,
+        'header-bottom': Footer
+      }},
+      {
+      path: '/about',
+      name: 'LineArtAbout',
+      components: {
+        default: SketchesAbout,
+        'header-top': Header,
+        'header-bottom': Footer
+      },
+      children: [
+        { path: 'perdurable', component: LineArtAbout },
+        { path: 'test', component: TestAbout },
+        { path: 'fourierplayground', component: FourierPlaygroundAbout },
+        { path: 'practice', component: PracticeAbout },
+        { path: 'unnamed', component: Unnamed }
+      ]
+    },
+    {
+      path: '/gallery',
+      name: 'gallery',
+      components: {
+        default: Gallery,
+        'header-top': Header,
+        'header-bottom': Footer
+      }
+    },
     ]
   },
-  {
-    path: '/gallery',
-    name: 'gallery',
-    components: {
-      default: Gallery,
-      'header-top': Header,
-      'header-bottom': Footer
-    }
-  },
+  
+  
   {
     path: '/sketches',
     name: 'sketches',
     components: {
-      default: Sketches,
-      'header-top': Header,
-      'header-bottom': Footer
+      default: Sketches//,
+      // 'header-top': Header,
+      // 'header-bottom': Footer
 
     },
     children: [

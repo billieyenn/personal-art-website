@@ -1,7 +1,6 @@
+<!-- NormalPage is a wrapper for pages where a header and footer are desirable  -->
 <template>
-          <router-view></router-view>
-
-<!--   <div class="container-fluid">
+  <div class="container-fluid">
     <div class="row">
       <div v-if="!isMobile()">
         <div class="col-sm-3 col-md-3 sidebar springwood">
@@ -23,15 +22,11 @@
         <router-view></router-view>
       </div>
     </div>
-  </div> -->
+  </div>
 </template>
 
 <script>
-
 export default {
-  name: 'App',
-  components: {
-  },
   methods: {
     isMobile () {
       if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
@@ -45,7 +40,7 @@ export default {
 </script>
 
 <style>
-  body {
+body {
     font-family: 'Montserrat', sans-serif;
     /*color: black;*/
     color: #121a33;

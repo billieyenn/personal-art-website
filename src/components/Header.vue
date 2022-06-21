@@ -1,4 +1,5 @@
 <template>
+  
 <div id="sidebar-wrapper">
 <div class="header">
 <!-- <img alt="logo" src="../assets/logo2.png" width="20%" height="20%"> -->

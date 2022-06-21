@@ -1,19 +1,31 @@
+<!-- Sketches want to be on their own page without a header or footer -->
+
 <template>
-  <div class="container">
-      <h1>Sketch</h1>
-      <hr>
-      <div style="background-color: white;">
+<!--   <div class="container"> -->
+<!--       <h1>Sketch</h1>
+      <hr> -->
+      <div class="center" style="background-color: white;">
         <router-view></router-view>
       </div>
-  </div>
+<!--   </div> -->
 </template>
 
 <script>
-export default {
+/* eslint-enable */
+/* eslint-disable */
 
+export default {
 }
 </script>
 
-<style>
+<style scoped>
 
+/*https://blog.hubspot.com/website/center-div-css#center-div-horizontally-vertically*/
+.center {
+position: absolute;
+left: 50%;
+top: 50%;
+transform: translate(-50%, -50%);
+padding: 10px;
+}
 </style>
