@@ -10,7 +10,7 @@
     <button @click="toggleLoop"> {{ looping ? "Pause Drawing" : "Continue Drawing" }}</button>
 
     <div v-if="showConfig" class="card">
-      <button @click="refresh">Restart</button>
+      <button @click="refresh">Redraw</button>
       <div v-for="obj in Object.entries(config)" :key="obj[0]">
         <label :for="obj[0]">{{ obj[0] }}</label>
         <input      v-if="obj[1].type === 'string'"  :name="obj[0]" type="text"     v-model="obj[1].value">
@@ -43,6 +43,7 @@ export default {
   },
   methods: {
     refresh () {
+      this.showConfig = false
       this.p5canvas.setup(this.config)
     },
     toggleLoop () {
