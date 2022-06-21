@@ -51,42 +51,6 @@ export default {
     color: #121a33;
   }
 
-  .sidebar {
-    position: fixed;
-    top: 0px;
-    bottom: 0;
-    left: 0;
-    z-index: 1000;
-    display: block;
-    padding: 20px;
-    overflow-x: hidden;
-    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-    border-right: 1px solid #eee;
-  }
-
-  .sidebar {
-    width: 400px;
-  }
-
-  .gray {
-    background-color: #F5F5F5;
-  }
-
-  .springwood {
-    background-color: #faf8f5;
-  }
-
-  .main {
-    padding-top: 100px;
-  }
-
-  @media (min-width: 768px) {
-    .main {
-      padding-right: 40px;
-      padding-left: 440px; /* 180 + 40 */
-    }
-  }
-
   body {
     min-height: 100vh;
     display: flex;
