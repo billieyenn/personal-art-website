@@ -26,6 +26,6 @@ position: absolute;
 left: 50%;
 top: 0;
 transform: translate(-50%, 0);
-padding: 10px;
+/*padding: 10px;*/
 }
 </style>
