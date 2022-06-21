@@ -3,6 +3,8 @@
 
 <template>
   <div>
+    <div id="canvas"></div>
+
     <button @click="toggleConfig">Show Config</button>
     <button @click="nextFrame">Next Frame</button>
     <button @click="toggleLoop"> {{ looping ? "Pause Drawing" : "Continue Drawing" }}</button>
@@ -18,7 +20,6 @@
       </div>
     </div>
     <div>
-      <div id="canvas"></div>
     </div>
 
   </div>

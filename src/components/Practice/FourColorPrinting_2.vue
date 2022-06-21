@@ -344,14 +344,16 @@ let sketch = (config) => {
 }
 /* eslint-disable */
 
+import { min } from 'mathjs'
 export default {
+
   data () {
     return {
       sketch: sketch,
       config: {
         canvasSize: {
           type: 'number',
-          value: 500
+          value: min(window.innerWidth, window.innerHeight)
         },
         dotScale: {
           type: 'number',
