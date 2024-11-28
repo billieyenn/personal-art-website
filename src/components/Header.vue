@@ -61,6 +61,7 @@
       <router-link tag='li' to='/sketches/unnamed' style='cursor: pointer;'>Unnamed</router-link>
       <router-link tag='li' to='/sketches/shape/1' style='cursor: pointer;'>Shape 1</router-link>
       <router-link tag='li' to='/sketches/practice/forceswindows' style='cursor: pointer;'>Windows</router-link>
+      <router-link tag='li' to='/sketches/practice/birch' style='cursor: pointer;'>Birch</router-link>
       <router-link tag='li' to='/sketches/paths' style='cursor: pointer;'>Paths</router-link>
   </ul>
 
