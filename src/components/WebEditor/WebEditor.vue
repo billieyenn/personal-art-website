@@ -1,68 +1,51 @@
-/* eslint-enable */
-/* eslint-disable */
 <!--
 A simple markdown editor.
 -->
-
 <template>
-  <div class="editor">
-    <textarea class="input" :value="input" @input="update"></textarea>
-    <div class="output" v-html="output"></div>
+  <div>
+    <Editor :modelValue="userCode" />
+    <Canvas :sketchFunction="sketchFunction" />
   </div>
 </template>
 
 <script>
-// import { marked } from 'marked'
-import { debounce } from 'lodash-es'
+/* eslint-enable */
+/* eslint-disable */
+import Editor from './Editor.vue';
+import Canvas from './Canvas.vue';
 
 export default {
-  data: () => ({
-    input: '# hello'
-  }),
-  computed: {
-    output () {
-      return 0 // marked(this.input)
-    }
+  components: { 
+        Editor, 
+        Canvas
+    },
+  data() {
+    return {
+      userCode: `
+function sketch(p) {
+  p.setup = function() {
+    p.createCanvas(400, 400);
+    p.background(220);
+  };
+
+  p.draw = function() {
+    p.fill(0);
+    p.ellipse(p.mouseX, p.mouseY, 50, 50);
+  };
+}`,
+    };
   },
-  methods: {
-    update: debounce(function (e) {
-      this.input = e.target.value
-    }, 100)
-  }
-}
+  computed: {
+    sketchFunction() {
+      try {
+        // Create a dynamic function from the user code
+        const userFunction = new Function('p', this.userCode);
+        return userFunction;
+      } catch (error) {
+        console.error('Error in user code:', error);
+        return (p) => {};
+      }
+    },
+  },
+};
 </script>
-
-<style>
-body {
-  margin: 0;
-}
-
-.editor {
-  height: 100vh;
-  display: flex;
-}
-
-.input,
-.output {
-  overflow: auto;
-  width: 50%;
-  height: 100%;
-  box-sizing: border-box;
-  padding: 0 20px;
-}
-
-.input {
-  border: none;
-  border-right: 1px solid #ccc;
-  resize: none;
-  outline: none;
-  background-color: #f6f6f6;
-  font-size: 14px;
-  font-family: 'Monaco', courier, monospace;
-  padding: 20px;
-}
-
-code {
-  color: #f66;
-}
-</style>
