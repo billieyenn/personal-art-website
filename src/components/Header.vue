@@ -64,6 +64,7 @@
       <router-link tag='li' to='/sketches/practice/birch' style='cursor: pointer;'>Birch</router-link>
       <router-link tag='li' to='/sketches/paths' style='cursor: pointer;'>Paths</router-link>
   </ul>
+  <router-link tag='li' to='/webeditor' style='cursor: pointer;'>Web Editor</router-link>
 
   <hr>
 </div>

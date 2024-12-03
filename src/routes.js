@@ -44,6 +44,7 @@ import SketchTemplate from './components/Practice/SketchTemplate.vue'
 import SpaceTime from './components/Practice/SpaceTime.vue'
 import Container from './components/Practice/Container.vue'
 import ShaderOne from './components/Practice/ShaderOne/ShaderOne.vue'
+import WebEditor from './components/WebEditor/WebEditor.vue'
 /* eslint-enable */
 /* eslint-disable */
 export const routes = [
@@ -133,7 +134,7 @@ export const routes = [
       { path: 'practice/sketchtemplate', component: SketchTemplate },
       { path: 'practice/spacetime', component: SpaceTime },
       { path: 'practice/container', component: Container },
-      { path: 'practice/shaderone', component: ShaderOne }
+      { path: 'practice/shaderone', component: ShaderOne },
     ]
   },
   {
@@ -152,6 +153,13 @@ export const routes = [
     path: '/opensea',
     beforeEnter (to, from, next) {
       window.location.href = 'https://opensea.io/Billieyenn'
+    }
+  },
+  {
+    path: '/webeditor',
+    name: 'webeditor',
+    components: {
+      default: WebEditor,
     }
   },
   {
