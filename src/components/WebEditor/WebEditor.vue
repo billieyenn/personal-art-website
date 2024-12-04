@@ -1,8 +1,8 @@
 
 <template>
   <div>
-    <Editor :modelValue="userCode" />
-    <Canvas :sketchFunction="sketchFunction" />
+    <Editor :modelValue="userCode" @update:modelValue="updateCode" />
+    <Canvas :key="canvasKey" :sketchFunction="sketchFunction" />
   </div>
 </template>
 
@@ -29,7 +29,8 @@ function setup() {
 function draw() {
   fill(0);
   ellipse(mouseX, mouseY, 50, 50);
-}`
+}`,
+  canvasKey: 0
     };
   },
   computed: {
@@ -68,7 +69,11 @@ function draw() {
       const regex = new RegExp(`function\\s+${name}\\s*\\(\\)\\s*{([^}]*)}`, 'ms');
       const match = code.match(regex);
       return match ? match[1].trim() : '';
-    }
+    },
+    updateCode(newCode) {
+      this.userCode = newCode;
+      this.canvasKey++;
+    },
   }
 };
 </script>
