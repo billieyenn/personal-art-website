@@ -1,6 +1,4 @@
-<!--
-A simple markdown editor.
--->
+
 <template>
   <div>
     <Editor :modelValue="userCode" />
@@ -9,6 +7,7 @@ A simple markdown editor.
 </template>
 
 <script>
+
 /* eslint-enable */
 /* eslint-disable */
 import Editor from './Editor.vue';
@@ -22,30 +21,54 @@ export default {
   data() {
     return {
       userCode: `
-function sketch(p) {
-  p.setup = function() {
-    p.createCanvas(400, 400);
-    p.background(220);
-  };
+function setup() {
+  createCanvas(400, 400);
+  background(220);
+}
 
-  p.draw = function() {
-    p.fill(0);
-    p.ellipse(p.mouseX, p.mouseY, 50, 50);
-  };
-}`,
+function draw() {
+  fill(0);
+  ellipse(mouseX, mouseY, 50, 50);
+}`
     };
   },
   computed: {
     sketchFunction() {
-      try {
-        // Create a dynamic function from the user code
-        const userFunction = new Function('p', this.userCode);
-        return userFunction;
-      } catch (error) {
-        console.error('Error in user code:', error);
-        return (p) => {};
-      }
-    },
+      return (p) => {
+        // Create a new scope for p5 instance
+        try {
+          const sketch = new Function('p', `
+            return {
+              setup() { 
+                with(p) { 
+                  ${this.extractFunction('setup', this.userCode)}
+                }
+              },
+              draw() { 
+                with(p) { 
+                  ${this.extractFunction('draw', this.userCode)}
+                }
+              }
+            }
+          `)(p);
+          
+          p.setup = sketch.setup;
+          p.draw = sketch.draw;
+        } catch (error) {
+          console.error('Error in user code:', error);
+          // Provide empty default sketch on error
+          p.setup = () => p.createCanvas(400, 400);
+          p.draw = () => {};
+        }
+      };
+    }
   },
+  methods: {
+    extractFunction(name, code) {
+      const regex = new RegExp(`function\\s+${name}\\s*\\(\\)\\s*{([^}]*)}`, 'ms');
+      const match = code.match(regex);
+      return match ? match[1].trim() : '';
+    }
+  }
 };
 </script>
