@@ -92,9 +92,11 @@ export default {
       }
     },
     resetToDefault() {
-      this.userCode = DEFAULT_CODE;
-      this.canvasKey++;
-      localStorage.removeItem(STORAGE_KEY);
+      if (confirm('Are you sure you want to reset to the default code? This will delete your current code.')) {
+        this.userCode = DEFAULT_CODE;
+        this.canvasKey++;
+        localStorage.removeItem(STORAGE_KEY);
+      }
     },
   },
   // Save code before user leaves the page
