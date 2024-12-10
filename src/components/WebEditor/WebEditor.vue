@@ -15,6 +15,8 @@
 import Editor from './Editor.vue';
 import Canvas from './Canvas.vue';
 
+const STORAGE_KEY = 'p5js-editor-code';
+
 export default {
   components: { 
         Editor, 
@@ -22,16 +24,8 @@ export default {
     },
   data() {
     return {
-      userCode: `function setup() {
-  createCanvas(400, 400);
-  background(220);
-}
-
-function draw() {
-  fill(0);
-  ellipse(mouseX, mouseY, 50, 50);
-}`,
-  canvasKey: 0
+      userCode: this.getInitialCode(),
+      canvasKey: 0
     };
   },
   computed: {
@@ -60,12 +54,42 @@ function draw() {
     }
   },
   methods: {
+    getInitialCode() {
+      // Try to get code from localStorage first
+      const savedCode = localStorage.getItem(STORAGE_KEY);
+      if (savedCode) {
+        return savedCode;
+      }
+      
+      // Default code if nothing is saved
+      return `function setup() {
+  createCanvas(400, 400);
+  background(220);
+}
+
+function draw() {
+  fill(0);
+  ellipse(mouseX, mouseY, 50, 50);
+}`
+    },
     updateCode(newCode) {
       this.userCode = newCode;
       this.canvasKey++;
+      this.saveToCache(this.userCode);
     },
+    saveToCache(code) {
+      try {
+        localStorage.setItem(STORAGE_KEY, code);
+      } catch (error) {
+        console.error('Error saving to localStorage:', error);
+      }
+    }
+  },
+  // Save code before user leaves the page
+  beforeUnmount() {
+    this.saveToCache(this.userCode);
   }
-};
+}
 </script>
 
 <style scoped>
