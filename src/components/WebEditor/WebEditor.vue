@@ -70,5 +70,19 @@ function draw() {
 .container {
   display: flex;
   flex-direction: row;
+  height: 100vh; /* Full viewport height */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.container :deep(> *) {
+  flex: 1;       /* Each child takes equal space */
+  height: 100%;  /* Full height of container */
+}
+
+/* Target ace editor specifically */
+.container :deep(.ace_editor) {
+  width: 100% !important;
+  height: 100% !important;
 }
 </style>

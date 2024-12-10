@@ -1,5 +1,5 @@
 <template>
-  <div ref="editor" class="container"></div>
+  <div ref="editor"></div>
 </template>
 
 <script>
@@ -24,7 +24,15 @@ export default {
       theme: 'ace/theme/monokai',
       value: this.modelValue,
       useWorker: false,
+      maxLines: Infinity,
+      minLines: Infinity,
     });
+
+    // resize handler
+    this.editor.container.style.resize = 'none';
+    this.editor.container.style.width = '100%';
+    this.editor.container.style.height = '100%';
+    this.editor.resize();
 
     this.editor.on('change', () => {
       this.$emit('update:modelValue', this.editor.getValue());
@@ -35,11 +43,3 @@ export default {
   },
 };
 </script>
-
-
-<style scoped>
-.container {
-  height: 400px; 
-  width: 100%;
-}
-</style>
