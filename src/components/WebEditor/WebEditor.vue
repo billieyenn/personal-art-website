@@ -1,8 +1,10 @@
 
 <template>
-  <div class="container">
-    <Editor :modelValue="userCode" @update:modelValue="updateCode" />
-    <Canvas :key="canvasKey" :sketchFunction="sketchFunction" />
+  <div class="web-editor-wrapper"> <!-- This wrapper overrides bootstrap and the annoying resizing jumps -->
+    <div class="container">
+      <Editor :modelValue="userCode" @update:modelValue="updateCode" />
+      <Canvas :key="canvasKey" :sketchFunction="sketchFunction" />
+    </div>
   </div>
 </template>
 
@@ -67,7 +69,26 @@ function draw() {
 </script>
 
 <style scoped>
-.container {
+.web-editor-wrapper {
+  /* Reset any Bootstrap container styles */
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.web-editor-wrapper .container {
+  /* Override Bootstrap's container class */
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+.web-editor-wrapper .container {
   display: flex;
   height: 100vh; /* Full viewport height */
   margin: 0 !important;
