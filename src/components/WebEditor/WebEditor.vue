@@ -35,20 +35,15 @@ function draw() {
   computed: {
     sketchFunction() {
       return (p) => {
-        // Create a new scope for p5 instance
         try {
+          // Evaluate the entire code as one block instead of extracting functions
           const sketch = new Function('p', `
-            return {
-              setup() { 
-                with(p) { 
-                  ${this.extractFunction('setup', this.userCode)}
-                }
-              },
-              draw() { 
-                with(p) { 
-                  ${this.extractFunction('draw', this.userCode)}
-                }
-              }
+            with(p) {
+              ${this.userCode}
+              return {
+                setup,
+                draw
+              };
             }
           `)(p);
           
@@ -56,7 +51,6 @@ function draw() {
           p.draw = sketch.draw;
         } catch (error) {
           console.error('Error in user code:', error);
-          // Provide empty default sketch on error
           p.setup = () => p.createCanvas(400, 400);
           p.draw = () => {};
         }
@@ -64,11 +58,6 @@ function draw() {
     }
   },
   methods: {
-    extractFunction(name, code) {
-      const regex = new RegExp(`function\\s+${name}\\s*\\(\\)\\s*{([^}]*)}`, 'ms');
-      const match = code.match(regex);
-      return match ? match[1].trim() : '';
-    },
     updateCode(newCode) {
       this.userCode = newCode;
       this.canvasKey++;
