@@ -1,6 +1,6 @@
 
 <template>
-  <div>
+  <div class="container">
     <Editor :modelValue="userCode" @update:modelValue="updateCode" />
     <Canvas :key="canvasKey" :sketchFunction="sketchFunction" />
   </div>
@@ -20,8 +20,7 @@ export default {
     },
   data() {
     return {
-      userCode: `
-function setup() {
+      userCode: `function setup() {
   createCanvas(400, 400);
   background(220);
 }
@@ -77,3 +76,10 @@ function draw() {
   }
 };
 </script>
+
+<style scoped>
+.container {
+  display: flex;
+  flex-direction: row;
+}
+</style>

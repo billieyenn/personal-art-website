@@ -1,5 +1,7 @@
 <template>
-  <div ref="canvasContainer" style="border: 1px solid red;"></div>
+  <div class="container">
+    <div ref="canvasContainer"></div>
+  </div>
 </template>
 
 <script>
@@ -32,3 +34,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.container {
+  border: 1px solid red;
+}
+</style>

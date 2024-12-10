@@ -1,6 +1,5 @@
-
 <template>
-  <div ref="editor" style="height: 400px; width: 100%;"></div>
+  <div ref="editor" class="container"></div>
 </template>
 
 <script>
@@ -36,3 +35,11 @@ export default {
   },
 };
 </script>
+
+
+<style scoped>
+.container {
+  height: 400px; 
+  width: 100%;
+}
+</style>
