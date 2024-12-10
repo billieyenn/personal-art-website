@@ -18,6 +18,14 @@ export default {
     },
   },
   emits: ['update:modelValue'],
+  watch: { // Watch change caused by the reset button
+    modelValue(newValue) {
+      // Only update if the editor value is different to avoid cursor jump
+      if (this.editor && this.editor.getValue() !== newValue) {
+        this.editor.setValue(newValue, 1); // The '1' parameter puts cursor at end
+      }
+    }
+  },
   mounted() {
     this.editor = ace.edit(this.$refs.editor, {
       mode: 'ace/mode/javascript',

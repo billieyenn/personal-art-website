@@ -2,7 +2,12 @@
 <template>
   <div class="web-editor-wrapper"> <!-- This wrapper overrides bootstrap and the annoying resizing jumps -->
     <div class="container">
-      <Editor :modelValue="userCode" @update:modelValue="updateCode" />
+      <div class="editor-section">
+        <div class="toolbar">
+          <button class="toolbar-button" @click="resetToDefault">Reset to Default</button>
+        </div>
+        <Editor :modelValue="userCode" @update:modelValue="updateCode" />
+      </div>
       <Canvas :key="canvasKey" :sketchFunction="sketchFunction" />
     </div>
   </div>
@@ -16,6 +21,16 @@ import Editor from './Editor.vue';
 import Canvas from './Canvas.vue';
 
 const STORAGE_KEY = 'p5js-editor-code';
+
+const DEFAULT_CODE = `function setup() {
+  createCanvas(400, 400);
+  background(220);
+}
+
+function draw() {
+  fill(0);
+  ellipse(mouseX, mouseY, 50, 50);
+}`;
 
 export default {
   components: { 
@@ -62,15 +77,7 @@ export default {
       }
       
       // Default code if nothing is saved
-      return `function setup() {
-  createCanvas(400, 400);
-  background(220);
-}
-
-function draw() {
-  fill(0);
-  ellipse(mouseX, mouseY, 50, 50);
-}`
+      return DEFAULT_CODE
     },
     updateCode(newCode) {
       this.userCode = newCode;
@@ -83,7 +90,12 @@ function draw() {
       } catch (error) {
         console.error('Error saving to localStorage:', error);
       }
-    }
+    },
+    resetToDefault() {
+      this.userCode = DEFAULT_CODE;
+      this.canvasKey++;
+      localStorage.removeItem(STORAGE_KEY);
+    },
   },
   // Save code before user leaves the page
   beforeUnmount() {
@@ -93,6 +105,32 @@ function draw() {
 </script>
 
 <style scoped>
+.editor-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.toolbar {
+  background: #2F3129;
+  padding: 8px;
+  border-bottom: 1px solid #444;
+}
+
+.toolbar-button {
+  background: #444;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 3px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.toolbar-button:hover {
+  background: #555;
+}
+
 .web-editor-wrapper {
   /* Reset any Bootstrap container styles */
   width: 100% !important;
