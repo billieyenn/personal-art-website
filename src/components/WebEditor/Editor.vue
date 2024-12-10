@@ -24,9 +24,14 @@ export default {
       theme: 'ace/theme/monokai',
       value: this.modelValue,
       useWorker: false,
-      maxLines: Infinity,
-      minLines: Infinity,
+      // wrap: true,         // Enable word wrapping // i prefer horizontal scrolling for now
+      showPrintMargin: false,  // Optional: removes the vertical line
+      scrollPastEnd: 0.5  // Optional: Allows scrolling past the end by 50% of the screen
     });
+
+    // Enable scrolling
+    // this.editor.setOption('vScrollBarAlwaysVisible', true);
+    // this.editor.setOption('hScrollBarAlwaysVisible', true);
 
     // resize handler
     this.editor.container.style.resize = 'none';
