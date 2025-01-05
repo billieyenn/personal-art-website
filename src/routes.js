@@ -44,6 +44,8 @@ import SketchTemplate from './components/Practice/SketchTemplate.vue'
 import SpaceTime from './components/Practice/SpaceTime.vue'
 import Container from './components/Practice/Container.vue'
 import ShaderOne from './components/Practice/ShaderOne/ShaderOne.vue'
+import Wind from './components/Wind.vue'
+
 /* eslint-enable */
 /* eslint-disable */
 export const routes = [
@@ -115,6 +117,7 @@ export const routes = [
       { path: 'fourier', component: FourierPlayground },
       { path: 'unnamed', component: Unnamed },
       { path: 'paths', component: Paths },
+      { path: 'wind', component: Wind },
       { path: 'shape/1', component: Shape1 },
       { path: 'practice/placeholder', component: Practice },
       { path: 'practice/fibonacci', component: Fibonacci },

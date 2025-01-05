@@ -63,6 +63,7 @@
       <router-link tag='li' to='/sketches/practice/forceswindows' style='cursor: pointer;'>Windows</router-link>
       <router-link tag='li' to='/sketches/practice/birch' style='cursor: pointer;'>Birch</router-link>
       <router-link tag='li' to='/sketches/paths' style='cursor: pointer;'>Paths</router-link>
+      <router-link tag='li' to='/sketches/wind' style='cursor: pointer;'>Wind</router-link>
   </ul>
 
   <hr>
