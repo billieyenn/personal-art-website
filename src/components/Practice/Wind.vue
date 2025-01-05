@@ -22,6 +22,7 @@ let cols
 const randomBGColor = randomColor(colors)
 const scale = 50
 let airPressureFlowField
+let windFlowField
 
 let sketch = (config) => {
     return function (p) {
@@ -41,6 +42,20 @@ let sketch = (config) => {
                 // fill airPressureFlowField with vector
                 airPressureFlowField.setVal(x, y, v)
             })
+
+            // the flow field keeps track of wind direction
+            windFlowField = new Grid(rows, cols)
+            windFlowField.forEach((x, y, val) => {
+                // todo: initialise wind in direction of lowest pressure
+                let r = p.noise(x, y) / 2 // generate a random value between 0 and 0.5
+                let v = p.createVector(r, 0)
+                let angle = p.noise(x, y) * p.TWO_PI  // generate a random value between 0 and 2 PI
+                p.angleMode(p.RADIANS)
+                v.rotate(angle)
+
+                // fill windFlowField with vector
+                windFlowField.setVal(x, y, v)
+            })
         }
 
         p.draw = function () {
@@ -56,8 +71,17 @@ let sketch = (config) => {
                 p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
 
                 // draw local 'pressure'
+                p.strokeWeight(0.5)
+                p.stroke(0)
                 p.fill(0)
                 p.circle((x+0.5)*scale, (y+0.5)*scale, val.x /* .x of vector encodes pressure */* scale) 
+            })
+
+            // Display the airPressureFlowField encoding pressure for debugging
+            windFlowField.forEach((x, y, val) => {
+                // draw local 'wind'
+                p.stroke(255)
+                p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x * scale, (y+0.5)*scale + val.y * scale) 
             })
         }
     }
