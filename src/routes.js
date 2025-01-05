@@ -44,7 +44,7 @@ import SketchTemplate from './components/Practice/SketchTemplate.vue'
 import SpaceTime from './components/Practice/SpaceTime.vue'
 import Container from './components/Practice/Container.vue'
 import ShaderOne from './components/Practice/ShaderOne/ShaderOne.vue'
-import Wind from './components/Wind.vue'
+import Wind from './components/Practice/Wind.vue'
 
 /* eslint-enable */
 /* eslint-disable */
