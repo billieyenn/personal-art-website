@@ -77,12 +77,59 @@ let sketch = (config) => {
                 p.circle((x+0.5)*scale, (y+0.5)*scale, val.x /* .x of vector encodes pressure */* scale) 
             })
 
-            // Display the airPressureFlowField encoding pressure for debugging
+            // Display the windFlowField encoding wind for debugging
             windFlowField.forEach((x, y, val) => {
                 // draw local 'wind'
                 p.stroke(255)
                 p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale + val.x * scale, (y+0.5)*scale + val.y * scale) 
             })
+            
+            // Compute average directional air pressure at each location
+            windFlowField.forEach((x, y, val) => {
+                // get each neighbouring air pressure
+                // 1 2 3
+                // 4 5 6
+                // 7 8 9
+                const p1 = airPressureFlowField.getVal(x - 1,   y - 1) ?? p.createVector(0, 0)
+                const p2 = airPressureFlowField.getVal(x,       y - 1) ?? p.createVector(0, 0)
+                const p3 = airPressureFlowField.getVal(x + 1,   y - 1) ?? p.createVector(0, 0)
+                const p4 = airPressureFlowField.getVal(x - 1,   y) ?? p.createVector(0, 0)
+                const p5 = airPressureFlowField.getVal(x,       y) ?? p.createVector(0, 0)
+                const p6 = airPressureFlowField.getVal(x + 1,   y) ?? p.createVector(0, 0)
+                const p7 = airPressureFlowField.getVal(x - 1,   y + 1) ?? p.createVector(0, 0)
+                const p8 = airPressureFlowField.getVal(x,       y + 1) ?? p.createVector(0, 0)
+                const p9 = airPressureFlowField.getVal(x + 1,   y + 1) ?? p.createVector(0, 0)
+
+                // compute the gradient in a rudimentary way
+                p.angleMode(p.RADIANS)
+                let sumPressure = p.createVector(0, 0)
+                sumPressure.add(p1.copy().rotate(p.PI + p.QUARTER_PI))
+                sumPressure.add(p2.copy().rotate(p.PI + p.HALF_PI))
+                sumPressure.add(p3.copy().rotate(-p.QUARTER_PI))
+                sumPressure.add(p4.copy().rotate(p.PI))
+                // sumPressure.add(p5.copy().rotate(-p.QUARTER_PI)) // todo> pressure at self affects differently, consider this carefully
+                sumPressure.add(p6.copy().rotate(0))
+                sumPressure.add(p7.copy().rotate(p.HALF_PI + p.QUARTER_PI))
+                sumPressure.add(p8.copy().rotate(p.HALF_PI))
+                sumPressure.add(p9.copy().rotate(p.QUARTER_PI))
+
+                sumPressure.rotate(p.PI) /* wind of course blows towards low pressure*/
+
+                // wind magnitude is differential between local average and this
+                sumPressure.setMag(p.abs( p5.mag() - sumPressure.mag() )) 
+                // todo: consider how wind should not blow out of low pressure area.
+                // after all, if there is no air, how can there be wind?
+
+                // Apply force to wind
+                windFlowField.setVal(x, y, sumPressure)
+            })
+
+            // Wind affects air pressure
+            windFlowField.forEach((x, y, val) => {
+                // todo
+            })
+
+            // todo: consider edges. now wind 'falls' out
         }
     }
 }
