@@ -21,7 +21,7 @@ let rows
 let cols
 const randomBGColor = randomColor(colors)
 const scale = 50
-let flowField
+let airPressureFlowField
 
 let sketch = (config) => {
     return function (p) {
@@ -31,23 +31,23 @@ let sketch = (config) => {
             rows = p.floor(p.width / scale)
             cols = p.floor(p.height / scale)
 
-            // the flow field keeps track of local gravity
-            flowField = new Grid(rows, cols)
-            flowField.forEach((x, y, val) => {
+            // the flow field keeps track of local pressure
+            airPressureFlowField = new Grid(rows, cols)
+            airPressureFlowField.forEach((x, y, val) => {
                 // create a vector of random magnitude
                 let r = p.noise(x, y) // generate a random value between 0 and 1
                 let v = p.createVector(r, 0)
 
-                // fill flowfield with vector
-                flowField.setVal(x, y, v)
+                // fill airPressureFlowField with vector
+                airPressureFlowField.setVal(x, y, v)
             })
         }
 
         p.draw = function () {
             p.background(randomBGColor)
             
-            // Display the flowfield encoding pressure for debugging
-            flowField.forEach((x, y, val) => {
+            // Display the airPressureFlowField encoding pressure for debugging
+            airPressureFlowField.forEach((x, y, val) => {
                 // draw the grid
                 p.strokeWeight(0.5)
                 p.noFill()
