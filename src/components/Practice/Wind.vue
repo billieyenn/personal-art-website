@@ -81,22 +81,36 @@ let sketch = (config) => {
                     airPressureFlowField.getVal(x,       y + 1),
                     airPressureFlowField.getVal(x + 1,   y + 1)
                 ]
+
+                // filter out non-values
                 const nonNullCluster = cluster
                     .filter(value => value !== undefined)
                     
+                // reduce to get sum
                 const clusterSum = nonNullCluster
                     .reduce((acc, value) => acc + value.x, 0)
+
+                // take average
                 const clusterAverage = clusterSum / nonNullCluster.length
 
-                console.log(clusterAverage)
-                
+                // vector.y encodes change to take place
                 const newVal = airPressureFlowField.getVal(x, y)
                 newVal.y = clusterAverage
             })
 
             // apply wind
             airPressureFlowField.forEach((x, y, val) => {
-                // todoi
+                const newVal = val.copy()
+                if (val.x > val.y) {
+                    // if cell is stronger than average, the wind blows away
+                    newVal.x -= 0.001
+                } else {
+                    // if the cell is weaker than average, wind blows inwards
+                    newVal.x += 0.001
+                }
+                airPressureFlowField.setVal(x, y, newVal)
+                // todo: do this with inertia, so that equilibrium is never reached
+
             })
 
             // todo: consider edges. now wind 'falls' out
