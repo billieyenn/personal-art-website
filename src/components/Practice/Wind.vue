@@ -49,24 +49,10 @@ let sketch = (config) => {
             // Display the airPressureFlowField encoding pressure for debugging
             airPressureFlowField.forEach((x, y, val) => {
                 // draw the grid
-                p.strokeWeight(0.5)
-                p.noFill()
-                p.stroke(0)
+                p.fill(val.x * 255, 255 - val.x * 255, 0)
+                p.noStroke(0)
                 p.rectMode(p.CENTER)
                 p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
-
-                // draw local 'pressure'
-                p.strokeWeight(0.5)
-                p.stroke(0)
-                p.fill(0)
-                p.circle((x+0.5)*scale, (y+0.5)*scale, val.x /* .x of vector encodes pressure */* scale) 
-            })
-
-            // Display the windFlowField encoding wind for debugging
-            airPressureFlowField.forEach((x, y, val) => {
-                // draw local 'wind'
-                p.stroke(255)
-                p.line((x+0.5)*scale, (y+0.5)*scale, (x+0.5)*scale, (y+0.5)*scale + val.y * scale / 2)
             })
             
             // Calculate effects of air pressure on wind
