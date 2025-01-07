@@ -35,8 +35,8 @@ let sketch = (config) => {
             airPressureFlowField = new Grid(rows, cols)
             airPressureFlowField.forEach((x, y, val) => {
                 // create a vector of random magnitude
-                let r = p.noise(x, y) // generate a random value between 0 and 1
-                let v = p.createVector(r, 0)
+                let r = p.noise(x/8, y/8) // generate a random value between 0 and 1
+                let v = p.createVector(r, 0, 0)
 
                 // fill airPressureFlowField with vector
                 airPressureFlowField.setVal(x, y, v)
@@ -89,14 +89,13 @@ let sketch = (config) => {
                 const newVal = val.copy()
                 if (val.x > val.y) {
                     // if cell is stronger than average, the wind blows away
-                    newVal.x -= 0.001
+                    newVal.z -= 0.001
                 } else {
                     // if the cell is weaker than average, wind blows inwards
-                    newVal.x += 0.001
+                    newVal.z += 0.001
                 }
+                newVal.x += newVal.z / 2
                 airPressureFlowField.setVal(x, y, newVal)
-                // todo: do this with inertia, so that equilibrium is never reached
-
             })
 
             // todo: consider edges. now wind 'falls' out
