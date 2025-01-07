@@ -72,8 +72,9 @@ let sketch = (config) => {
         const kernel = [
             [1, 1, 1],
             [1, 1, 1],
-            [1, 1, 1]
+            [1, 1, 1],
         ];
+        const kernelSize = kernel.reduce((total, row) => total + row.length, 0);
 
         p.draw = function () {
             p.background(randomBGColor)
@@ -92,7 +93,7 @@ let sketch = (config) => {
                 const clusterSum = applyConvolution(airPressureFlowField, x, y, kernel)
 
                 // take average
-                const clusterAverage = clusterSum / 9
+                const clusterAverage = clusterSum / kernelSize
 
                 // vector.y encodes change to take place
                 const newVal = airPressureFlowField.getVal(x, y)
