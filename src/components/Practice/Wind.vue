@@ -43,6 +43,38 @@ let sketch = (config) => {
             })
         }
 
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function applyConvolution(airPressureFlowField, x, y, kernel) {
+            const kernelSize = kernel.length;
+            const halfKernel = Math.floor(kernelSize / 2);
+            let result = 0;
+
+            // Iterate over the kernel
+            for (let dy = -halfKernel; dy <= halfKernel; dy++) {
+                for (let dx = -halfKernel; dx <= halfKernel; dx++) {
+                    // Clamp the indices to the valid range
+                    const neighborX = clamp(x + dx, 0, airPressureFlowField.cols - 1);
+                    const neighborY = clamp(y + dy, 0, airPressureFlowField.rows - 1);
+
+                    const weight = kernel[dy + halfKernel][dx + halfKernel];
+                    const neighborValue = airPressureFlowField.getVal(neighborX, neighborY).x;
+                    result += weight * neighborValue;
+                }
+            }
+
+            return result;
+        }
+
+        // Example usage with a simple 3x3 kernel
+        const kernel = [
+            [1, 1, 1],
+            [1, 1, 1],
+            [1, 1, 1]
+        ];
+
         p.draw = function () {
             p.background(randomBGColor)
             
@@ -57,27 +89,10 @@ let sketch = (config) => {
             
             // Calculate effects of air pressure on wind
             airPressureFlowField.forEach((x, y, val) => {
-                const cluster = [airPressureFlowField.getVal(x - 1,   y - 1),
-                    airPressureFlowField.getVal(x,       y - 1),
-                    airPressureFlowField.getVal(x + 1,   y - 1),
-                    airPressureFlowField.getVal(x - 1,   y),
-                    airPressureFlowField.getVal(x,       y),
-                    airPressureFlowField.getVal(x + 1,   y),
-                    airPressureFlowField.getVal(x - 1,   y + 1),
-                    airPressureFlowField.getVal(x,       y + 1),
-                    airPressureFlowField.getVal(x + 1,   y + 1)
-                ]
-
-                // filter out non-values
-                const nonNullCluster = cluster
-                    .filter(value => value !== undefined)
-                    
-                // reduce to get sum
-                const clusterSum = nonNullCluster
-                    .reduce((acc, value) => acc + value.x, 0)
+                const clusterSum = applyConvolution(airPressureFlowField, x, y, kernel)
 
                 // take average
-                const clusterAverage = clusterSum / nonNullCluster.length
+                const clusterAverage = clusterSum / 9
 
                 // vector.y encodes change to take place
                 const newVal = airPressureFlowField.getVal(x, y)
@@ -94,7 +109,8 @@ let sketch = (config) => {
                     // if the cell is weaker than average, wind blows inwards
                     newVal.z += 0.001
                 }
-                newVal.x += newVal.z / 2
+                newVal.z = clamp(newVal.z, -0.1, 0.1)
+                newVal.x = clamp(newVal.z/2 + newVal.x, 0, 255)
                 airPressureFlowField.setVal(x, y, newVal)
             })
 
