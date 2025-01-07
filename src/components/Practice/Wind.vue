@@ -47,7 +47,42 @@ let sketch = (config) => {
             return Math.max(min, Math.min(max, value));
         }
 
-        function applyConvolution(airPressureFlowField, x, y, kernel) {
+        
+        // Ignore out-of-bounds neighbors
+        function ignoreStrategy(airPressureFlowField, neighborX, neighborY) {
+            if (neighborX < 0 || neighborX >= airPressureFlowField.cols || 
+                neighborY < 0 || neighborY >= airPressureFlowField.rows) {
+                return null; // Return null to indicate "skip"
+            }
+            return airPressureFlowField.getVal(neighborX, neighborY);
+        }
+
+        // Clamp indices to the nearest valid values
+        function clampStrategy(airPressureFlowField, neighborX, neighborY) {
+            const clampedX = Math.max(0, Math.min(airPressureFlowField.cols - 1, neighborX));
+            const clampedY = Math.max(0, Math.min(airPressureFlowField.rows - 1, neighborY));
+            return airPressureFlowField.getVal(clampedX, clampedY);
+        }
+
+        // Wrap indices around the grid
+        function wrapStrategy(airPressureFlowField, neighborX, neighborY) {
+            const wrappedX = (neighborX + airPressureFlowField.cols) % airPressureFlowField.cols;
+            const wrappedY = (neighborY + airPressureFlowField.rows) % airPressureFlowField.rows;
+            return airPressureFlowField.getVal(wrappedX, wrappedY);
+        }
+
+        // Use a default value for out-of-bounds neighbors
+        function defaultValueStrategy(defaultValue) {
+            return function (airPressureFlowField, neighborX, neighborY) {
+                if (neighborX < 0 || neighborX >= airPressureFlowField.cols || 
+                    neighborY < 0 || neighborY >= airPressureFlowField.rows) {
+                    return defaultValue; // Return the specified default value
+                }
+                return airPressureFlowField.getVal(neighborX, neighborY);
+            };
+        }
+
+        function applyConvolution(array, x, y, kernel, getterWithOutOfBoundsStrategy) {
             const kernelSize = kernel.length;
             const halfKernel = Math.floor(kernelSize / 2);
             let result = 0;
@@ -55,13 +90,14 @@ let sketch = (config) => {
             // Iterate over the kernel
             for (let dy = -halfKernel; dy <= halfKernel; dy++) {
                 for (let dx = -halfKernel; dx <= halfKernel; dx++) {
-                    // Clamp the indices to the valid range
-                    const neighborX = clamp(x + dx, 0, airPressureFlowField.cols - 1);
-                    const neighborY = clamp(y + dy, 0, airPressureFlowField.rows - 1);
+                    const neighborX = x + dx;
+                    const neighborY = y + dy;
+
+                    // Get the neighbor value using the provided handler
+                    const neighborValue = getterWithOutOfBoundsStrategy(array, neighborX, neighborY);
 
                     const weight = kernel[dy + halfKernel][dx + halfKernel];
-                    const neighborValue = airPressureFlowField.getVal(neighborX, neighborY).x;
-                    result += weight * neighborValue;
+                    result += weight * neighborValue.x;
                 }
             }
 
@@ -101,7 +137,7 @@ let sketch = (config) => {
             
             // Calculate effects of air pressure on wind
             airPressureFlowField.forEach((x, y, val) => {
-                const clusterSum = applyConvolution(airPressureFlowField, x, y, kernel)
+                const clusterSum = applyConvolution(airPressureFlowField, x, y, kernel, wrapStrategy)
 
                 // take average
                 const clusterAverage = clusterSum / kernelSize
@@ -125,8 +161,6 @@ let sketch = (config) => {
                 newVal.x = clamp(newVal.z/2 + newVal.x, 0, 255)
                 airPressureFlowField.setVal(x, y, newVal)
             })
-
-            // todo: consider edges. now wind 'falls' out
         }
     }
 }
