@@ -137,7 +137,7 @@ let sketch = (config) => {
             
             // Calculate effects of air pressure on wind
             airPressureFlowField.forEach((x, y, val) => {
-                const clusterSum = applyConvolution(airPressureFlowField, x, y, kernel, wrapStrategy)
+                const clusterSum = applyConvolution(airPressureFlowField, x, y, kernel, clampStrategy)
 
                 // take average
                 const clusterAverage = clusterSum / kernelSize
@@ -150,14 +150,8 @@ let sketch = (config) => {
             // apply wind
             airPressureFlowField.forEach((x, y, val) => {
                 const newVal = val.copy()
-                if (val.x > val.y) {
-                    // if cell is stronger than average, the wind blows away
-                    newVal.z -= 0.001
-                } else {
-                    // if the cell is weaker than average, wind blows inwards
-                    newVal.z += 0.001
-                }
-                newVal.z = clamp(newVal.z, -0.1, 0.1)
+                newVal.z += -(val.x - val.y)/10
+                // newVal.z = clamp(newVal.z, -0.1, 0.1)
                 newVal.x = clamp(newVal.z/2 + newVal.x, 0, 255)
                 airPressureFlowField.setVal(x, y, newVal)
             })
