@@ -20,13 +20,13 @@ import { Grid } from '../../utils.js'
 let rows
 let cols
 const randomBGColor = randomColor(colors)
-const scale = 50
+const scale = 10
 let airPressureFlowField
 
 let sketch = (config) => {
     return function (p) {
         p.setup = function () {
-            p.createCanvas(1000, 1000);
+            p.createCanvas(500, 500);
             p.background(randomBGColor)
             rows = p.floor(p.width / scale)
             cols = p.floor(p.height / scale)
