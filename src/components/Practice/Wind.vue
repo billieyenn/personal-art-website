@@ -68,12 +68,23 @@ let sketch = (config) => {
             return result;
         }
 
+        function normalizeKernel(kernel) {
+            const numElements = kernel.length * kernel[0].length; // Total elements in the kernel
+            const sum = kernel.flat().reduce((acc, val) => acc + val, 0); // Sum of all elements
+            const normalizationFactor = sum / numElements;
+
+            // Normalize the kernel
+            return kernel.map(row => row.map(val => val / normalizationFactor));
+        }
+
         // Example usage with a simple 3x3 kernel
-        const kernel = [
-            [1, 1, 1],
-            [1, 1, 1],
-            [1, 1, 1],
+        // Sum of kernel elements must always equal number of kernel elements, otherwise runaway happens
+        const kernelNotNormalized = [
+            [0.5, 0.7, 0.5],
+            [0.7, 1, 0.7],
+            [0.5, 0.7, 0.5],
         ];
+        const kernel = normalizeKernel(kernelNotNormalized)
         const kernelSize = kernel.reduce((total, row) => total + row.length, 0);
 
         p.draw = function () {
