@@ -15,8 +15,9 @@
 /* eslint-disable */
 
 import {colors, randomColor} from '../../colors.js'
-import { Grid } from '../../utils.js'
+import { Grid, Canvas } from '../../utils.js'
 import { applyConvolution, clampStrategy, kernel, clamp } from '../../convolution.js'
+import { createParticleClass } from '../../particle.js'
 
 let rows
 let cols
@@ -26,7 +27,12 @@ let airPressureFlowField
 
 let sketch = (config) => {
     return function (p) {
+        const Particle = createParticleClass(p)
+        const particles = []
+        const particlesCount = 100
+
         p.setup = function () {
+
             p.createCanvas(500, 500);
             p.background(randomBGColor)
             rows = p.floor(p.width / scale)
@@ -42,6 +48,18 @@ let sketch = (config) => {
                 // fill airPressureFlowField with vector
                 airPressureFlowField.setVal(x, y, v)
             })
+
+            
+            let canvas = new Canvas([p.createVector(0, 0),
+                p.createVector(0, p.height),
+                p.createVector(p.width, p.height),
+                p.createVector(p.width, 0),
+            ])
+
+            for (let i = 0; i < particlesCount; i++) {
+                const newPart = new Particle(null, p.random(0.5, 5), canvas)
+                particles.push(newPart)
+            }
         }
 
         p.draw = function () {
@@ -76,6 +94,13 @@ let sketch = (config) => {
                 // newVal.z = clamp(newVal.z, -0.1, 0.1)
                 newVal.x = clamp(newVal.z/2 + newVal.x, 0, 255)
                 airPressureFlowField.setVal(x, y, newVal)
+            })
+
+            particles.forEach( (particle, index) => {
+                const force = p.createVector(0.1, 0)
+                particle.applyForce(force)
+                particle.update({limit: 10, friction: 0.05})
+                particle.display()
             })
         }
     }
