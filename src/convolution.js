@@ -62,6 +62,32 @@ function applyConvolution(array, x, y, kernel, getterWithOutOfBoundsStrategy) {
     return result;
 }
 
+
+function getGradient(array, x, y, range, getterWithOutOfBoundsStrategy) {
+    let gradientX = 0;
+    let gradientY = 0;
+
+    // Iterate over the kernel
+    for (let dy = -range; dy <= range; dy++) {
+        for (let dx = -range; dx <= range; dx++) {
+            const neighborX = x + dx;
+            const neighborY = y + dy;
+
+            // Get the neighbor value using the provided handler
+            const neighborValue = getterWithOutOfBoundsStrategy(array, neighborX, neighborY);
+
+            // Calculate gradient components
+            if (dj === -1) dx -= neighborValue; // Left
+            if (dj === 1) dx += neighborValue;  // Right
+            if (di === -1) dy -= neighborValue; // Top
+            if (di === 1) dy += neighborValue;  // Bottom
+
+        }
+    }
+
+    return Math.atan2(gradientY, gradientX);;
+}
+
 function normalizeKernel(kernel) {
     const numElements = kernel.length * kernel[0].length; // Total elements in the kernel
     const sum = kernel.flat().reduce((acc, val) => acc + val, 0); // Sum of all elements
@@ -83,6 +109,7 @@ const kernel = normalizeKernel(kernelNotNormalized)
 
 export {
     applyConvolution,
+    getGradient,
     ignoreStrategy, 
     clampStrategy, 
     wrapStrategy, 
