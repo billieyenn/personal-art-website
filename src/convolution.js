@@ -77,15 +77,15 @@ function getGradient(array, x, y, range, getterWithOutOfBoundsStrategy) {
             const neighborValue = getterWithOutOfBoundsStrategy(array, neighborX, neighborY);
 
             // Calculate gradient components
-            if (dj === -1) dx -= neighborValue; // Left
-            if (dj === 1) dx += neighborValue;  // Right
-            if (di === -1) dy -= neighborValue; // Top
-            if (di === 1) dy += neighborValue;  // Bottom
+            if (dx === -1) gradientX -= neighborValue.x; // Left
+            if (dx === 1) gradientX += neighborValue.x;  // Right
+            if (dy === -1) gradientY -= neighborValue.x; // Top
+            if (dy === 1) gradientY += neighborValue.x;  // Bottom
 
         }
     }
 
-    return Math.atan2(gradientY, gradientX);;
+    return Math.atan2(gradientY, gradientX)
 }
 
 function normalizeKernel(kernel) {

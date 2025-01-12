@@ -16,7 +16,7 @@
 
 import {colors, randomColor} from '../../colors.js'
 import { Grid, Canvas } from '../../utils.js'
-import { applyConvolution, clampStrategy, kernel, clamp } from '../../convolution.js'
+import { applyConvolution, clampStrategy, kernel, clamp, getGradient } from '../../convolution.js'
 import { createParticleClass } from '../../particle.js'
 
 let rows
@@ -43,7 +43,7 @@ let sketch = (config) => {
             airPressureFlowField.forEach((x, y, val) => {
                 // create a vector of random magnitude
                 let r = p.noise(x/8, y/8) // generate a random value between 0 and 1 
-                let v = {x: r, y: 0, z: 0} //x: pressure, y: nextPressure, z: "air pressure inertia"
+                let v = {x: r, y: 0, z: 0, g: 0} //x: pressure, y: nextPressure, z: "air pressure inertia", g: gradient
 
                 // fill airPressureFlowField with vector
                 airPressureFlowField.setVal(x, y, v)
@@ -85,6 +85,7 @@ let sketch = (config) => {
                 // vector.y encodes new wind pressure to be updated after convolving whole field
                 const newVal = airPressureFlowField.getVal(x, y)
                 newVal.y = clusterAverage
+                newVal.g = getGradient(airPressureFlowField, x, y, 1, clampStrategy)
             })
 
             // apply wind
@@ -98,8 +99,11 @@ let sketch = (config) => {
 
             // update particles
             particles.forEach( (particle, index) => {
-                // todo: calculate force of wind on particles better
-                const force = p.createVector(0.1, 0)
+                const x = clamp(Math.floor(particle.pos.x / scale - 0.5), 0, cols)
+                const y = clamp(Math.floor(particle.pos.y / scale - 0.5), 0, rows)
+                
+                const localAirSituation = airPressureFlowField.getVal(x, y)
+                const force = p.createVector(localAirSituation.x, 0).rotate(localAirSituation.g)
                 particle.applyForce(force)
                 particle.update({limit: 10, friction: 0.05})
                 particle.display()
