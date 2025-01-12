@@ -42,8 +42,8 @@ let sketch = (config) => {
             airPressureFlowField = new Grid(rows, cols)
             airPressureFlowField.forEach((x, y, val) => {
                 // create a vector of random magnitude
-                let r = p.noise(x/8, y/8) // generate a random value between 0 and 1
-                let v = p.createVector(r, 0, 0)
+                let r = p.noise(x/8, y/8) // generate a random value between 0 and 1 
+                let v = {x: r, y: 0, z: 0} //x: pressure, y: nextPressure, z: "air pressure inertia"
 
                 // fill airPressureFlowField with vector
                 airPressureFlowField.setVal(x, y, v)
@@ -82,21 +82,23 @@ let sketch = (config) => {
                 const kernelSize = kernel.reduce((total, row) => total + row.length, 0);
                 const clusterAverage = clusterSum / kernelSize
 
-                // vector.y encodes change to take place
+                // vector.y encodes new wind pressure to be updated after convolving whole field
                 const newVal = airPressureFlowField.getVal(x, y)
                 newVal.y = clusterAverage
             })
 
             // apply wind
             airPressureFlowField.forEach((x, y, val) => {
-                const newVal = val.copy()
+                const newVal = { ...val }
                 newVal.z += -(val.x - val.y)/10
                 // newVal.z = clamp(newVal.z, -0.1, 0.1)
                 newVal.x = clamp(newVal.z/2 + newVal.x, 0, 255)
                 airPressureFlowField.setVal(x, y, newVal)
             })
 
+            // update particles
             particles.forEach( (particle, index) => {
+                // todo: calculate force of wind on particles better
                 const force = p.createVector(0.1, 0)
                 particle.applyForce(force)
                 particle.update({limit: 10, friction: 0.05})
