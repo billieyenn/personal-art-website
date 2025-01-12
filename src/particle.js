@@ -62,8 +62,8 @@ return class Particle {
     display() {
         p.push()
         p.translate(this.pos.x, this.pos.y)
-        p.fill(255)
-        p.ellipse(0, 0, 5, 5)
+        p.stroke(255); // Set the color of the pixel
+        p.point(0, 0); // Draw a single pixel
         p.pop()
     }
 

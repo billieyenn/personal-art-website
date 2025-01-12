@@ -29,7 +29,7 @@ let sketch = (config) => {
     return function (p) {
         const Particle = createParticleClass(p)
         const particles = []
-        const particlesCount = 100
+        const particlesCount = 1000
 
         p.setup = function () {
 
@@ -64,15 +64,6 @@ let sketch = (config) => {
 
         p.draw = function () {
             p.background(randomBGColor)
-            
-            // Display the airPressureFlowField encoding pressure for debugging
-            airPressureFlowField.forEach((x, y, val) => {
-                // draw the grid
-                p.fill(val.x * 255, 255 - val.x * 255, 0)
-                p.noStroke(0)
-                p.rectMode(p.CENTER)
-                p.rect((x+0.5)*scale, (y+0.5)*scale, scale, scale)
-            })
             
             // Calculate effects of air pressure on wind
             airPressureFlowField.forEach((x, y, val) => {
