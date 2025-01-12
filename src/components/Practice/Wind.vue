@@ -16,13 +16,13 @@
 
 import {colors, randomColor} from '../../colors.js'
 import { Grid, Canvas } from '../../utils.js'
-import { applyConvolution, clampStrategy, kernel, clamp, getGradient } from '../../convolution.js'
+import { applyConvolution, wrapStrategy, kernel, clamp, getGradient } from '../../convolution.js'
 import { createParticleClass } from '../../particle.js'
 
 let rows
 let cols
-const randomBGColor = randomColor(colors)
-const scale = 10
+const randomBGColor = colors.millbrook
+const scale = 5
 let airPressureFlowField
 
 let sketch = (config) => {
@@ -67,7 +67,7 @@ let sketch = (config) => {
             
             // Calculate effects of air pressure on wind
             airPressureFlowField.forEach((x, y, val) => {
-                const clusterSum = applyConvolution(airPressureFlowField, x, y, kernel, clampStrategy)
+                const clusterSum = applyConvolution(airPressureFlowField, x, y, kernel, wrapStrategy)
 
                 // take average
                 const kernelSize = kernel.reduce((total, row) => total + row.length, 0);
@@ -76,7 +76,7 @@ let sketch = (config) => {
                 // vector.y encodes new wind pressure to be updated after convolving whole field
                 const newVal = airPressureFlowField.getVal(x, y)
                 newVal.y = clusterAverage
-                newVal.g = getGradient(airPressureFlowField, x, y, 1, clampStrategy)
+                newVal.g = getGradient(airPressureFlowField, x, y, 1, wrapStrategy)
             })
 
             // apply wind
@@ -90,11 +90,12 @@ let sketch = (config) => {
 
             // update particles
             particles.forEach( (particle, index) => {
+                // convert position on canvas to nearestby grid cell
+                // make it an integer, and keep it within bounds
                 const x = clamp(Math.floor(particle.pos.x / scale - 0.5), 0, cols)
                 const y = clamp(Math.floor(particle.pos.y / scale - 0.5), 0, rows)
-                
                 const localAirSituation = airPressureFlowField.getVal(x, y)
-                const force = p.createVector(localAirSituation.x, 0).rotate(localAirSituation.g)
+                const force = p.createVector(localAirSituation.x/5/*magic number experimentally determined*/, 0).rotate(localAirSituation.g)
                 particle.applyForce(force)
                 particle.update({limit: 10, friction: 0.05})
                 particle.display()
